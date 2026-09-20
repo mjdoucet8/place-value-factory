@@ -285,6 +285,31 @@ function App() {
       setNotice(`Could not take over — ${(error as Error).message}`);
     }
   };
+  const changeAttemptState = async (action: "pause" | "resume") => {
+    const commandId = crypto.randomUUID();
+    try {
+      const data = await api(
+        `/games/place-value-factory/attempts/${attempt.attemptId}/${action}`,
+        {
+          method: "POST",
+          headers: { "x-session": session, "idempotency-key": commandId },
+          body: JSON.stringify({
+            commandId,
+            expectedRevision: attempt.revision,
+            leaseEpoch: attempt.leaseEpoch,
+            tabId,
+          }),
+        },
+      );
+      setAttempt(data.snapshot);
+      if (action === "pause") {
+        await loadMap();
+        setScreen("map");
+      }
+    } catch (error) {
+      setNotice(`Could not ${action} — ${(error as Error).message}`);
+    }
+  };
   if (screen === "login")
     return (
       <main className="login">
@@ -438,6 +463,28 @@ function App() {
             : order.canonicalRequired
               ? "Use normal place value: 0–9 crates of each size."
               : "Build this target with the open machines.";
+  if (attempt.status === "paused")
+    return (
+      <main className="results">
+        <h1>Mission paused</h1>
+        <p>
+          Your draft is kept on this device and your saved order is ready to
+          resume.
+        </p>
+        <button onClick={() => changeAttemptState("resume")}>
+          Resume mission
+        </button>
+        <button
+          className="secondary"
+          onClick={async () => {
+            await loadMap();
+            setScreen("map");
+          }}
+        >
+          Back to map
+        </button>
+      </main>
+    );
   return (
     <main>
       <header>
@@ -613,12 +660,9 @@ function App() {
         <button
           className="secondary"
           disabled={saving}
-          onClick={async () => {
-            await loadMap();
-            setScreen("map");
-          }}
+          onClick={() => changeAttemptState("pause")}
         >
-          End mission
+          Pause mission
         </button>
       </section>
       {notice && (

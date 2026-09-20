@@ -240,6 +240,14 @@ Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (40 
 
 Evidence level: fictional API integrated; pause/resume UI and E2E remain next.
 
+## 2026-09-20 | FE-02f | UPDATE | Pause/resume UI
+
+Changes and artifacts: game UI can pause a mission through the server transition, return to the map, show a saved paused state, and resume the same server-owned order without discarding the local draft.
+
+Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (40 tests), and `npm run build` passed.
+
+Evidence level: fictional API/UI integrated; browser E2E NOT RUN.
+
 ## 2026-09-20 | FE-04a | CLAIM | Frontend / Game UX
 
 Timestamp (UTC): 2026-09-20T15:29:49Z
