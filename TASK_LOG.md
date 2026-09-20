@@ -192,6 +192,14 @@ Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (39 
 
 Evidence level: fictional API/UI integrated; browser E2E and PostgreSQL runtime persistence NOT RUN.
 
+## 2026-09-20 | FE-02b | UPDATE | Recovery foundation
+
+Changes and artifacts: browser stores a profile/order-scoped draft and one pending shipment before send, removes it only after the server acknowledgement, and restores only a matching active-order draft. No credentials or session token are stored.
+
+Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (39 tests), and `npm run build` passed.
+
+Evidence level: build-verified client recovery foundation; browser refresh/drop-reply E2E NOT RUN.
+
 ## 2026-09-20 | FE-04a | CLAIM | Frontend / Game UX
 
 Timestamp (UTC): 2026-09-20T15:29:49Z
