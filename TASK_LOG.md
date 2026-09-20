@@ -224,6 +224,14 @@ Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (40 
 
 Evidence level: fictional API integration verified; takeover UI and browser two-tab E2E NOT RUN.
 
+## 2026-09-20 | FE-02e | UPDATE | Takeover UI
+
+Changes and artifacts: formatted the game component with project Prettier and added a conditional Take over this attempt control. It appears only when the current snapshot names another writer tab and reconciles the returned takeover snapshot.
+
+Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (40 tests), and `npm run build` passed.
+
+Evidence level: API/UI integrated; actual two-tab browser E2E NOT RUN.
+
 ## 2026-09-20 | FE-04a | CLAIM | Frontend / Game UX
 
 Timestamp (UTC): 2026-09-20T15:29:49Z
