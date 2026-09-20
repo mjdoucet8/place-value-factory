@@ -248,6 +248,14 @@ Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (40 
 
 Evidence level: fictional API/UI integrated; browser E2E NOT RUN.
 
+## 2026-09-20 | BE-03d | UPDATE | Skip and replacement orders
+
+Changes and artifacts: added an idempotent skip route that requires two persisted unsuccessful mathematical responses, records zero evidence, and issues a deterministic replacement for the same slot rather than advancing completion.
+
+Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (40 tests), and `npm run build` passed.
+
+Evidence level: fictional API implementation verified by existing suite; dedicated skip integration/UI remain next.
+
 ## 2026-09-20 | FE-04a | CLAIM | Frontend / Game UX
 
 Timestamp (UTC): 2026-09-20T15:29:49Z
