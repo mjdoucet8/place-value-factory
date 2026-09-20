@@ -109,6 +109,22 @@ export function generateOrder(seed: number, slotIndex: number, difficultyBand: D
     difficultyBand, primarySkill: slot.skillId };
 }
 
+/** A targeted practice order retains one immutable primary skill. */
+export function generatePracticeOrder(skillId: string, seed: number, slotIndex: number, difficultyBand: DifficultyBand = 'easy'): OrderSpec {
+  const placeBySkill: Record<string, Denomination> = { 'pv.ones': 1, 'pv.tens': 10, 'pv.hundreds': 100, 'pv.thousands': 1000, 'pv.tenThousands': 10000, 'pv.hundredThousands': 100000 };
+  const place = placeBySkill[skillId];
+  if (place) {
+    const [low, high] = DIGIT_RANGES[difficultyBand]; const digit = low + Math.abs(seed + slotIndex) % (high - low + 1);
+    return { id: `practice-${skillId}-${seed}-${slotIndex}`, target: digit * place, allowed: DENOMINATIONS, canonicalRequired: true, minimumRequired: false, exactTypes: null, distinctRepresentations: 1, difficultyBand, primarySkill: skillId, mode: 'standard' };
+  }
+  const level = LEVELS_FOR_PRACTICE(skillId); return generateLevelOrder(level.id, seed, slotIndex, difficultyBand);
+}
+
+function LEVELS_FOR_PRACTICE(skillId: string) {
+  const level = ['standard.decompose', 'standard.zero', 'rename.100000_10000', 'rename.10000_1000', 'rename.1000_100', 'rename.100_10', 'rename.10_1', 'rename.multi', 'compose.allowed', 'compose.forbidden', 'reason.minimum', 'reason.exactTypes', 'reason.multiple'].indexOf(skillId);
+  return level >= 0 ? levelById(`level-${level < 2 ? 5 + level * 3 : level + 8}`) ?? levelById('level-1')! : levelById('level-1')!;
+}
+
 /** Deterministic level generator; every branch supplies a whole-crate witness. */
 export function generateLevelOrder(levelId: string, seed: number, slotIndex: number, difficultyBand: DifficultyBand = 'easy'): OrderSpec {
   const level = levelById(levelId); if (!level) throw new Error('CONFIG_INVALID');

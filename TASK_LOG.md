@@ -184,6 +184,14 @@ Evidence level: fictional API/UI integrated.
 
 Remaining risks or blockers: the recommendation does not yet start a dedicated practice attempt, and PostgreSQL is not the active runtime store.
 
+## 2026-09-20 | GL-03c / BE-03 / FE-03 | UPDATE | Practice flow
+
+Changes and artifacts: practice recommendation now starts a `practice` attempt. The server selects the deterministic focus skill, issues five orders retaining that skill, and adapts only their difficulty band from committed evidence. The map supplies the practice action.
+
+Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (39 tests), and `npm run build` passed.
+
+Evidence level: fictional API/UI integrated; browser E2E and PostgreSQL runtime persistence NOT RUN.
+
 ## 2026-09-20 | FE-04a | CLAIM | Frontend / Game UX
 
 Timestamp (UTC): 2026-09-20T15:29:49Z

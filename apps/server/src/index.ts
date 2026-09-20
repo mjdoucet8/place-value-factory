@@ -3,7 +3,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { difficultyFor, evidenceScore, generateLevelOrder, isIndependentFirst, nextPracticeSkill, stageGate, summarizeMastery, validateRepresentation, type EvidenceRecord } from '../../../packages/game-engine/src/index.js';
+import { difficultyFor, evidenceScore, generateLevelOrder, generatePracticeOrder, isIndependentFirst, nextPracticeSkill, stageGate, summarizeMastery, validateRepresentation, type EvidenceRecord } from '../../../packages/game-engine/src/index.js';
 import { LEVELS, STAGE_GATE_SKILLS, levelById } from '../../../packages/config/src/index.js';
 
 const port = Number(process.env.PORT ?? 3101);
@@ -16,7 +16,7 @@ type Receipt = { actorId: string; commandId: string; payloadHash: string; status
 type Attempt = {
   id: string; studentId: string; levelId: string; seed: number; slot: number; activeOrder?: Order;
   responses: ResponseRecord[]; completed: boolean; createdAt: string; revision: number; leaseEpoch: number;
-  writerTabId: string; leaseExpiresAt: string; receipts: Receipt[]; evidence: EvidenceRecord[];
+  writerTabId: string; leaseExpiresAt: string; receipts: Receipt[]; evidence: EvidenceRecord[]; kind?: 'path' | 'practice'; practiceSkill?: string;
 };
 type Store = { attempts: Attempt[] };
 type Actor = { id: string; role: 'student' | 'teacher' };
@@ -72,7 +72,7 @@ export function createApiServer(dataPath = defaultDataPath): Server {
     return [...firstOrderResponse.values()].filter((record) => !record.validation.shipmentAccepted).length;
   }
   function snapshot(attempt: Attempt) {
-    return { attemptId: attempt.id, revision: attempt.revision, leaseEpoch: attempt.leaseEpoch, leaseExpiresAt: attempt.leaseExpiresAt, writerTabId: attempt.writerTabId, status: attempt.completed ? 'completed' : 'active', levelId: attempt.levelId, kind: 'path', configVersion: 'v1-local', shippedSlots: attempt.slot, skippedOrders: 0, correctedSlots: correctedSlots(attempt), acknowledgedCommandIds: attempt.receipts.map((receipt) => receipt.commandId).slice(-20), achievedTier: 'Trainee', activeOrder: attempt.completed ? null : orderFor(attempt) };
+    return { attemptId: attempt.id, revision: attempt.revision, leaseEpoch: attempt.leaseEpoch, leaseExpiresAt: attempt.leaseExpiresAt, writerTabId: attempt.writerTabId, status: attempt.completed ? 'completed' : 'active', levelId: attempt.levelId, kind: attempt.kind ?? 'path', configVersion: 'v1-local', shippedSlots: attempt.slot, skippedOrders: 0, correctedSlots: correctedSlots(attempt), acknowledgedCommandIds: attempt.receipts.map((receipt) => receipt.commandId).slice(-20), achievedTier: 'Trainee', activeOrder: attempt.completed ? null : orderFor(attempt) };
   }
   function mapFor(attempts: Attempt[]) {
     const completed = new Set(attempts.filter((attempt) => attempt.completed).map((attempt) => attempt.levelId));
@@ -89,10 +89,10 @@ export function createApiServer(dataPath = defaultDataPath): Server {
     return { attemptId: attempt.id, completed: true, shipped: 5, submittedOrders: attempt.responses.length, firstObjectiveCorrect: [...firstPerOrder.values()].filter((item) => item.validation.objectiveMet).length, firstValueCorrect: [...firstPerOrder.values()].filter((item) => item.validation.valueMatches).length, eventuallyCorrect: 5, correctedSlots: correctedSlots(attempt), skippedOrders: 0, efficiency: Math.max(0, 100 - 6 * correctedSlots(attempt)), mainStars: 2, transferStar: false, bestLevelStars: 2, newlyUnlockedLevelIds: [`level-${Math.min(30, Number(attempt.levelId.slice(6)) + 1)}`], newlyEarnedTier: null, policyVersion: 'v1-local' };
   }
   function nextDifficulty(attempt: Attempt): 'easy' | 'medium' | 'hard' {
-    const nextOrder = generateLevelOrder(attempt.levelId, attempt.seed, attempt.slot, 'easy');
+    const nextOrder = attempt.kind === 'practice' && attempt.practiceSkill ? generatePracticeOrder(attempt.practiceSkill, attempt.seed, attempt.slot, 'easy') : generateLevelOrder(attempt.levelId, attempt.seed, attempt.slot, 'easy');
     return difficultyFor(summarizeMastery(nextOrder.primarySkill ?? 'unknown', attempt.evidence).status);
   }
-  function orderFor(attempt: Attempt) { return attempt.activeOrder ?? generateLevelOrder(attempt.levelId, attempt.seed, attempt.slot, nextDifficulty(attempt)); }
+  function orderFor(attempt: Attempt) { return attempt.activeOrder ?? (attempt.kind === 'practice' && attempt.practiceSkill ? generatePracticeOrder(attempt.practiceSkill, attempt.seed, attempt.slot, nextDifficulty(attempt)) : generateLevelOrder(attempt.levelId, attempt.seed, attempt.slot, nextDifficulty(attempt))); }
 
   return createServer(async (request, response) => {
     try {
@@ -118,14 +118,15 @@ export function createApiServer(dataPath = defaultDataPath): Server {
         const body = await json(request); const command = startCommandFrom(body);
         if (!command || !matchingKey(request, command)) return send(response, 422, responseError('INVALID_INPUT', 'A command ID, profile revision, tab ID, and matching Idempotency-Key are required.'));
         const state = await store(); let attempt = state.attempts.find((item) => item.studentId === actor.id && !item.completed);
-        const requestedLevel = levelById(typeof body.levelId === 'string' ? body.levelId : 'level-1'); const completed = new Set(state.attempts.filter((item) => item.studentId === actor.id && item.completed).map((item) => item.levelId)); const highest = Math.max(0, ...LEVELS.filter((level) => completed.has(level.id)).map((level) => level.ordinal));
+        const isPractice = body.kind === 'practice'; const requestedLevel = levelById(typeof body.levelId === 'string' ? body.levelId : 'level-1'); const completed = new Set(state.attempts.filter((item) => item.studentId === actor.id && item.completed).map((item) => item.levelId)); const highest = Math.max(0, ...LEVELS.filter((level) => completed.has(level.id)).map((level) => level.ordinal));
         const evidence = state.attempts.filter((item) => item.studentId === actor.id).flatMap((item) => item.evidence);
         const firstOfStage = requestedLevel && LEVELS.find((item) => item.stage === requestedLevel.stage)?.id === requestedLevel.id;
-        if (!requestedLevel || requestedLevel.ordinal > highest + 1 || (firstOfStage && requestedLevel.stage > 1 && !stageGate(requestedLevel.stage - 1, evidence).satisfied)) return send(response, 409, responseError('LEVEL_LOCKED', 'Complete the earlier level and practice the required skills first.'));
+        if (!requestedLevel || (!isPractice && (requestedLevel.ordinal > highest + 1 || (firstOfStage && requestedLevel.stage > 1 && !stageGate(requestedLevel.stage - 1, evidence).satisfied)))) return send(response, 409, responseError('LEVEL_LOCKED', 'Complete the earlier level and practice the required skills first.'));
         if (command.profileRevision !== completed.size) return send(response, 409, responseError('REVISION_CONFLICT', 'Progress changed. Reloading your saved work.', completed.size));
         if (attempt) return send(response, 200, snapshot(attempt));
         const now = new Date(); const seed = 71 + requestedLevel.ordinal;
-        attempt = { id: randomUUID(), studentId: actor.id, levelId: requestedLevel.id, seed, slot: 0, activeOrder: generateLevelOrder(requestedLevel.id, seed, 0, 'easy'), responses: [], completed: false, createdAt: now.toISOString(), revision: 0, leaseEpoch: 1, writerTabId: command.tabId, leaseExpiresAt: new Date(now.getTime() + leaseDurationMs).toISOString(), receipts: [], evidence: [] };
+        const gateSkills = requestedLevel.stage > 1 ? STAGE_GATE_SKILLS[requestedLevel.stage - 1] : STAGE_GATE_SKILLS[1]; const practiceSkill = isPractice ? nextPracticeSkill(gateSkills, evidence) ?? gateSkills[0] : undefined;
+        attempt = { id: randomUUID(), studentId: actor.id, levelId: requestedLevel.id, seed, slot: 0, activeOrder: isPractice && practiceSkill ? generatePracticeOrder(practiceSkill, seed, 0, 'easy') : generateLevelOrder(requestedLevel.id, seed, 0, 'easy'), responses: [], completed: false, createdAt: now.toISOString(), revision: 0, leaseEpoch: 1, writerTabId: command.tabId, leaseExpiresAt: new Date(now.getTime() + leaseDurationMs).toISOString(), receipts: [], evidence: [], kind: isPractice ? 'practice' : 'path', practiceSkill };
         state.attempts.push(attempt); await save(state); return send(response, 201, snapshot(attempt));
       }
       const match = url.pathname.match(/^\/api\/v1\/games\/place-value-factory\/attempts\/([^/]+)(?:\/orders\/([^/]+)\/responses|\/results)?$/);
@@ -150,7 +151,7 @@ export function createApiServer(dataPath = defaultDataPath): Server {
             const responsesForOrder = attempt.responses.filter((record) => record.order.id === order.id);
             const facts = { firstObjectiveCorrect: responsesForOrder[0].validation.objectiveMet, wrongSubmissions: responsesForOrder.slice(0, -1).filter((record) => !record.validation.objectiveMet).length, highestHint: 'none' as const, skipped: false };
             attempt.evidence.push({ skillId: order.primarySkill ?? 'unknown', score: evidenceScore(facts), independentFirst: isIndependentFirst(facts), attemptId: attempt.id, signature: `${order.target}:${order.allowed.join(',')}:${order.mode ?? ''}`, committedAt: new Date().toISOString() });
-            attempt.slot += 1; if (attempt.slot === 5) attempt.completed = true; else attempt.activeOrder = generateLevelOrder(attempt.levelId, attempt.seed, attempt.slot, nextDifficulty(attempt));
+            attempt.slot += 1; if (attempt.slot === 5) attempt.completed = true; else attempt.activeOrder = attempt.kind === 'practice' && attempt.practiceSkill ? generatePracticeOrder(attempt.practiceSkill, attempt.seed, attempt.slot, nextDifficulty(attempt)) : generateLevelOrder(attempt.levelId, attempt.seed, attempt.slot, nextDifficulty(attempt));
           }
           attempt.revision += 1;
           const bodyOut = { commandId: command.commandId, committedAt: new Date().toISOString(), validation, snapshot: snapshot(attempt), ...(attempt.completed ? { result: result(attempt) } : {}) };
