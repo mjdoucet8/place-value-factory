@@ -132,6 +132,14 @@ Remaining risks or blockers: the active API remains on its fictional JSON adapte
 
 Next owner / reviewer: provision a disposable PostgreSQL database, run/apply the migration, switch API persistence behind the repository boundary, and run DATA-01..04 integration tests.
 
+## 2026-09-20 | BE-03 / GL-03b | UPDATE | Backend / Data + Game Logic / Adaptive Learning
+
+Changes and artifacts: added PostgreSQL-compatible integration coverage that applies the real forward migration, persists a validated response with its receipt and evidence in one transaction, safely replays the receipt, and reloads the stored evidence through the mastery summarizer.
+
+Commands/manual checks and observed results: `npx tsc --noEmit` passed; `npm test` passed 38 tests including the new PostgreSQL-compatible repository test.
+
+Evidence level: database-path integration verified against pg-mem; real PostgreSQL server verification remains NOT RUN.
+
 ## 2026-09-20 | FE-04a | CLAIM | Frontend / Game UX
 
 Timestamp (UTC): 2026-09-20T15:29:49Z

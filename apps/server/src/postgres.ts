@@ -32,6 +32,7 @@ export class PostgresGameRepository {
   constructor(private readonly pool: Pool) {}
 
   static fromDatabaseUrl(databaseUrl: string) { return new PostgresGameRepository(new Pool({ connectionString: databaseUrl })); }
+  static fromPool(pool: Pool) { return new PostgresGameRepository(pool); }
   async close() { await this.pool.end(); }
 
   async evidenceFor(studentId: string, skillId: string): Promise<EvidenceRecord[]> {
