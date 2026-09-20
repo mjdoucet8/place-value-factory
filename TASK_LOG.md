@@ -140,6 +140,14 @@ Commands/manual checks and observed results: `npx tsc --noEmit` passed; `npm tes
 
 Evidence level: database-path integration verified against pg-mem; real PostgreSQL server verification remains NOT RUN.
 
+## 2026-09-20 | GL-03b | HANDOFF | Game Logic / Adaptive Learning
+
+Changes and artifacts: active API attempts now record a deterministic evidence event only upon accepted resolution and derive the next issued order's band from the next primary skill's mastery summary. Issued order specs remain immutable, and no elapsed-time field enters the policy.
+
+Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (38 tests), and `npm run build` passed.
+
+Evidence level: fictional API integrated; PostgreSQL runtime selection and progression/practice gates remain incomplete.
+
 ## 2026-09-20 | FE-04a | CLAIM | Frontend / Game UX
 
 Timestamp (UTC): 2026-09-20T15:29:49Z

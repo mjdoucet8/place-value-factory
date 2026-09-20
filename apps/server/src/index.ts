@@ -3,7 +3,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { generateLevelOrder, validateRepresentation } from '../../../packages/game-engine/src/index.js';
+import { difficultyFor, evidenceScore, generateLevelOrder, isIndependentFirst, summarizeMastery, validateRepresentation, type EvidenceRecord } from '../../../packages/game-engine/src/index.js';
 import { LEVELS, levelById } from '../../../packages/config/src/index.js';
 
 const port = Number(process.env.PORT ?? 3101);
@@ -16,7 +16,7 @@ type Receipt = { actorId: string; commandId: string; payloadHash: string; status
 type Attempt = {
   id: string; studentId: string; levelId: string; seed: number; slot: number; activeOrder?: Order;
   responses: ResponseRecord[]; completed: boolean; createdAt: string; revision: number; leaseEpoch: number;
-  writerTabId: string; leaseExpiresAt: string; receipts: Receipt[];
+  writerTabId: string; leaseExpiresAt: string; receipts: Receipt[]; evidence: EvidenceRecord[];
 };
 type Store = { attempts: Attempt[] };
 type Actor = { id: string; role: 'student' | 'teacher' };
@@ -87,9 +87,8 @@ export function createApiServer(dataPath = defaultDataPath): Server {
     return { attemptId: attempt.id, completed: true, shipped: 5, submittedOrders: attempt.responses.length, firstObjectiveCorrect: [...firstPerOrder.values()].filter((item) => item.validation.objectiveMet).length, firstValueCorrect: [...firstPerOrder.values()].filter((item) => item.validation.valueMatches).length, eventuallyCorrect: 5, correctedSlots: correctedSlots(attempt), skippedOrders: 0, efficiency: Math.max(0, 100 - 6 * correctedSlots(attempt)), mainStars: 2, transferStar: false, bestLevelStars: 2, newlyUnlockedLevelIds: [`level-${Math.min(30, Number(attempt.levelId.slice(6)) + 1)}`], newlyEarnedTier: null, policyVersion: 'v1-local' };
   }
   function nextDifficulty(attempt: Attempt): 'easy' | 'medium' | 'hard' {
-    const defaults: Array<'easy' | 'medium' | 'hard'> = ['easy', 'medium', 'hard', 'easy', 'medium'];
-    const recent = attempt.responses.slice(-2);
-    return recent.length === 2 && recent.every((record) => !record.validation.shipmentAccepted) ? 'easy' : defaults[attempt.slot];
+    const nextOrder = generateLevelOrder(attempt.levelId, attempt.seed, attempt.slot, 'easy');
+    return difficultyFor(summarizeMastery(nextOrder.primarySkill ?? 'unknown', attempt.evidence).status);
   }
   function orderFor(attempt: Attempt) { return attempt.activeOrder ?? generateLevelOrder(attempt.levelId, attempt.seed, attempt.slot, nextDifficulty(attempt)); }
 
@@ -116,7 +115,7 @@ export function createApiServer(dataPath = defaultDataPath): Server {
         if (command.profileRevision !== completed.size) return send(response, 409, responseError('REVISION_CONFLICT', 'Progress changed. Reloading your saved work.', completed.size));
         if (attempt) return send(response, 200, snapshot(attempt));
         const now = new Date(); const seed = 71 + requestedLevel.ordinal;
-        attempt = { id: randomUUID(), studentId: actor.id, levelId: requestedLevel.id, seed, slot: 0, activeOrder: generateLevelOrder(requestedLevel.id, seed, 0, 'easy'), responses: [], completed: false, createdAt: now.toISOString(), revision: 0, leaseEpoch: 1, writerTabId: command.tabId, leaseExpiresAt: new Date(now.getTime() + leaseDurationMs).toISOString(), receipts: [] };
+        attempt = { id: randomUUID(), studentId: actor.id, levelId: requestedLevel.id, seed, slot: 0, activeOrder: generateLevelOrder(requestedLevel.id, seed, 0, 'easy'), responses: [], completed: false, createdAt: now.toISOString(), revision: 0, leaseEpoch: 1, writerTabId: command.tabId, leaseExpiresAt: new Date(now.getTime() + leaseDurationMs).toISOString(), receipts: [], evidence: [] };
         state.attempts.push(attempt); await save(state); return send(response, 201, snapshot(attempt));
       }
       const match = url.pathname.match(/^\/api\/v1\/games\/place-value-factory\/attempts\/([^/]+)(?:\/orders\/([^/]+)\/responses|\/results)?$/);
@@ -137,7 +136,12 @@ export function createApiServer(dataPath = defaultDataPath): Server {
           const order = orderFor(attempt); if (order.id !== match[2] || attempt.completed) return send(response, 409, responseError('ORDER_NOT_ACTIVE', 'That order is no longer active.'));
           const validation = validateRepresentation(order, body.representationA, body.representationB ?? null);
           attempt.responses.push({ order, representationA: body.representationA, representationB: body.representationB ?? null, validation, at: new Date().toISOString() });
-          if (validation.shipmentAccepted) { attempt.slot += 1; if (attempt.slot === 5) attempt.completed = true; else attempt.activeOrder = generateLevelOrder(attempt.levelId, attempt.seed, attempt.slot, nextDifficulty(attempt)); }
+          if (validation.shipmentAccepted) {
+            const responsesForOrder = attempt.responses.filter((record) => record.order.id === order.id);
+            const facts = { firstObjectiveCorrect: responsesForOrder[0].validation.objectiveMet, wrongSubmissions: responsesForOrder.slice(0, -1).filter((record) => !record.validation.objectiveMet).length, highestHint: 'none' as const, skipped: false };
+            attempt.evidence.push({ skillId: order.primarySkill ?? 'unknown', score: evidenceScore(facts), independentFirst: isIndependentFirst(facts), attemptId: attempt.id, signature: `${order.target}:${order.allowed.join(',')}:${order.mode ?? ''}`, committedAt: new Date().toISOString() });
+            attempt.slot += 1; if (attempt.slot === 5) attempt.completed = true; else attempt.activeOrder = generateLevelOrder(attempt.levelId, attempt.seed, attempt.slot, nextDifficulty(attempt));
+          }
           attempt.revision += 1;
           const bodyOut = { commandId: command.commandId, committedAt: new Date().toISOString(), validation, snapshot: snapshot(attempt), ...(attempt.completed ? { result: result(attempt) } : {}) };
           attempt.receipts.push({ actorId: actor.id, commandId: command.commandId, payloadHash, status: 200, body: bodyOut });
@@ -154,7 +158,7 @@ export function createApiServer(dataPath = defaultDataPath): Server {
 }
 
 function hydrateAttempt(attempt: Partial<Attempt>): Attempt {
-  return { ...attempt, revision: attempt.revision ?? 0, leaseEpoch: attempt.leaseEpoch ?? 1, writerTabId: attempt.writerTabId ?? 'legacy-tab', leaseExpiresAt: attempt.leaseExpiresAt ?? new Date(0).toISOString(), receipts: attempt.receipts ?? [] } as Attempt;
+  return { ...attempt, revision: attempt.revision ?? 0, leaseEpoch: attempt.leaseEpoch ?? 1, writerTabId: attempt.writerTabId ?? 'legacy-tab', leaseExpiresAt: attempt.leaseExpiresAt ?? new Date(0).toISOString(), receipts: attempt.receipts ?? [], evidence: attempt.evidence ?? [] } as Attempt;
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) createApiServer().listen(port, () => console.log(`Place Value Factory API listening on http://localhost:${port}`));
