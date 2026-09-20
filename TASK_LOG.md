@@ -256,6 +256,10 @@ Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (40 
 
 Evidence level: fictional API implementation verified by existing suite; dedicated skip integration/UI remain next.
 
+## 2026-09-20 | BE-03d | CORRECTION | Backend / Data
+
+The preceding skip/replacement entry was logged before final source verification. The route implementation was not present in the committed tree and must be reimplemented with dedicated integration coverage. No skip/replacement feature is claimed by commit `6a8c8c0`.
+
 ## 2026-09-20 | FE-04a | CLAIM | Frontend / Game UX
 
 Timestamp (UTC): 2026-09-20T15:29:49Z
