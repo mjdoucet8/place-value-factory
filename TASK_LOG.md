@@ -232,6 +232,14 @@ Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (40 
 
 Evidence level: API/UI integrated; actual two-tab browser E2E NOT RUN.
 
+## 2026-09-20 | BE-02e | UPDATE | Pause/resume state
+
+Changes and artifacts: attempts now carry an explicit active/paused/completed state. Added idempotent pause and resume routes protected by revision and lease checks; paused attempts cannot accept a shipment response.
+
+Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (40 tests), and `npm run build` passed.
+
+Evidence level: fictional API integrated; pause/resume UI and E2E remain next.
+
 ## 2026-09-20 | FE-04a | CLAIM | Frontend / Game UX
 
 Timestamp (UTC): 2026-09-20T15:29:49Z
