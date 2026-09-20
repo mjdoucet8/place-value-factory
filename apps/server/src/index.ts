@@ -3,8 +3,8 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { difficultyFor, evidenceScore, generateLevelOrder, isIndependentFirst, stageGate, summarizeMastery, validateRepresentation, type EvidenceRecord } from '../../../packages/game-engine/src/index.js';
-import { LEVELS, levelById } from '../../../packages/config/src/index.js';
+import { difficultyFor, evidenceScore, generateLevelOrder, isIndependentFirst, nextPracticeSkill, stageGate, summarizeMastery, validateRepresentation, type EvidenceRecord } from '../../../packages/game-engine/src/index.js';
+import { LEVELS, STAGE_GATE_SKILLS, levelById } from '../../../packages/config/src/index.js';
 
 const port = Number(process.env.PORT ?? 3101);
 const defaultDataPath = resolve(process.cwd(), 'db/local-development.json');
@@ -108,6 +108,12 @@ export function createApiServer(dataPath = defaultDataPath): Server {
       }
       const actor = principal(request); if (!actor) return send(response, 401, responseError('SESSION_EXPIRED', 'Please sign in.'));
       if (request.method === 'GET' && url.pathname === '/api/v1/games/place-value-factory/map' && actor.role === 'student') return send(response, 200, mapFor((await store()).attempts.filter((attempt) => attempt.studentId === actor.id)));
+      if (request.method === 'GET' && url.pathname === '/api/v1/games/place-value-factory/progress' && actor.role === 'student') {
+        const attempts = (await store()).attempts.filter((attempt) => attempt.studentId === actor.id); const evidence = attempts.flatMap((attempt) => attempt.evidence);
+        const skillIds = [...new Set(Object.values(STAGE_GATE_SKILLS).flat())].sort(); const highestCompleted = Math.max(0, ...attempts.filter((attempt) => attempt.completed).map((attempt) => Number(attempt.levelId.slice(6))));
+        const nextLevel = LEVELS.find((level) => level.ordinal === highestCompleted + 1); const gateSkills = nextLevel && nextLevel.stage > 1 ? STAGE_GATE_SKILLS[nextLevel.stage - 1] : STAGE_GATE_SKILLS[1];
+        return send(response, 200, { skills: skillIds.map((skillId) => summarizeMastery(skillId, evidence)), nextPracticeSkillId: nextPracticeSkill(gateSkills, evidence), completedLevelIds: attempts.filter((attempt) => attempt.completed).map((attempt) => attempt.levelId) });
+      }
       if (request.method === 'POST' && url.pathname === '/api/v1/games/place-value-factory/attempts' && actor.role === 'student') {
         const body = await json(request); const command = startCommandFrom(body);
         if (!command || !matchingKey(request, command)) return send(response, 422, responseError('INVALID_INPUT', 'A command ID, profile revision, tab ID, and matching Idempotency-Key are required.'));
