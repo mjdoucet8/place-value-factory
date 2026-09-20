@@ -12,6 +12,24 @@ Dependencies and contract version: contract v1.0; BE-03d skip command and attemp
 
 Acceptance IDs: GAME-07, ORDER-05, MASTERY-02.
 
+## 2026-09-20 | BE-03e | CLAIM | Backend / Data
+
+Goal and scope: implement the existing H1/H2/H3 support-event contract in the fictional API and carry server-recorded highest hint into evidence scoring.
+
+Owned paths: `apps/server/src/index.ts`, `tests/integration/idempotency.test.ts`, `TASK_LOG.md`.
+
+Dependencies and contract version: API contract v1.0; engine evidence policy.
+
+Acceptance IDs: HELP-01, MASTERY-02, ORDER-05.
+
+## 2026-09-20 | BE-03e | HANDOFF | Backend / Data
+
+Changes and artifacts: added immutable, idempotent H1/H2/H3 support events to the fictional API; enforces progressive help ordering; returns a relationship prompt, distinct-target example, or server-generated current-order model as appropriate; and uses the recorded highest hint when resolving evidence. Progress now includes skills that have actual evidence even when they are not stage-gate skills.
+
+Commands/manual checks and observed results: `npx prettier --write apps/server/src/index.ts tests/integration/idempotency.test.ts`, `npx tsc --noEmit`, `npm test` (42 tests), and `npm run build` passed.
+
+Evidence level: fictional API integrated with direct command/replay/order/evidence tests. Student Help dialog, browser E2E, and durable PostgreSQL persistence remain NOT RUN.
+
 ## 2026-09-20 | FE-04b | HANDOFF | Frontend / Game UX
 
 Changes and artifacts: added a semantic “Skip after two saved tries” control. It sends the BE-03d idempotent command with the current revision and lease, leaves eligibility and replacement generation to the server, and clears local representations only after a replacement snapshot returns.
