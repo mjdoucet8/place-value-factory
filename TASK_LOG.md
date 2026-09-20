@@ -166,6 +166,14 @@ Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (39 
 
 Evidence level: logic verified. Server map/practice routes still need to consume these functions.
 
+## 2026-09-20 | GL-03c / BE-03 | UPDATE | Game Logic / Backend
+
+Changes and artifacts: active map and attempt-start decisions now apply the stage-evidence gates. A completed prior level alone cannot unlock the first level of a new stage; the map instead reports that practice of required skills is needed.
+
+Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (39 tests), and `npm run build` passed.
+
+Evidence level: fictional API integrated. Practice-attempt route/UI remains incomplete.
+
 ## 2026-09-20 | FE-04a | CLAIM | Frontend / Game UX
 
 Timestamp (UTC): 2026-09-20T15:29:49Z

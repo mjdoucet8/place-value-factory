@@ -3,7 +3,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { difficultyFor, evidenceScore, generateLevelOrder, isIndependentFirst, summarizeMastery, validateRepresentation, type EvidenceRecord } from '../../../packages/game-engine/src/index.js';
+import { difficultyFor, evidenceScore, generateLevelOrder, isIndependentFirst, stageGate, summarizeMastery, validateRepresentation, type EvidenceRecord } from '../../../packages/game-engine/src/index.js';
 import { LEVELS, levelById } from '../../../packages/config/src/index.js';
 
 const port = Number(process.env.PORT ?? 3101);
@@ -77,7 +77,9 @@ export function createApiServer(dataPath = defaultDataPath): Server {
   function mapFor(attempts: Attempt[]) {
     const completed = new Set(attempts.filter((attempt) => attempt.completed).map((attempt) => attempt.levelId));
     const highest = Math.max(0, ...LEVELS.filter((level) => completed.has(level.id)).map((level) => level.ordinal));
-    const zones = [...new Set(LEVELS.map((level) => level.zone))].map((zone) => ({ id: zone.toLowerCase(), name: zone, levels: LEVELS.filter((level) => level.zone === zone).map((level) => ({ id: level.id, title: level.title, stage: level.stage, status: completed.has(level.id) ? 'completed' : level.ordinal <= highest + 1 ? 'unlocked' : 'locked', stars: completed.has(level.id) ? 2 : 0, prerequisiteSummary: level.ordinal <= highest + 1 ? 'Ready to practice' : `Complete Level ${level.ordinal - 1} first` })) }));
+    const evidence = attempts.flatMap((attempt) => attempt.evidence);
+    const eligible = (level: typeof LEVELS[number]) => level.ordinal <= highest + 1 && (level.stage === 1 || level.ordinal !== LEVELS.find((item) => item.stage === level.stage)?.ordinal || stageGate(level.stage - 1, evidence).satisfied);
+    const zones = [...new Set(LEVELS.map((level) => level.zone))].map((zone) => ({ id: zone.toLowerCase(), name: zone, levels: LEVELS.filter((level) => level.zone === zone).map((level) => ({ id: level.id, title: level.title, stage: level.stage, status: completed.has(level.id) ? 'completed' : eligible(level) ? 'unlocked' : 'locked', stars: completed.has(level.id) ? 2 : 0, prerequisiteSummary: eligible(level) ? 'Ready to practice' : level.ordinal <= highest + 1 ? `Practice required skills before Stage ${level.stage}` : `Complete Level ${level.ordinal - 1} first` })) }));
     return { configVersion: 'v1-local', zones, profileRevision: completed.size, highestUnlockedLevelId: `level-${Math.min(30, highest + 1)}` };
   }
   function responseError(code: string, message: string, currentRevision?: number) { return { error: { code, message, ...(currentRevision === undefined ? {} : { currentRevision }) } }; }
@@ -111,7 +113,9 @@ export function createApiServer(dataPath = defaultDataPath): Server {
         if (!command || !matchingKey(request, command)) return send(response, 422, responseError('INVALID_INPUT', 'A command ID, profile revision, tab ID, and matching Idempotency-Key are required.'));
         const state = await store(); let attempt = state.attempts.find((item) => item.studentId === actor.id && !item.completed);
         const requestedLevel = levelById(typeof body.levelId === 'string' ? body.levelId : 'level-1'); const completed = new Set(state.attempts.filter((item) => item.studentId === actor.id && item.completed).map((item) => item.levelId)); const highest = Math.max(0, ...LEVELS.filter((level) => completed.has(level.id)).map((level) => level.ordinal));
-        if (!requestedLevel || requestedLevel.ordinal > highest + 1) return send(response, 409, responseError('LEVEL_LOCKED', 'Complete the earlier level first.'));
+        const evidence = state.attempts.filter((item) => item.studentId === actor.id).flatMap((item) => item.evidence);
+        const firstOfStage = requestedLevel && LEVELS.find((item) => item.stage === requestedLevel.stage)?.id === requestedLevel.id;
+        if (!requestedLevel || requestedLevel.ordinal > highest + 1 || (firstOfStage && requestedLevel.stage > 1 && !stageGate(requestedLevel.stage - 1, evidence).satisfied)) return send(response, 409, responseError('LEVEL_LOCKED', 'Complete the earlier level and practice the required skills first.'));
         if (command.profileRevision !== completed.size) return send(response, 409, responseError('REVISION_CONFLICT', 'Progress changed. Reloading your saved work.', completed.size));
         if (attempt) return send(response, 200, snapshot(attempt));
         const now = new Date(); const seed = 71 + requestedLevel.ordinal;
