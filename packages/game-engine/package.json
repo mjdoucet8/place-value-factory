@@ -1,0 +1,6 @@
+{
+  "name": "@place-value-factory/game-engine",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": "./src/index.ts"
+}

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="490" height="340" preserveAspectRatio="xMinYMin meet" viewBox="0 0 490 340" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="490" height="340"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-340)" style="clip-path: url(#clip)">
+		<g transform="">
+			<path d="M 245,285 L 75,238 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="75 238, 80.84163 236.6306, 79.30858 242.1757" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<text x="151.590087890625" y="251.5" style="font-family: DV; font-size: 7px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,503) scale(1,-1)">draft</text>
+			<path d="M 245,285 L 245,238 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="245 238, 247.8766 243.2655, 242.1234 243.2655" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<text x="225.707275390625" y="251.5" style="font-family: DV; font-size: 7px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,503) scale(1,-1)">commands</text>
+			<path d="M 245,285 L 417.5,238 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="417.5 238, 413.1759 242.1596, 411.6635 236.6088" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<text x="317.37646484375" y="266.5" style="font-family: DV; font-size: 7px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,533) scale(1,-1)">preview</text>
+			<path d="M 315,219 L 350,219 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="350 219, 344.7345 221.8766, 344.7345 216.1234" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<text x="318.447021484375" y="224.0" style="font-family: DV; font-size: 7px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,448) scale(1,-1)">validate</text>
+			<path d="M 245,190 L 80,140 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="80 140, 85.87343 138.7741, 84.20499 144.28" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<text x="146.003173828125" y="155.0" style="font-family: DV; font-size: 7px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,310) scale(1,-1)">authorize</text>
+			<path d="M 245,190 L 245,140 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="245 140, 247.8766 145.2655, 242.1234 145.2655" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<text x="231.770751953125" y="155.0" style="font-family: DV; font-size: 7px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,310) scale(1,-1)">commit</text>
+			<path d="M 245,95 L 280,50 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="280 50, 279.0379 55.92236, 274.4967 52.3903" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<text x="244.427490234375" y="77.5" style="font-family: DV; font-size: 7px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,155) scale(1,-1)">aggregate</text>
+			<rect x="140" y="285" width="210" height="42" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="198.956298828125" y="303.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,606) scale(1,-1)">Semantic game UI</text>
+			<rect x="5" y="190" width="140" height="48" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="47.641845703125" y="217.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,434) scale(1,-1)">Local draft</text>
+			<text x="46.310302734375" y="205.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,410) scale(1,-1)">and outbox</text>
+			<rect x="175" y="190" width="140" height="48" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="192.421630859375" y="211.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,422) scale(1,-1)">Authorized HTTP API</text>
+			<rect x="350" y="190" width="135" height="48" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="367.422119140625" y="211.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,422) scale(1,-1)">Shared pure engine</text>
+			<rect x="5" y="95" width="150" height="45" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="38.56616210937499" y="114.5" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,229) scale(1,-1)">Identity adapter</text>
+			<rect x="175" y="95" width="140" height="45" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="215.3544921875" y="114.5" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,229) scale(1,-1)">PostgreSQL</text>
+			<rect x="175" y="5" width="210" height="45" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="215.209228515625" y="24.5" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,49) scale(1,-1)">Teacher evidence reports</text>
+		</g>
+	</g>
+</svg>

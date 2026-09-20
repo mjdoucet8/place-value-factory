@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="490" height="470" preserveAspectRatio="xMinYMin meet" viewBox="0 0 490 470" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="490" height="470"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-470)" style="clip-path: url(#clip)">
+		<g transform="">
+			<path d="M 245,420 L 245,391 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="245 391, 247.8766 396.2655, 242.1234 396.2655" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<path d="M 245,357 L 245,328 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="245 328, 247.8766 333.2655, 242.1234 333.2655" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<path d="M 245,294 L 245,265 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="245 265, 247.8766 270.2655, 242.1234 270.2655" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<path d="M 245,231 L 245,202 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="245 202, 247.8766 207.2655, 242.1234 207.2655" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<path d="M 245,168 L 245,139 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="245 139, 247.8766 144.2655, 242.1234 144.2655" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<path d="M 245,105 L 77.5,74 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="77.5 74, 83.20106 72.12972, 82.15408 77.78676" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<path d="M 245,105 L 244.5,74 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="244.5 74, 247.4611 79.21842, 241.7087 79.3112" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<path d="M 245,105 L 412.5,74 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="412.5 74, 407.8459 77.78676, 406.7989 72.12972" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<rect x="155" y="420" width="180" height="34" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="207.683837890625" y="434.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,868) scale(1,-1)">Six place skills</text>
+			<rect x="140" y="357" width="210" height="34" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="195.414306640625" y="371.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,742) scale(1,-1)">Standard and zeros</text>
+			<rect x="140" y="294" width="210" height="34" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="182.507568359375" y="308.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,616) scale(1,-1)">Five adjacent renamings</text>
+			<rect x="140" y="231" width="210" height="34" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="193.37744140625" y="245.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,490) scale(1,-1)">Multi-step renaming</text>
+			<rect x="140" y="168" width="210" height="34" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="203.680419921875" y="182.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,364) scale(1,-1)">Allowed subsets</text>
+			<rect x="140" y="105" width="210" height="34" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="201.388671875" y="119.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,238) scale(1,-1)">Forbidden places</text>
+			<rect x="5" y="40" width="145" height="34" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="36.78027343749999" y="54.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,108) scale(1,-1)">Minimum crates</text>
+			<rect x="172" y="40" width="145" height="34" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="215.0654296875" y="54.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,108) scale(1,-1)">Exact types</text>
+			<rect x="340" y="40" width="145" height="34" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="377.394287109375" y="54.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,108) scale(1,-1)">Multiple ways</text>
+		</g>
+	</g>
+</svg>

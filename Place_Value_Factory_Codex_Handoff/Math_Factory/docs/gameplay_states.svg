@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="490" height="340" preserveAspectRatio="xMinYMin meet" viewBox="0 0 490 340" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="490" height="340"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-340)" style="clip-path: url(#clip)">
+		<g transform="">
+			<path d="M 85,290 L 85,240 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="85 240, 87.87655 245.2655, 82.12345 245.2655" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<text x="77.365966796875" y="255.0" style="font-family: DV; font-size: 7px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,510) scale(1,-1)">Ship</text>
+			<path d="M 150,225 L 320,225 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="320 225, 314.7345 227.8766, 314.7345 222.1234" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<text x="224.1171875" y="230.0" style="font-family: DV; font-size: 7px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,460) scale(1,-1)">wrong</text>
+			<path d="M 320,215 L 150,215 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="150 215, 155.2655 212.1234, 155.2655 217.8766" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<text x="226.525146484375" y="205.0" style="font-family: DV; font-size: 7px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,410) scale(1,-1)">retry</text>
+			<path d="M 85,200 L 252.5,150 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="252.5 150, 248.2773 154.2625, 246.6317 148.7498" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<text x="152.47021484375" y="180.0" style="font-family: DV; font-size: 7px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,360) scale(1,-1)">reply lost</text>
+			<path d="M 252.5,110 L 85,60 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="85 60, 90.86829 58.74975, 89.2227 64.26249" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<text x="156.513671875" y="75.0" style="font-family: DV; font-size: 7px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,150) scale(1,-1)">receipt</text>
+			<path d="M 85,200 L 85,60 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="85 60, 87.87655 65.2655, 82.12345 65.2655" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<text x="71.770751953125" y="120.0" style="font-family: DV; font-size: 7px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,240) scale(1,-1)">commit</text>
+			<path d="M 150,45 L 320,45 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="320 45, 314.7345 47.87655, 314.7345 42.12345" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<text x="217.828125" y="50.0" style="font-family: DV; font-size: 7px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,100) scale(1,-1)">5 shipped</text>
+			<rect x="20" y="290" width="130" height="40" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="67.0439453125" y="307.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,614) scale(1,-1)">Editing</text>
+			<rect x="20" y="200" width="130" height="40" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="64.2578125" y="217.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,434) scale(1,-1)">Pending</text>
+			<rect x="320" y="200" width="150" height="40" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="368.32958984375" y="217.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,434) scale(1,-1)">Correcting</text>
+			<rect x="180" y="110" width="145" height="40" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="228.2158203125" y="127.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,254) scale(1,-1)">Reconcile</text>
+			<rect x="20" y="20" width="130" height="40" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="69.515869140625" y="37.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,74) scale(1,-1)">Saved</text>
+			<rect x="320" y="20" width="150" height="40" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="376.228759765625" y="37.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,74) scale(1,-1)">Results</text>
+		</g>
+	</g>
+</svg>

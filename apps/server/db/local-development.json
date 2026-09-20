@@ -1,0 +1,2431 @@
+{
+  "attempts": [
+    {
+      "id": "d0fcce8e-f009-4157-a027-db29508b2802",
+      "studentId": "student-ava",
+      "levelId": "level-1",
+      "seed": 71,
+      "slot": 5,
+      "responses": [
+        {
+          "order": {
+            "id": "order-71-0",
+            "target": 2305,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1
+          },
+          "representationA": [
+            0,
+            0,
+            2,
+            3,
+            0,
+            5
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              2305
+            ],
+            "crateCounts": [
+              10
+            ],
+            "minimumCrates": 10,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:05:57.348Z"
+        },
+        {
+          "order": {
+            "id": "order-71-1",
+            "target": 506020,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1
+          },
+          "representationA": [
+            5,
+            0,
+            6,
+            0,
+            2,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              506020
+            ],
+            "crateCounts": [
+              13
+            ],
+            "minimumCrates": 13,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:05:57.352Z"
+        },
+        {
+          "order": {
+            "id": "order-71-2",
+            "target": 423892,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1
+          },
+          "representationA": [
+            4,
+            2,
+            3,
+            8,
+            9,
+            2
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              423892
+            ],
+            "crateCounts": [
+              28
+            ],
+            "minimumCrates": 28,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:05:57.357Z"
+        },
+        {
+          "order": {
+            "id": "order-71-3",
+            "target": 91007,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1
+          },
+          "representationA": [
+            0,
+            9,
+            1,
+            0,
+            0,
+            7
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              91007
+            ],
+            "crateCounts": [
+              17
+            ],
+            "minimumCrates": 17,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:05:57.361Z"
+        },
+        {
+          "order": {
+            "id": "order-71-4",
+            "target": 40000,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1
+          },
+          "representationA": [
+            0,
+            4,
+            0,
+            0,
+            0,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              40000
+            ],
+            "crateCounts": [
+              4
+            ],
+            "minimumCrates": 4,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:05:57.365Z"
+        }
+      ],
+      "completed": true,
+      "createdAt": "2026-09-20T02:05:57.343Z"
+    },
+    {
+      "id": "95333d36-ff4d-4fa4-8bd7-9a7891dc5995",
+      "studentId": "student-ava",
+      "levelId": "level-1",
+      "seed": 71,
+      "slot": 5,
+      "responses": [
+        {
+          "order": {
+            "id": "order-71-0",
+            "target": 2305,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1
+          },
+          "representationA": [
+            0,
+            0,
+            2,
+            3,
+            0,
+            5
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              2305
+            ],
+            "crateCounts": [
+              10
+            ],
+            "minimumCrates": 10,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:20:59.022Z"
+        },
+        {
+          "order": {
+            "id": "order-71-1",
+            "target": 506020,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1
+          },
+          "representationA": [
+            5,
+            0,
+            6,
+            0,
+            2,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              506020
+            ],
+            "crateCounts": [
+              13
+            ],
+            "minimumCrates": 13,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:21:19.503Z"
+        },
+        {
+          "order": {
+            "id": "order-71-2",
+            "target": 423892,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1
+          },
+          "representationA": [
+            4,
+            2,
+            3,
+            8,
+            9,
+            2
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              423892
+            ],
+            "crateCounts": [
+              28
+            ],
+            "minimumCrates": 28,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:21:43.974Z"
+        },
+        {
+          "order": {
+            "id": "order-71-3",
+            "target": 91007,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1
+          },
+          "representationA": [
+            0,
+            9,
+            1,
+            0,
+            0,
+            7
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              91007
+            ],
+            "crateCounts": [
+              17
+            ],
+            "minimumCrates": 17,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:22:33.530Z"
+        },
+        {
+          "order": {
+            "id": "order-71-4",
+            "target": 40000,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1
+          },
+          "representationA": [
+            0,
+            0,
+            4,
+            0,
+            0,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": false,
+            "restrictionsMet": true,
+            "objectiveMet": false,
+            "shipmentAccepted": false,
+            "representedTotals": [
+              4000
+            ],
+            "crateCounts": [
+              4
+            ],
+            "minimumCrates": 4,
+            "feedbackCode": "UNDERPRODUCTION"
+          },
+          "at": "2026-09-20T02:22:37.676Z"
+        },
+        {
+          "order": {
+            "id": "order-71-4",
+            "target": 40000,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1
+          },
+          "representationA": [
+            0,
+            4,
+            0,
+            0,
+            0,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              40000
+            ],
+            "crateCounts": [
+              4
+            ],
+            "minimumCrates": 4,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:22:45.789Z"
+        }
+      ],
+      "completed": true,
+      "createdAt": "2026-09-20T02:20:39.129Z"
+    },
+    {
+      "id": "5acaed6b-3673-4fdf-aa2e-8818d655832a",
+      "studentId": "student-ava",
+      "levelId": "level-1",
+      "seed": 71,
+      "slot": 5,
+      "responses": [
+        {
+          "order": {
+            "id": "order-71-0-easy",
+            "target": 3,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "easy",
+            "primarySkill": "pv.ones"
+          },
+          "representationA": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            3
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              3
+            ],
+            "crateCounts": [
+              3
+            ],
+            "minimumCrates": 3,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:27:14.488Z"
+        },
+        {
+          "order": {
+            "id": "order-71-1-medium",
+            "target": 50,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "medium",
+            "primarySkill": "pv.tens"
+          },
+          "representationA": [
+            0,
+            0,
+            0,
+            0,
+            5,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              50
+            ],
+            "crateCounts": [
+              5
+            ],
+            "minimumCrates": 5,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:28:29.162Z"
+        },
+        {
+          "order": {
+            "id": "order-71-2-hard",
+            "target": 700,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "hard",
+            "primarySkill": "pv.hundreds"
+          },
+          "representationA": [
+            0,
+            0,
+            0,
+            7,
+            0,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              700
+            ],
+            "crateCounts": [
+              7
+            ],
+            "minimumCrates": 7,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:28:32.364Z"
+        },
+        {
+          "order": {
+            "id": "order-71-3-easy",
+            "target": 3,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "easy",
+            "primarySkill": "pv.ones"
+          },
+          "representationA": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            3
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              3
+            ],
+            "crateCounts": [
+              3
+            ],
+            "minimumCrates": 3,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:28:34.821Z"
+        },
+        {
+          "order": {
+            "id": "order-71-4-medium",
+            "target": 50,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "medium",
+            "primarySkill": "pv.tens"
+          },
+          "representationA": [
+            0,
+            0,
+            0,
+            0,
+            5,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              50
+            ],
+            "crateCounts": [
+              5
+            ],
+            "minimumCrates": 5,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:28:37.693Z"
+        }
+      ],
+      "completed": true,
+      "createdAt": "2026-09-20T02:22:58.596Z",
+      "activeOrder": {
+        "id": "order-71-4-medium",
+        "target": 50,
+        "allowed": [
+          100000,
+          10000,
+          1000,
+          100,
+          10,
+          1
+        ],
+        "canonicalRequired": true,
+        "minimumRequired": false,
+        "exactTypes": null,
+        "distinctRepresentations": 1,
+        "difficultyBand": "medium",
+        "primarySkill": "pv.tens"
+      }
+    },
+    {
+      "id": "cf175b8c-ca10-459a-a900-4bb7cfbc0f0f",
+      "studentId": "student-ava",
+      "levelId": "level-2",
+      "seed": 73,
+      "slot": 5,
+      "activeOrder": {
+        "id": "level-2-73-4",
+        "target": 90000,
+        "allowed": [
+          100000,
+          10000,
+          1000,
+          100,
+          10,
+          1
+        ],
+        "canonicalRequired": true,
+        "minimumRequired": false,
+        "exactTypes": null,
+        "distinctRepresentations": 1,
+        "difficultyBand": "medium",
+        "primarySkill": "pv.10000",
+        "mode": "standard"
+      },
+      "responses": [
+        {
+          "order": {
+            "id": "level-2-73-0",
+            "target": 900,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "easy",
+            "primarySkill": "pv.100",
+            "mode": "standard"
+          },
+          "representationA": [
+            0,
+            0,
+            0,
+            9,
+            0,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              900
+            ],
+            "crateCounts": [
+              9
+            ],
+            "minimumCrates": 9,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:34:32.168Z"
+        },
+        {
+          "order": {
+            "id": "level-2-73-1",
+            "target": 10,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "medium",
+            "primarySkill": "pv.10",
+            "mode": "standard"
+          },
+          "representationA": [
+            0,
+            0,
+            0,
+            0,
+            10,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": false,
+            "restrictionsMet": true,
+            "objectiveMet": false,
+            "shipmentAccepted": false,
+            "representedTotals": [
+              100
+            ],
+            "crateCounts": [
+              10
+            ],
+            "minimumCrates": 1,
+            "feedbackCode": "OVERPRODUCTION"
+          },
+          "at": "2026-09-20T02:34:36.972Z"
+        },
+        {
+          "order": {
+            "id": "level-2-73-1",
+            "target": 10,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "medium",
+            "primarySkill": "pv.10",
+            "mode": "standard"
+          },
+          "representationA": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              10
+            ],
+            "crateCounts": [
+              1
+            ],
+            "minimumCrates": 1,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:34:48.860Z"
+        },
+        {
+          "order": {
+            "id": "level-2-73-2",
+            "target": 3,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "hard",
+            "primarySkill": "pv.1",
+            "mode": "standard"
+          },
+          "representationA": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            3
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              3
+            ],
+            "crateCounts": [
+              3
+            ],
+            "minimumCrates": 3,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:34:53.680Z"
+        },
+        {
+          "order": {
+            "id": "level-2-73-3",
+            "target": 600000,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "easy",
+            "primarySkill": "pv.100000",
+            "mode": "standard"
+          },
+          "representationA": [
+            6,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              600000
+            ],
+            "crateCounts": [
+              6
+            ],
+            "minimumCrates": 6,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:34:57.671Z"
+        },
+        {
+          "order": {
+            "id": "level-2-73-4",
+            "target": 90000,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "medium",
+            "primarySkill": "pv.10000",
+            "mode": "standard"
+          },
+          "representationA": [
+            0,
+            0,
+            9,
+            0,
+            0,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": false,
+            "restrictionsMet": true,
+            "objectiveMet": false,
+            "shipmentAccepted": false,
+            "representedTotals": [
+              9000
+            ],
+            "crateCounts": [
+              9
+            ],
+            "minimumCrates": 9,
+            "feedbackCode": "UNDERPRODUCTION"
+          },
+          "at": "2026-09-20T02:35:02.859Z"
+        },
+        {
+          "order": {
+            "id": "level-2-73-4",
+            "target": 90000,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "medium",
+            "primarySkill": "pv.10000",
+            "mode": "standard"
+          },
+          "representationA": [
+            0,
+            9,
+            0,
+            0,
+            0,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              90000
+            ],
+            "crateCounts": [
+              9
+            ],
+            "minimumCrates": 9,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:35:11.298Z"
+        }
+      ],
+      "completed": true,
+      "createdAt": "2026-09-20T02:34:27.693Z"
+    },
+    {
+      "id": "70598364-1f7c-4a10-9ad6-6356bd3835e6",
+      "studentId": "student-ava",
+      "levelId": "level-3",
+      "seed": 74,
+      "slot": 5,
+      "activeOrder": {
+        "id": "level-3-74-4",
+        "target": 3000,
+        "allowed": [
+          100000,
+          10000,
+          1000,
+          100,
+          10,
+          1
+        ],
+        "canonicalRequired": true,
+        "minimumRequired": false,
+        "exactTypes": null,
+        "distinctRepresentations": 1,
+        "difficultyBand": "medium",
+        "primarySkill": "pv.1000",
+        "mode": "standard"
+      },
+      "responses": [
+        {
+          "order": {
+            "id": "level-3-74-0",
+            "target": 30,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "easy",
+            "primarySkill": "pv.10",
+            "mode": "standard"
+          },
+          "representationA": [
+            0,
+            0,
+            0,
+            0,
+            3,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              30
+            ],
+            "crateCounts": [
+              3
+            ],
+            "minimumCrates": 3,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:36:51.798Z"
+        },
+        {
+          "order": {
+            "id": "level-3-74-1",
+            "target": 6,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "medium",
+            "primarySkill": "pv.1",
+            "mode": "standard"
+          },
+          "representationA": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            6
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              6
+            ],
+            "crateCounts": [
+              6
+            ],
+            "minimumCrates": 6,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:36:55.607Z"
+        },
+        {
+          "order": {
+            "id": "level-3-74-2",
+            "target": 900000,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "hard",
+            "primarySkill": "pv.100000",
+            "mode": "standard"
+          },
+          "representationA": [
+            9,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              900000
+            ],
+            "crateCounts": [
+              9
+            ],
+            "minimumCrates": 9,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:37:01.189Z"
+        },
+        {
+          "order": {
+            "id": "level-3-74-3",
+            "target": 10000,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "easy",
+            "primarySkill": "pv.10000",
+            "mode": "standard"
+          },
+          "representationA": [
+            0,
+            10,
+            0,
+            0,
+            0,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": false,
+            "restrictionsMet": true,
+            "objectiveMet": false,
+            "shipmentAccepted": false,
+            "representedTotals": [
+              100000
+            ],
+            "crateCounts": [
+              10
+            ],
+            "minimumCrates": 1,
+            "feedbackCode": "OVERPRODUCTION"
+          },
+          "at": "2026-09-20T02:37:13.791Z"
+        },
+        {
+          "order": {
+            "id": "level-3-74-3",
+            "target": 10000,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "easy",
+            "primarySkill": "pv.10000",
+            "mode": "standard"
+          },
+          "representationA": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              10000
+            ],
+            "crateCounts": [
+              1
+            ],
+            "minimumCrates": 1,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:37:20.840Z"
+        },
+        {
+          "order": {
+            "id": "level-3-74-4",
+            "target": 3000,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "medium",
+            "primarySkill": "pv.1000",
+            "mode": "standard"
+          },
+          "representationA": [
+            0,
+            0,
+            3,
+            0,
+            0,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              3000
+            ],
+            "crateCounts": [
+              3
+            ],
+            "minimumCrates": 3,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:37:25.737Z"
+        }
+      ],
+      "completed": true,
+      "createdAt": "2026-09-20T02:36:46.577Z"
+    },
+    {
+      "id": "c5cb6548-c835-4d0a-9095-d5eef024de44",
+      "studentId": "student-ava",
+      "levelId": "level-4",
+      "seed": 75,
+      "slot": 5,
+      "activeOrder": {
+        "id": "level-4-75-4",
+        "target": 900,
+        "allowed": [
+          100000,
+          10000,
+          1000,
+          100,
+          10,
+          1
+        ],
+        "canonicalRequired": true,
+        "minimumRequired": false,
+        "exactTypes": null,
+        "distinctRepresentations": 1,
+        "difficultyBand": "medium",
+        "primarySkill": "pv.100",
+        "mode": "standard"
+      },
+      "responses": [
+        {
+          "order": {
+            "id": "level-4-75-0",
+            "target": 9,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "easy",
+            "primarySkill": "pv.1",
+            "mode": "standard"
+          },
+          "representationA": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            9
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              9
+            ],
+            "crateCounts": [
+              9
+            ],
+            "minimumCrates": 9,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:37:44.663Z"
+        },
+        {
+          "order": {
+            "id": "level-4-75-1",
+            "target": 100000,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "medium",
+            "primarySkill": "pv.100000",
+            "mode": "standard"
+          },
+          "representationA": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              100000
+            ],
+            "crateCounts": [
+              1
+            ],
+            "minimumCrates": 1,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:39:13.444Z"
+        },
+        {
+          "order": {
+            "id": "level-4-75-2",
+            "target": 30000,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "hard",
+            "primarySkill": "pv.10000",
+            "mode": "standard"
+          },
+          "representationA": [
+            0,
+            3,
+            0,
+            0,
+            0,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              30000
+            ],
+            "crateCounts": [
+              3
+            ],
+            "minimumCrates": 3,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:39:17.850Z"
+        },
+        {
+          "order": {
+            "id": "level-4-75-3",
+            "target": 6000,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "easy",
+            "primarySkill": "pv.1000",
+            "mode": "standard"
+          },
+          "representationA": [
+            0,
+            0,
+            6,
+            0,
+            0,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              6000
+            ],
+            "crateCounts": [
+              6
+            ],
+            "minimumCrates": 6,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:39:21.538Z"
+        },
+        {
+          "order": {
+            "id": "level-4-75-4",
+            "target": 900,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "medium",
+            "primarySkill": "pv.100",
+            "mode": "standard"
+          },
+          "representationA": [
+            0,
+            0,
+            0,
+            9,
+            0,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              900
+            ],
+            "crateCounts": [
+              9
+            ],
+            "minimumCrates": 9,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:39:24.639Z"
+        }
+      ],
+      "completed": true,
+      "createdAt": "2026-09-20T02:37:37.133Z"
+    },
+    {
+      "id": "d571b1c8-3338-4b61-8a8d-991fdf8686f5",
+      "studentId": "student-ava",
+      "levelId": "level-5",
+      "seed": 76,
+      "slot": 5,
+      "activeOrder": {
+        "id": "level-5-76-4",
+        "target": 1203,
+        "allowed": [
+          100000,
+          10000,
+          1000,
+          100,
+          10,
+          1
+        ],
+        "canonicalRequired": true,
+        "minimumRequired": false,
+        "exactTypes": null,
+        "distinctRepresentations": 1,
+        "difficultyBand": "medium",
+        "primarySkill": "standard.decompose",
+        "mode": "standard"
+      },
+      "responses": [
+        {
+          "order": {
+            "id": "level-5-76-0",
+            "target": 23040,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "easy",
+            "primarySkill": "standard.decompose",
+            "mode": "standard"
+          },
+          "representationA": [
+            0,
+            2,
+            3,
+            0,
+            4,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              23040
+            ],
+            "crateCounts": [
+              9
+            ],
+            "minimumCrates": 9,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:41:06.101Z"
+        },
+        {
+          "order": {
+            "id": "level-5-76-1",
+            "target": 506020,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "medium",
+            "primarySkill": "standard.decompose",
+            "mode": "standard"
+          },
+          "representationA": [
+            5,
+            0,
+            6,
+            0,
+            2,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              506020
+            ],
+            "crateCounts": [
+              13
+            ],
+            "minimumCrates": 13,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:41:57.177Z"
+        },
+        {
+          "order": {
+            "id": "level-5-76-2",
+            "target": 423892,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "hard",
+            "primarySkill": "standard.decompose",
+            "mode": "standard"
+          },
+          "representationA": [
+            4,
+            2,
+            3,
+            8,
+            9,
+            2
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              423892
+            ],
+            "crateCounts": [
+              28
+            ],
+            "minimumCrates": 28,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:51:42.472Z"
+        },
+        {
+          "order": {
+            "id": "level-5-76-3",
+            "target": 918273,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "easy",
+            "primarySkill": "standard.decompose",
+            "mode": "standard"
+          },
+          "representationA": [
+            9,
+            1,
+            8,
+            2,
+            7,
+            3
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              918273
+            ],
+            "crateCounts": [
+              30
+            ],
+            "minimumCrates": 30,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:51:52.033Z"
+        },
+        {
+          "order": {
+            "id": "level-5-76-4",
+            "target": 1203,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "medium",
+            "primarySkill": "standard.decompose",
+            "mode": "standard"
+          },
+          "representationA": [
+            0,
+            0,
+            1,
+            2,
+            0,
+            3
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              1203
+            ],
+            "crateCounts": [
+              6
+            ],
+            "minimumCrates": 6,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:52:04.590Z"
+        }
+      ],
+      "completed": true,
+      "createdAt": "2026-09-20T02:40:51.659Z"
+    },
+    {
+      "id": "9fe40a32-6285-45fc-a89d-7fc53f53f06f",
+      "studentId": "student-ava",
+      "levelId": "level-6",
+      "seed": 77,
+      "slot": 5,
+      "activeOrder": {
+        "id": "level-6-77-4",
+        "target": 506020,
+        "allowed": [
+          100000,
+          10000,
+          1000,
+          100,
+          10,
+          1
+        ],
+        "canonicalRequired": true,
+        "minimumRequired": false,
+        "exactTypes": null,
+        "distinctRepresentations": 1,
+        "difficultyBand": "medium",
+        "primarySkill": "standard.decompose",
+        "mode": "standard"
+      },
+      "responses": [
+        {
+          "order": {
+            "id": "level-6-77-0",
+            "target": 423892,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "easy",
+            "primarySkill": "standard.decompose",
+            "mode": "standard"
+          },
+          "representationA": [
+            4,
+            2,
+            3,
+            8,
+            9,
+            2
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              423892
+            ],
+            "crateCounts": [
+              28
+            ],
+            "minimumCrates": 28,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:54:53.629Z"
+        },
+        {
+          "order": {
+            "id": "level-6-77-1",
+            "target": 918273,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "medium",
+            "primarySkill": "standard.decompose",
+            "mode": "standard"
+          },
+          "representationA": [
+            9,
+            1,
+            8,
+            2,
+            7,
+            3
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              918273
+            ],
+            "crateCounts": [
+              30
+            ],
+            "minimumCrates": 30,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:55:04.571Z"
+        },
+        {
+          "order": {
+            "id": "level-6-77-2",
+            "target": 1203,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "hard",
+            "primarySkill": "standard.decompose",
+            "mode": "standard"
+          },
+          "representationA": [
+            0,
+            0,
+            1,
+            2,
+            0,
+            3
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              1203
+            ],
+            "crateCounts": [
+              6
+            ],
+            "minimumCrates": 6,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:55:11.285Z"
+        },
+        {
+          "order": {
+            "id": "level-6-77-3",
+            "target": 23040,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "easy",
+            "primarySkill": "standard.decompose",
+            "mode": "standard"
+          },
+          "representationA": [
+            0,
+            2,
+            3,
+            0,
+            4,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              23040
+            ],
+            "crateCounts": [
+              9
+            ],
+            "minimumCrates": 9,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:55:16.289Z"
+        },
+        {
+          "order": {
+            "id": "level-6-77-4",
+            "target": 506020,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "medium",
+            "primarySkill": "standard.decompose",
+            "mode": "standard"
+          },
+          "representationA": [
+            5,
+            0,
+            6,
+            0,
+            2,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              506020
+            ],
+            "crateCounts": [
+              13
+            ],
+            "minimumCrates": 13,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:55:21.558Z"
+        }
+      ],
+      "completed": true,
+      "createdAt": "2026-09-20T02:54:44.184Z"
+    },
+    {
+      "id": "23a70233-3bab-4126-aab1-797ee44e0f8d",
+      "studentId": "student-ava",
+      "levelId": "level-7",
+      "seed": 78,
+      "slot": 5,
+      "activeOrder": {
+        "id": "level-7-78-4",
+        "target": 918273,
+        "allowed": [
+          100000,
+          10000,
+          1000,
+          100,
+          10,
+          1
+        ],
+        "canonicalRequired": true,
+        "minimumRequired": false,
+        "exactTypes": null,
+        "distinctRepresentations": 1,
+        "difficultyBand": "medium",
+        "primarySkill": "standard.decompose",
+        "mode": "standard"
+      },
+      "responses": [
+        {
+          "order": {
+            "id": "level-7-78-0",
+            "target": 1203,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "easy",
+            "primarySkill": "standard.decompose",
+            "mode": "standard"
+          },
+          "representationA": [
+            0,
+            0,
+            1,
+            2,
+            0,
+            3
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              1203
+            ],
+            "crateCounts": [
+              6
+            ],
+            "minimumCrates": 6,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:57:22.413Z"
+        },
+        {
+          "order": {
+            "id": "level-7-78-1",
+            "target": 23040,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "medium",
+            "primarySkill": "standard.decompose",
+            "mode": "standard"
+          },
+          "representationA": [
+            0,
+            2,
+            3,
+            0,
+            4,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              23040
+            ],
+            "crateCounts": [
+              9
+            ],
+            "minimumCrates": 9,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:59:24.516Z"
+        },
+        {
+          "order": {
+            "id": "level-7-78-2",
+            "target": 506020,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "hard",
+            "primarySkill": "standard.decompose",
+            "mode": "standard"
+          },
+          "representationA": [
+            5,
+            0,
+            6,
+            0,
+            2,
+            0
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              506020
+            ],
+            "crateCounts": [
+              13
+            ],
+            "minimumCrates": 13,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:59:28.058Z"
+        },
+        {
+          "order": {
+            "id": "level-7-78-3",
+            "target": 423892,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "easy",
+            "primarySkill": "standard.decompose",
+            "mode": "standard"
+          },
+          "representationA": [
+            4,
+            2,
+            3,
+            8,
+            9,
+            2
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              423892
+            ],
+            "crateCounts": [
+              28
+            ],
+            "minimumCrates": 28,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:59:34.077Z"
+        },
+        {
+          "order": {
+            "id": "level-7-78-4",
+            "target": 918273,
+            "allowed": [
+              100000,
+              10000,
+              1000,
+              100,
+              10,
+              1
+            ],
+            "canonicalRequired": true,
+            "minimumRequired": false,
+            "exactTypes": null,
+            "distinctRepresentations": 1,
+            "difficultyBand": "medium",
+            "primarySkill": "standard.decompose",
+            "mode": "standard"
+          },
+          "representationA": [
+            9,
+            1,
+            8,
+            2,
+            7,
+            3
+          ],
+          "validation": {
+            "schemaValid": true,
+            "valueMatches": true,
+            "restrictionsMet": true,
+            "objectiveMet": true,
+            "shipmentAccepted": true,
+            "representedTotals": [
+              918273
+            ],
+            "crateCounts": [
+              30
+            ],
+            "minimumCrates": 30,
+            "feedbackCode": "SHIPMENT_CORRECT"
+          },
+          "at": "2026-09-20T02:59:40.368Z"
+        }
+      ],
+      "completed": true,
+      "createdAt": "2026-09-20T02:57:15.957Z"
+    },
+    {
+      "id": "a4aed692-c776-4f34-954e-bede135e817d",
+      "studentId": "student-ava",
+      "levelId": "level-8",
+      "seed": 79,
+      "slot": 0,
+      "activeOrder": {
+        "id": "level-8-79-0",
+        "target": 506020,
+        "allowed": [
+          100000,
+          10000,
+          1000,
+          100,
+          10,
+          1
+        ],
+        "canonicalRequired": true,
+        "minimumRequired": false,
+        "exactTypes": null,
+        "distinctRepresentations": 1,
+        "difficultyBand": "easy",
+        "primarySkill": "standard.zero",
+        "mode": "standard"
+      },
+      "responses": [],
+      "completed": false,
+      "createdAt": "2026-09-20T02:59:51.008Z"
+    }
+  ]
+}

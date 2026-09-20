@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="490" height="420" preserveAspectRatio="xMinYMin meet" viewBox="0 0 490 420" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="490" height="420"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-420)" style="clip-path: url(#clip)">
+		<g transform="">
+			<path d="M 245,365 L 245,328 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="245 328, 247.8766 333.2655, 242.1234 333.2655" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<text x="239.3671875" y="336.5" style="font-family: DV; font-size: 7px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,673) scale(1,-1)">1:1</text>
+			<path d="M 245,290 L 82.5,248 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="82.5 248, 88.31779 246.5326, 86.87815 252.1027" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<text x="150.500244140625" y="259.0" style="font-family: DV; font-size: 7px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,518) scale(1,-1)">1:many</text>
+			<path d="M 245,290 L 247.5,248 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="247.5 248, 250.0586 253.4271, 244.3157 253.0853" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<text x="233.000244140625" y="274.0" style="font-family: DV; font-size: 7px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,548) scale(1,-1)">1:many</text>
+			<path d="M 245,290 L 412.5,248 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="412.5 248, 408.0922 252.0708, 406.693 246.4905" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<text x="315.500244140625" y="274.0" style="font-family: DV; font-size: 7px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,548) scale(1,-1)">1:many</text>
+			<path d="M 82.5,210 L 82.5,163 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="82.5 163, 85.37655 168.2655, 79.62345 168.2655" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<text x="69.250244140625" y="176.5" style="font-family: DV; font-size: 7px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,353) scale(1,-1)">1:many</text>
+			<path d="M 82.5,210 L 412.5,163 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="412.5 163, 407.6927 166.5903, 406.8815 160.8946" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<text x="241.8671875" y="191.5" style="font-family: DV; font-size: 7px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,383) scale(1,-1)">0:1</text>
+			<path d="M 82.5,125 L 82.5,63 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="82.5 63, 85.37655 68.2655, 79.62345 68.2655" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<text x="69.250244140625" y="84.0" style="font-family: DV; font-size: 7px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,168) scale(1,-1)">1:many</text>
+			<path d="M 82.5,125 L 247.5,63 Z" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<polygon points="247.5 63, 243.5828 67.54484, 241.5592 62.15938" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(7%,39%,84%); fill-rule: evenodd;"/>
+			<text x="159.3671875" y="99.0" style="font-family: DV; font-size: 7px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,198) scale(1,-1)">0:1</text>
+			<rect x="165" y="365" width="160" height="38" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="201.786376953125" y="381.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,762) scale(1,-1)">Platform student</text>
+			<rect x="165" y="290" width="160" height="38" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="212.33544921875" y="306.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,612) scale(1,-1)">Game profile</text>
+			<rect x="10" y="210" width="145" height="38" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="44.35546874999999" y="226.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,452) scale(1,-1)">Level attempts</text>
+			<rect x="175" y="210" width="145" height="38" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="214.3125" y="226.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,452) scale(1,-1)">Skill mastery</text>
+			<rect x="340" y="210" width="145" height="38" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="392.669677734375" y="226.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,452) scale(1,-1)">Unlocks</text>
+			<rect x="10" y="125" width="145" height="38" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="37.77026367187499" y="141.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,282) scale(1,-1)">Generated orders</text>
+			<rect x="340" y="125" width="145" height="38" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="372.509765625" y="141.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,282) scale(1,-1)">Attempt results</text>
+			<rect x="10" y="25" width="145" height="38" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="55.379150390625" y="41.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,82) scale(1,-1)">Responses</text>
+			<rect x="175" y="25" width="145" height="38" rx="7" ry="7" style="stroke: rgb(7%,39%,84%); stroke-linecap: butt; stroke-width: 0.7; fill: rgb(91%,95%,98%); fill-rule: evenodd;"/>
+			<text x="212.34814453125" y="41.0" style="font-family: DVB; font-size: 9px;fill: rgb(6%,14%,32%); stroke:none;" transform="translate(0,82) scale(1,-1)">Skill evidence</text>
+		</g>
+	</g>
+</svg>

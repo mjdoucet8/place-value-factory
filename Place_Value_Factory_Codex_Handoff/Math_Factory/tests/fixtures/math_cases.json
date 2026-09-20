@@ -1,0 +1,830 @@
+{
+  "version": "1.0",
+  "status": "Expected fixtures only; implement runtime tests",
+  "denominations": [
+    100000,
+    10000,
+    1000,
+    100,
+    10,
+    1
+  ],
+  "cases": [
+    {
+      "id": "basic_40000",
+      "target": 40000,
+      "allowed": [
+        100000,
+        10000,
+        1000,
+        100,
+        10,
+        1
+      ],
+      "canonicalRequired": true,
+      "minimumRequired": false,
+      "exactTypes": null,
+      "distinctRepresentations": 1,
+      "representationA": [
+        0,
+        4,
+        0,
+        0,
+        0,
+        0
+      ],
+      "representationB": null,
+      "expected": {
+        "accepted": true,
+        "feedbackCode": "SHIPMENT_CORRECT",
+        "representedTotal": 40000,
+        "crateCount": 4,
+        "minimumCrates": 4
+      }
+    },
+    {
+      "id": "standard_423892",
+      "target": 423892,
+      "allowed": [
+        100000,
+        10000,
+        1000,
+        100,
+        10,
+        1
+      ],
+      "canonicalRequired": true,
+      "minimumRequired": false,
+      "exactTypes": null,
+      "distinctRepresentations": 1,
+      "representationA": [
+        4,
+        2,
+        3,
+        8,
+        9,
+        2
+      ],
+      "representationB": null,
+      "expected": {
+        "accepted": true,
+        "feedbackCode": "SHIPMENT_CORRECT",
+        "representedTotal": 423892,
+        "crateCount": 28,
+        "minimumCrates": 28
+      }
+    },
+    {
+      "id": "single_420000",
+      "target": 420000,
+      "allowed": [
+        10000
+      ],
+      "canonicalRequired": false,
+      "minimumRequired": false,
+      "exactTypes": null,
+      "distinctRepresentations": 1,
+      "representationA": [
+        0,
+        42,
+        0,
+        0,
+        0,
+        0
+      ],
+      "representationB": null,
+      "expected": {
+        "accepted": true,
+        "feedbackCode": "SHIPMENT_CORRECT",
+        "representedTotal": 420000,
+        "crateCount": 42,
+        "minimumCrates": 42
+      }
+    },
+    {
+      "id": "single_42000",
+      "target": 42000,
+      "allowed": [
+        1000
+      ],
+      "canonicalRequired": false,
+      "minimumRequired": false,
+      "exactTypes": null,
+      "distinctRepresentations": 1,
+      "representationA": [
+        0,
+        0,
+        42,
+        0,
+        0,
+        0
+      ],
+      "representationB": null,
+      "expected": {
+        "accepted": true,
+        "feedbackCode": "SHIPMENT_CORRECT",
+        "representedTotal": 42000,
+        "crateCount": 42,
+        "minimumCrates": 42
+      }
+    },
+    {
+      "id": "restricted_minimum",
+      "target": 529521,
+      "allowed": [
+        10000,
+        100,
+        1
+      ],
+      "canonicalRequired": false,
+      "minimumRequired": false,
+      "exactTypes": null,
+      "distinctRepresentations": 1,
+      "representationA": [
+        0,
+        52,
+        0,
+        95,
+        0,
+        21
+      ],
+      "representationB": null,
+      "expected": {
+        "accepted": true,
+        "feedbackCode": "SHIPMENT_CORRECT",
+        "representedTotal": 529521,
+        "crateCount": 168,
+        "minimumCrates": 168
+      }
+    },
+    {
+      "id": "restricted_equivalent",
+      "target": 529521,
+      "allowed": [
+        10000,
+        100,
+        1
+      ],
+      "canonicalRequired": false,
+      "minimumRequired": false,
+      "exactTypes": null,
+      "distinctRepresentations": 1,
+      "representationA": [
+        0,
+        51,
+        0,
+        195,
+        0,
+        21
+      ],
+      "representationB": null,
+      "expected": {
+        "accepted": true,
+        "feedbackCode": "SHIPMENT_CORRECT",
+        "representedTotal": 529521,
+        "crateCount": 267,
+        "minimumCrates": 168
+      }
+    },
+    {
+      "id": "minimum_not_met",
+      "target": 529521,
+      "allowed": [
+        10000,
+        100,
+        1
+      ],
+      "canonicalRequired": false,
+      "minimumRequired": true,
+      "exactTypes": null,
+      "distinctRepresentations": 1,
+      "representationA": [
+        0,
+        51,
+        0,
+        195,
+        0,
+        21
+      ],
+      "representationB": null,
+      "expected": {
+        "accepted": false,
+        "feedbackCode": "CAN_REPACK",
+        "representedTotal": 529521,
+        "crateCount": 267,
+        "minimumCrates": 168
+      }
+    },
+    {
+      "id": "forbidden_458123",
+      "target": 458123,
+      "allowed": [
+        10000,
+        1000,
+        10,
+        1
+      ],
+      "canonicalRequired": false,
+      "minimumRequired": false,
+      "exactTypes": null,
+      "distinctRepresentations": 1,
+      "representationA": [
+        0,
+        45,
+        8,
+        0,
+        12,
+        3
+      ],
+      "representationB": null,
+      "expected": {
+        "accepted": true,
+        "feedbackCode": "SHIPMENT_CORRECT",
+        "representedTotal": 458123,
+        "crateCount": 68,
+        "minimumCrates": 68
+      }
+    },
+    {
+      "id": "zero_placeholders",
+      "target": 506020,
+      "allowed": [
+        100000,
+        10000,
+        1000,
+        100,
+        10,
+        1
+      ],
+      "canonicalRequired": true,
+      "minimumRequired": false,
+      "exactTypes": null,
+      "distinctRepresentations": 1,
+      "representationA": [
+        5,
+        0,
+        6,
+        0,
+        2,
+        0
+      ],
+      "representationB": null,
+      "expected": {
+        "accepted": true,
+        "feedbackCode": "SHIPMENT_CORRECT",
+        "representedTotal": 506020,
+        "crateCount": 13,
+        "minimumCrates": 13
+      }
+    },
+    {
+      "id": "zero_tutorial",
+      "target": 0,
+      "allowed": [
+        100000,
+        10000,
+        1000,
+        100,
+        10,
+        1
+      ],
+      "canonicalRequired": false,
+      "minimumRequired": false,
+      "exactTypes": null,
+      "distinctRepresentations": 1,
+      "representationA": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "representationB": null,
+      "expected": {
+        "accepted": true,
+        "feedbackCode": "SHIPMENT_CORRECT",
+        "representedTotal": 0,
+        "crateCount": 0,
+        "minimumCrates": 0
+      }
+    },
+    {
+      "id": "under",
+      "target": 40000,
+      "allowed": [
+        100000,
+        10000,
+        1000,
+        100,
+        10,
+        1
+      ],
+      "canonicalRequired": false,
+      "minimumRequired": false,
+      "exactTypes": null,
+      "distinctRepresentations": 1,
+      "representationA": [
+        0,
+        3,
+        0,
+        0,
+        0,
+        0
+      ],
+      "representationB": null,
+      "expected": {
+        "accepted": false,
+        "feedbackCode": "UNDERPRODUCTION",
+        "representedTotal": 30000,
+        "crateCount": 3,
+        "minimumCrates": 4
+      }
+    },
+    {
+      "id": "over",
+      "target": 40000,
+      "allowed": [
+        100000,
+        10000,
+        1000,
+        100,
+        10,
+        1
+      ],
+      "canonicalRequired": false,
+      "minimumRequired": false,
+      "exactTypes": null,
+      "distinctRepresentations": 1,
+      "representationA": [
+        0,
+        5,
+        0,
+        0,
+        0,
+        0
+      ],
+      "representationB": null,
+      "expected": {
+        "accepted": false,
+        "feedbackCode": "OVERPRODUCTION",
+        "representedTotal": 50000,
+        "crateCount": 5,
+        "minimumCrates": 4
+      }
+    },
+    {
+      "id": "forbidden_equal_total",
+      "target": 100,
+      "allowed": [
+        10,
+        1
+      ],
+      "canonicalRequired": false,
+      "minimumRequired": false,
+      "exactTypes": null,
+      "distinctRepresentations": 1,
+      "representationA": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "representationB": null,
+      "expected": {
+        "accepted": false,
+        "feedbackCode": "MACHINE_UNAVAILABLE",
+        "representedTotal": 100,
+        "crateCount": 1,
+        "minimumCrates": 10
+      }
+    },
+    {
+      "id": "equal_noncanonical",
+      "target": 100,
+      "allowed": [
+        100000,
+        10000,
+        1000,
+        100,
+        10,
+        1
+      ],
+      "canonicalRequired": true,
+      "minimumRequired": false,
+      "exactTypes": null,
+      "distinctRepresentations": 1,
+      "representationA": [
+        0,
+        0,
+        0,
+        0,
+        10,
+        0
+      ],
+      "representationB": null,
+      "expected": {
+        "accepted": false,
+        "feedbackCode": "STANDARD_REQUIRED",
+        "representedTotal": 100,
+        "crateCount": 10,
+        "minimumCrates": 1
+      }
+    },
+    {
+      "id": "exact2",
+      "target": 100,
+      "allowed": [
+        100000,
+        10000,
+        1000,
+        100,
+        10,
+        1
+      ],
+      "canonicalRequired": false,
+      "minimumRequired": false,
+      "exactTypes": 2,
+      "distinctRepresentations": 1,
+      "representationA": [
+        0,
+        0,
+        0,
+        0,
+        9,
+        10
+      ],
+      "representationB": null,
+      "expected": {
+        "accepted": true,
+        "feedbackCode": "SHIPMENT_CORRECT",
+        "representedTotal": 100,
+        "crateCount": 19
+      }
+    },
+    {
+      "id": "exact2_wrong_types",
+      "target": 100,
+      "allowed": [
+        100000,
+        10000,
+        1000,
+        100,
+        10,
+        1
+      ],
+      "canonicalRequired": false,
+      "minimumRequired": false,
+      "exactTypes": 2,
+      "distinctRepresentations": 1,
+      "representationA": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "representationB": null,
+      "expected": {
+        "accepted": false,
+        "feedbackCode": "TYPE_COUNT",
+        "representedTotal": 100,
+        "crateCount": 1
+      }
+    },
+    {
+      "id": "two_ways",
+      "target": 100,
+      "allowed": [
+        100000,
+        10000,
+        1000,
+        100,
+        10,
+        1
+      ],
+      "canonicalRequired": false,
+      "minimumRequired": false,
+      "exactTypes": null,
+      "distinctRepresentations": 2,
+      "representationA": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "representationB": [
+        0,
+        0,
+        0,
+        0,
+        10,
+        0
+      ],
+      "expected": {
+        "accepted": true,
+        "feedbackCode": "SHIPMENT_CORRECT",
+        "representedTotal": 100,
+        "crateCount": 1,
+        "minimumCrates": 1
+      }
+    },
+    {
+      "id": "same_twice",
+      "target": 100,
+      "allowed": [
+        100000,
+        10000,
+        1000,
+        100,
+        10,
+        1
+      ],
+      "canonicalRequired": false,
+      "minimumRequired": false,
+      "exactTypes": null,
+      "distinctRepresentations": 2,
+      "representationA": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "representationB": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "expected": {
+        "accepted": false,
+        "feedbackCode": "SAME_REPRESENTATION",
+        "representedTotal": 100,
+        "crateCount": 1,
+        "minimumCrates": 1
+      }
+    },
+    {
+      "id": "negative",
+      "target": 1,
+      "allowed": [
+        100000,
+        10000,
+        1000,
+        100,
+        10,
+        1
+      ],
+      "canonicalRequired": false,
+      "minimumRequired": false,
+      "exactTypes": null,
+      "distinctRepresentations": 1,
+      "representationA": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "representationB": null,
+      "expected": {
+        "accepted": false,
+        "feedbackCode": "INVALID_INPUT"
+      }
+    },
+    {
+      "id": "fraction",
+      "target": 1,
+      "allowed": [
+        100000,
+        10000,
+        1000,
+        100,
+        10,
+        1
+      ],
+      "canonicalRequired": false,
+      "minimumRequired": false,
+      "exactTypes": null,
+      "distinctRepresentations": 1,
+      "representationA": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0.5
+      ],
+      "representationB": null,
+      "expected": {
+        "accepted": false,
+        "feedbackCode": "INVALID_INPUT"
+      }
+    },
+    {
+      "id": "oversized",
+      "target": 1,
+      "allowed": [
+        100000,
+        10000,
+        1000,
+        100,
+        10,
+        1
+      ],
+      "canonicalRequired": false,
+      "minimumRequired": false,
+      "exactTypes": null,
+      "distinctRepresentations": 1,
+      "representationA": [
+        1000000,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "representationB": null,
+      "expected": {
+        "accepted": false,
+        "feedbackCode": "INVALID_INPUT"
+      }
+    },
+    {
+      "id": "string",
+      "target": 1,
+      "allowed": [
+        100000,
+        10000,
+        1000,
+        100,
+        10,
+        1
+      ],
+      "canonicalRequired": false,
+      "minimumRequired": false,
+      "exactTypes": null,
+      "distinctRepresentations": 1,
+      "representationA": [
+        "1",
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "representationB": null,
+      "expected": {
+        "accepted": false,
+        "feedbackCode": "INVALID_INPUT"
+      }
+    },
+    {
+      "id": "null",
+      "target": 1,
+      "allowed": [
+        100000,
+        10000,
+        1000,
+        100,
+        10,
+        1
+      ],
+      "canonicalRequired": false,
+      "minimumRequired": false,
+      "exactTypes": null,
+      "distinctRepresentations": 1,
+      "representationA": [
+        null,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "representationB": null,
+      "expected": {
+        "accepted": false,
+        "feedbackCode": "INVALID_INPUT"
+      }
+    },
+    {
+      "id": "length",
+      "target": 1,
+      "allowed": [
+        100000,
+        10000,
+        1000,
+        100,
+        10,
+        1
+      ],
+      "canonicalRequired": false,
+      "minimumRequired": false,
+      "exactTypes": null,
+      "distinctRepresentations": 1,
+      "representationA": [
+        0,
+        0
+      ],
+      "representationB": null,
+      "expected": {
+        "accepted": false,
+        "feedbackCode": "INVALID_INPUT"
+      }
+    }
+  ],
+  "invalidConfigurations": [
+    {
+      "target": 42000,
+      "allowed": [
+        10000
+      ],
+      "expected": "CONFIG_INVALID"
+    },
+    {
+      "target": 1,
+      "allowed": [],
+      "expected": "CONFIG_INVALID"
+    },
+    {
+      "target": 100,
+      "allowed": [
+        100000,
+        10000,
+        1000,
+        100,
+        10,
+        1
+      ],
+      "minimumRequired": true,
+      "exactTypes": 2,
+      "expected": "CONFIG_INVALID"
+    }
+  ],
+  "policyCases": [
+    {
+      "id": "efficiency_84",
+      "correctedSlots": 2,
+      "skips": 1,
+      "expected": 84
+    },
+    {
+      "id": "eight_independent",
+      "scores": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "independentFirst": 8,
+      "attempts": 2,
+      "expectedSecure": true
+    },
+    {
+      "id": "seven_insufficient",
+      "scores": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "independentFirst": 7,
+      "attempts": 2,
+      "expectedSecure": false
+    },
+    {
+      "id": "eight_hints",
+      "scores": [
+        0.8,
+        0.8,
+        0.8,
+        0.8,
+        0.8,
+        0.8,
+        0.8,
+        0.8
+      ],
+      "independentFirst": 0,
+      "attempts": 2,
+      "expectedSecure": false
+    }
+  ]
+}
