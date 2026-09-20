@@ -49,3 +49,33 @@ Changes: all 30 level metadata records are now immutable configuration with zone
 Commands/results: `npm test` passed 31 tests; `npx tsc --noEmit` and `npm run build` passed.
 
 Evidence: configuration and order generation are logic verified; map unlocking is server-integrated. The frontend has not yet implemented second-representation, repack or advanced-objective controls, so Stage 6 is not yet playable through the UI.
+
+## 2026-09-20 | BE-02a | CLAIM | Backend / Data
+
+Timestamp (UTC): 2026-09-20T15:04:20Z
+
+Goal and scope: add contract-aligned command idempotency, optimistic revision checks, and a bounded writer lease to the fictional-data API. This is a development persistence safety slice only; PostgreSQL migrations remain a separate, required production task.
+
+Owned paths: `apps/server/src/index.ts`, `tests/integration/`, `TASK_LOG.md`.
+
+Dependencies and contract version: contract v1.0; existing immutable order generation.
+
+Acceptance IDs: RECOVERY-01, RECOVERY-02, RECOVERY-04, TECH-03 (partial, fictional-data adapter).
+
+Expected outputs: actor-scoped duplicate-command receipts, revision and lease conflict responses, repeatable integration checks, and an honest handoff record.
+
+## 2026-09-20 | BE-02a / FE-02a | UPDATE / HANDOFF | Backend / Data + Frontend / Game UX
+
+Goal and scope: implemented a contract-shaped development safety slice over the existing fictional JSON adapter and connected the active game screen to it.
+
+Owned paths: `apps/server/src/index.ts`, `apps/web/src/main.tsx`, `tests/integration/idempotency.test.ts`, `TASK_LOG.md`, `PROJECT_STATUS.md`.
+
+Changes and artifacts: server-created attempts now carry a revision, lease epoch, writer tab ID, expiry, and actor-scoped response receipts. Shipment commands require `commandId`, `expectedRevision`, `leaseEpoch`, `tabId`, and a matching `Idempotency-Key`; exact retries replay the original response, while altered keys, stale revisions, and second active writers receive typed conflicts. The game UI generates these command fields, exposes a saving state, and retains the editable draft after a failed save. The API server is now constructible for isolated integration tests instead of listening on import.
+
+Commands/manual checks and observed results: `npx tsc --noEmit` passed; `npm test` passed 33 tests (31 mathematical unit tests and 2 command-safety integration tests); `npm run build` passed.
+
+Evidence level: narrow fictional-data flow integrated.
+
+Remaining risks or blockers: JSON read/write is not transactional or multi-process safe; PostgreSQL migrations, database rollback tests, lease heartbeat/takeover routes, persistent browser outbox/retry, CSRF/session hardening, and browser E2E remain NOT RUN. This does not satisfy production persistence requirements.
+
+Next owner / reviewer: BE-02 PostgreSQL persistence and QA recovery review; then FE-02 durable outbox/reconciliation.

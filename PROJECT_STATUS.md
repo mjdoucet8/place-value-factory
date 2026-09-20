@@ -34,3 +34,9 @@ Level 1 no longer uses a placeholder fixed target list. Its immutable configurat
 ## 2026-09-19 progression foundation checkpoint
 
 All 30 baseline level definitions now live in immutable config and have a deterministic server generator path. The map is driven by committed level completion and exposes only the next level; a 150-order test confirms a valid whole-crate witness for every level/slot definition. Stage 6 browser controls for two representations and repacking are still missing, and mastery gates/practice scheduling are not yet implemented. Therefore this is a configuration/integration checkpoint, not completion of full V1 progression.
+
+## 2026-09-20 command-safety checkpoint
+
+The fictional-data API now requires matching idempotency keys for starts and shipment responses, stores response receipts, validates optimistic revisions, and enforces a bounded single-writer lease. The game screen sends these fields and clearly disables editing while a shipment is being saved. Isolated integration tests verify exact duplicate replay, altered duplicate rejection, stale revision rejection, and a second active tab rejection.
+
+This is still a narrow development adapter, not PostgreSQL persistence: its JSON file has no cross-process transaction or rollback guarantee. Database migrations, durable browser outbox/reconciliation, lease heartbeat/takeover, CSRF/session hardening, browser E2E, and classroom evidence remain NOT RUN.

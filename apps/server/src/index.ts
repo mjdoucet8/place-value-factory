@@ -1,81 +1,160 @@
-import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import { createHash, randomUUID } from 'node:crypto';
+import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { generateLevelOrder, validateRepresentation } from '../../../packages/game-engine/src/index.js';
 import { LEVELS, levelById } from '../../../packages/config/src/index.js';
 
 const port = Number(process.env.PORT ?? 3101);
-const dataPath = resolve(process.cwd(), 'db/local-development.json');
-type Attempt = { id: string; studentId: string; levelId: string; seed: number; slot: number; activeOrder?: ReturnType<typeof generateLevelOrder>; responses: any[]; completed: boolean; createdAt: string };
+const defaultDataPath = resolve(process.cwd(), 'db/local-development.json');
+const leaseDurationMs = 60_000;
+
+type Order = ReturnType<typeof generateLevelOrder>;
+type ResponseRecord = { order: Order; representationA: unknown; representationB: unknown; validation: ReturnType<typeof validateRepresentation>; at: string };
+type Receipt = { actorId: string; commandId: string; payloadHash: string; status: number; body: unknown };
+type Attempt = {
+  id: string; studentId: string; levelId: string; seed: number; slot: number; activeOrder?: Order;
+  responses: ResponseRecord[]; completed: boolean; createdAt: string; revision: number; leaseEpoch: number;
+  writerTabId: string; leaseExpiresAt: string; receipts: Receipt[];
+};
 type Store = { attempts: Attempt[] };
+type Actor = { id: string; role: 'student' | 'teacher' };
+type Command = { commandId: string; expectedRevision: number; leaseEpoch: number; tabId: string };
 const students = [{ id: 'student-ava', username: 'ava', pin: '123456', alias: 'Ava', classCode: 'FACTORY5' }];
 const teachers = [{ id: 'teacher-dev', username: 'teacher', password: 'factory-demo' }];
 
-async function store(): Promise<Store> { try { return JSON.parse(await readFile(dataPath, 'utf8')); } catch { return { attempts: [] }; } }
-async function save(value: Store) { await mkdir(dirname(dataPath), { recursive: true }); await writeFile(dataPath, JSON.stringify(value, null, 2)); }
-function send(response: ServerResponse, status: number, body?: unknown, origin?: string) {
-  // The development adapter uses a header token rather than cookies. A permissive
-  // local CORS policy keeps loopback host aliases from breaking test accounts.
-  response.writeHead(status, { 'content-type': 'application/json', 'access-control-allow-origin': '*', 'access-control-allow-headers': 'content-type,x-session' });
-  response.end(body === undefined ? undefined : JSON.stringify(body));
+function hashPayload(body: unknown) { return createHash('sha256').update(JSON.stringify(body)).digest('hex'); }
+function isNonNegativeInteger(value: unknown): value is number { return typeof value === 'number' && Number.isInteger(value) && value >= 0; }
+function commandFrom(body: unknown): Command | null {
+  if (!body || typeof body !== 'object') return null;
+  const value = body as Record<string, unknown>;
+  return typeof value.commandId === 'string' && value.commandId.length > 0 && isNonNegativeInteger(value.expectedRevision) && isNonNegativeInteger(value.leaseEpoch) && typeof value.tabId === 'string' && value.tabId.length > 0 ? value as unknown as Command : null;
 }
-async function json(request: IncomingMessage): Promise<any> { let body = ''; for await (const chunk of request) body += chunk; return body ? JSON.parse(body) : {}; }
-function principal(request: IncomingMessage) { const value = request.headers['x-session']; if (value === 'student-ava') return { id: 'student-ava', role: 'student' as const }; if (value === 'teacher-dev') return { id: 'teacher-dev', role: 'teacher' as const }; return null; }
-function mapFor(attempts: Attempt[]) {
-  const completed = new Set(attempts.filter((attempt) => attempt.completed).map((attempt) => attempt.levelId));
-  const highest = Math.max(0, ...LEVELS.filter((level) => completed.has(level.id)).map((level) => level.ordinal));
-  const zones = [...new Set(LEVELS.map((level) => level.zone))].map((zone) => ({ id: zone.toLowerCase(), name: zone, levels: LEVELS.filter((level) => level.zone === zone).map((level) => ({ id: level.id, title: level.title, stage: level.stage, status: completed.has(level.id) ? 'completed' : level.ordinal <= highest + 1 ? 'unlocked' : 'locked', stars: completed.has(level.id) ? 2 : 0, prerequisiteSummary: level.ordinal <= highest + 1 ? 'Ready to practice' : `Complete Level ${level.ordinal - 1} first` })) }));
-  return { configVersion: 'v1-local', zones, highestUnlockedLevelId: `level-${Math.min(30, highest + 1)}` };
+function startCommandFrom(body: unknown): { commandId: string; profileRevision: number; tabId: string } | null {
+  if (!body || typeof body !== 'object') return null;
+  const value = body as Record<string, unknown>;
+  return typeof value.commandId === 'string' && value.commandId.length > 0 && isNonNegativeInteger(value.profileRevision) && typeof value.tabId === 'string' && value.tabId.length > 0 ? value as unknown as { commandId: string; profileRevision: number; tabId: string } : null;
 }
 
-const server = createServer(async (request, response) => {
-  try {
-    const origin = request.headers.origin;
-    if (request.method === 'OPTIONS') return send(response, 204, undefined, origin);
-    const url = new URL(request.url ?? '/', `http://${request.headers.host}`);
-    if (request.method === 'POST' && url.pathname === '/api/v1/auth/student/session') {
-      const body = await json(request); const student = students.find((s) => s.classCode === String(body.classCode).trim().toUpperCase() && s.username === String(body.username).trim().toLowerCase() && s.pin === body.pin);
-      return student ? send(response, 200, { principal: { id: student.id, role: 'student', classId: 'class-demo' }, csrfToken: 'local-dev' }) : send(response, 401, { error: { code: 'INVALID_CREDENTIALS', message: 'Those login details did not match.' } });
-    }
-    if (request.method === 'POST' && url.pathname === '/api/v1/auth/teacher/session') {
-      const body = await json(request); const teacher = teachers.find((t) => t.username === body.username && t.password === body.password);
-      return teacher ? send(response, 200, { principal: { id: teacher.id, role: 'teacher' }, csrfToken: 'local-dev' }) : send(response, 401, { error: { code: 'INVALID_CREDENTIALS', message: 'Those login details did not match.' } });
-    }
-    const actor = principal(request); if (!actor) return send(response, 401, { error: { code: 'SESSION_EXPIRED', message: 'Please sign in.' } });
-    if (request.method === 'GET' && url.pathname === '/api/v1/games/place-value-factory/map' && actor.role === 'student') return send(response, 200, mapFor((await store()).attempts.filter((attempt) => attempt.studentId === actor.id)));
-    if (request.method === 'POST' && url.pathname === '/api/v1/games/place-value-factory/attempts' && actor.role === 'student') {
-      const body = await json(request); const state = await store(); let attempt = state.attempts.find((item) => item.studentId === actor.id && !item.completed);
-      const requestedLevel = levelById(body.levelId ?? 'level-1'); const completed = new Set(state.attempts.filter((item) => item.studentId === actor.id && item.completed).map((item) => item.levelId)); const highest = Math.max(0, ...LEVELS.filter((level) => completed.has(level.id)).map((level) => level.ordinal));
-      if (!requestedLevel || requestedLevel.ordinal > highest + 1) return send(response, 409, { error: { code: 'LEVEL_LOCKED', message: 'Complete the earlier level first.' } });
-      if (!attempt) { const seed = 71 + requestedLevel.ordinal; attempt = { id: crypto.randomUUID(), studentId: actor.id, levelId: requestedLevel.id, seed, slot: 0, activeOrder: generateLevelOrder(requestedLevel.id, seed, 0, 'easy'), responses: [], completed: false, createdAt: new Date().toISOString() }; state.attempts.push(attempt); await save(state); }
-      return send(response, 201, snapshot(attempt));
-    }
-    const match = url.pathname.match(/^\/api\/v1\/games\/place-value-factory\/attempts\/([^/]+)(?:\/orders\/([^/]+)\/responses|\/results)?$/);
-    if (match && actor.role === 'student') {
-      const state = await store(); const attempt = state.attempts.find((item) => item.id === match[1] && item.studentId === actor.id); if (!attempt) return send(response, 404, { error: { code: 'NOT_FOUND', message: 'Attempt not found.' } });
-      if (request.method === 'GET' && url.pathname.endsWith('/results')) return attempt.completed ? send(response, 200, result(attempt)) : send(response, 409, { error: { code: 'NOT_COMPLETE' } });
-      if (request.method === 'GET') return send(response, 200, snapshot(attempt));
-      if (request.method === 'POST' && match[2]) {
-        const body = await json(request); const order = orderFor(attempt); if (order.id !== match[2] || attempt.completed) return send(response, 409, { error: { code: 'ORDER_NOT_ACTIVE' } });
-        const validation = validateRepresentation(order, body.representationA, body.representationB ?? null); attempt.responses.push({ order, representationA: body.representationA, validation, at: new Date().toISOString() });
-        if (validation.shipmentAccepted) { attempt.slot += 1; if (attempt.slot === 5) attempt.completed = true; else attempt.activeOrder = generateLevelOrder(attempt.levelId, attempt.seed, attempt.slot, nextDifficulty(attempt)); }
-        await save(state); return send(response, 200, { validation, snapshot: snapshot(attempt), result: attempt.completed ? result(attempt) : null });
+export function createApiServer(dataPath = defaultDataPath): Server {
+  async function store(): Promise<Store> {
+    try { const parsed = JSON.parse(await readFile(dataPath, 'utf8')) as Store; return { attempts: parsed.attempts.map(hydrateAttempt) }; }
+    catch { return { attempts: [] }; }
+  }
+  async function save(value: Store) { await mkdir(dirname(dataPath), { recursive: true }); await writeFile(dataPath, JSON.stringify(value, null, 2)); }
+  function send(response: ServerResponse, status: number, body?: unknown) {
+    response.writeHead(status, { 'content-type': 'application/json', 'access-control-allow-origin': '*', 'access-control-allow-headers': 'content-type,x-session,idempotency-key' });
+    response.end(body === undefined ? undefined : JSON.stringify(body));
+  }
+  async function json(request: IncomingMessage): Promise<Record<string, unknown>> {
+    let body = ''; for await (const chunk of request) { body += chunk; if (body.length > 32 * 1024) throw new Error('BODY_TOO_LARGE'); }
+    const parsed: unknown = body ? JSON.parse(body) : {};
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('INVALID_INPUT');
+    return parsed as Record<string, unknown>;
+  }
+  function principal(request: IncomingMessage): Actor | null {
+    const value = request.headers['x-session'];
+    if (value === 'student-ava') return { id: 'student-ava', role: 'student' };
+    if (value === 'teacher-dev') return { id: 'teacher-dev', role: 'teacher' };
+    return null;
+  }
+  function receiptFor(attempt: Attempt, actor: Actor, commandId: string, payloadHash: string): Receipt | null | 'conflict' {
+    const receipt = attempt.receipts.find((item) => item.actorId === actor.id && item.commandId === commandId);
+    if (!receipt) return null;
+    return receipt.payloadHash === payloadHash ? receipt : 'conflict';
+  }
+  function matchingKey(request: IncomingMessage, command: { commandId: string }) { return request.headers['idempotency-key'] === command.commandId; }
+  function activeLease(attempt: Attempt) { return Date.parse(attempt.leaseExpiresAt) > Date.now(); }
+  function correctedSlots(attempt: Attempt) {
+    const firstOrderResponse = new Map<string, ResponseRecord>();
+    for (const record of attempt.responses) if (!firstOrderResponse.has(record.order.id)) firstOrderResponse.set(record.order.id, record);
+    return [...firstOrderResponse.values()].filter((record) => !record.validation.shipmentAccepted).length;
+  }
+  function snapshot(attempt: Attempt) {
+    return { attemptId: attempt.id, revision: attempt.revision, leaseEpoch: attempt.leaseEpoch, leaseExpiresAt: attempt.leaseExpiresAt, writerTabId: attempt.writerTabId, status: attempt.completed ? 'completed' : 'active', levelId: attempt.levelId, kind: 'path', configVersion: 'v1-local', shippedSlots: attempt.slot, skippedOrders: 0, correctedSlots: correctedSlots(attempt), acknowledgedCommandIds: attempt.receipts.map((receipt) => receipt.commandId).slice(-20), achievedTier: 'Trainee', activeOrder: attempt.completed ? null : orderFor(attempt) };
+  }
+  function mapFor(attempts: Attempt[]) {
+    const completed = new Set(attempts.filter((attempt) => attempt.completed).map((attempt) => attempt.levelId));
+    const highest = Math.max(0, ...LEVELS.filter((level) => completed.has(level.id)).map((level) => level.ordinal));
+    const zones = [...new Set(LEVELS.map((level) => level.zone))].map((zone) => ({ id: zone.toLowerCase(), name: zone, levels: LEVELS.filter((level) => level.zone === zone).map((level) => ({ id: level.id, title: level.title, stage: level.stage, status: completed.has(level.id) ? 'completed' : level.ordinal <= highest + 1 ? 'unlocked' : 'locked', stars: completed.has(level.id) ? 2 : 0, prerequisiteSummary: level.ordinal <= highest + 1 ? 'Ready to practice' : `Complete Level ${level.ordinal - 1} first` })) }));
+    return { configVersion: 'v1-local', zones, profileRevision: completed.size, highestUnlockedLevelId: `level-${Math.min(30, highest + 1)}` };
+  }
+  function responseError(code: string, message: string, currentRevision?: number) { return { error: { code, message, ...(currentRevision === undefined ? {} : { currentRevision }) } }; }
+  function result(attempt: Attempt) {
+    const firstPerOrder = new Map<string, ResponseRecord>();
+    for (const record of attempt.responses) if (!firstPerOrder.has(record.order.id)) firstPerOrder.set(record.order.id, record);
+    return { attemptId: attempt.id, completed: true, shipped: 5, submittedOrders: attempt.responses.length, firstObjectiveCorrect: [...firstPerOrder.values()].filter((item) => item.validation.objectiveMet).length, firstValueCorrect: [...firstPerOrder.values()].filter((item) => item.validation.valueMatches).length, eventuallyCorrect: 5, correctedSlots: correctedSlots(attempt), skippedOrders: 0, efficiency: Math.max(0, 100 - 6 * correctedSlots(attempt)), mainStars: 2, transferStar: false, bestLevelStars: 2, newlyUnlockedLevelIds: [`level-${Math.min(30, Number(attempt.levelId.slice(6)) + 1)}`], newlyEarnedTier: null, policyVersion: 'v1-local' };
+  }
+  function nextDifficulty(attempt: Attempt): 'easy' | 'medium' | 'hard' {
+    const defaults: Array<'easy' | 'medium' | 'hard'> = ['easy', 'medium', 'hard', 'easy', 'medium'];
+    const recent = attempt.responses.slice(-2);
+    return recent.length === 2 && recent.every((record) => !record.validation.shipmentAccepted) ? 'easy' : defaults[attempt.slot];
+  }
+  function orderFor(attempt: Attempt) { return attempt.activeOrder ?? generateLevelOrder(attempt.levelId, attempt.seed, attempt.slot, nextDifficulty(attempt)); }
+
+  return createServer(async (request, response) => {
+    try {
+      if (request.method === 'OPTIONS') return send(response, 204);
+      const url = new URL(request.url ?? '/', `http://${request.headers.host}`);
+      if (request.method === 'POST' && url.pathname === '/api/v1/auth/student/session') {
+        const body = await json(request); const student = students.find((item) => item.classCode === String(body.classCode).trim().toUpperCase() && item.username === String(body.username).trim().toLowerCase() && item.pin === body.pin);
+        return student ? send(response, 200, { principal: { id: student.id, role: 'student', classId: 'class-demo' }, csrfToken: 'local-dev' }) : send(response, 401, responseError('INVALID_CREDENTIALS', 'Those login details did not match.'));
       }
-    }
-    if (request.method === 'GET' && url.pathname === '/api/v1/teacher/classes/class-demo/games/place-value-factory/report' && actor.role === 'teacher') {
-      const state = await store(); const attempts = state.attempts.filter((item) => item.studentId === 'student-ava'); const responses = attempts.flatMap((item) => item.responses as any[]);
-      return send(response, 200, { classId: 'class-demo', students: [{ studentId: 'student-ava', alias: 'Ava', currentLevelId: attempts.some((item) => item.completed) ? 'level-2' : 'level-1', submittedN: responses.length, eventuallyCorrectN: responses.filter((item) => item.validation.shipmentAccepted).length, evidence: responses.map((item) => ({ target: item.order.target, vector: item.representationA, accepted: item.validation.shipmentAccepted })) }] });
-    }
-    send(response, 404, { error: { code: 'NOT_FOUND', message: 'Route not found.' } });
-  } catch { send(response, 422, { error: { code: 'INVALID_INPUT', message: 'Request could not be processed.' } }, request.headers.origin); }
-});
-
-function nextDifficulty(attempt: Attempt): 'easy' | 'medium' | 'hard' {
-  const defaults: Array<'easy' | 'medium' | 'hard'> = ['easy', 'medium', 'hard', 'easy', 'medium'];
-  const recent = attempt.responses.slice(-2);
-  return recent.length === 2 && recent.every((response) => !response.validation.shipmentAccepted) ? 'easy' : defaults[attempt.slot];
+      if (request.method === 'POST' && url.pathname === '/api/v1/auth/teacher/session') {
+        const body = await json(request); const teacher = teachers.find((item) => item.username === body.username && item.password === body.password);
+        return teacher ? send(response, 200, { principal: { id: teacher.id, role: 'teacher' }, csrfToken: 'local-dev' }) : send(response, 401, responseError('INVALID_CREDENTIALS', 'Those login details did not match.'));
+      }
+      const actor = principal(request); if (!actor) return send(response, 401, responseError('SESSION_EXPIRED', 'Please sign in.'));
+      if (request.method === 'GET' && url.pathname === '/api/v1/games/place-value-factory/map' && actor.role === 'student') return send(response, 200, mapFor((await store()).attempts.filter((attempt) => attempt.studentId === actor.id)));
+      if (request.method === 'POST' && url.pathname === '/api/v1/games/place-value-factory/attempts' && actor.role === 'student') {
+        const body = await json(request); const command = startCommandFrom(body);
+        if (!command || !matchingKey(request, command)) return send(response, 422, responseError('INVALID_INPUT', 'A command ID, profile revision, tab ID, and matching Idempotency-Key are required.'));
+        const state = await store(); let attempt = state.attempts.find((item) => item.studentId === actor.id && !item.completed);
+        const requestedLevel = levelById(typeof body.levelId === 'string' ? body.levelId : 'level-1'); const completed = new Set(state.attempts.filter((item) => item.studentId === actor.id && item.completed).map((item) => item.levelId)); const highest = Math.max(0, ...LEVELS.filter((level) => completed.has(level.id)).map((level) => level.ordinal));
+        if (!requestedLevel || requestedLevel.ordinal > highest + 1) return send(response, 409, responseError('LEVEL_LOCKED', 'Complete the earlier level first.'));
+        if (command.profileRevision !== completed.size) return send(response, 409, responseError('REVISION_CONFLICT', 'Progress changed. Reloading your saved work.', completed.size));
+        if (attempt) return send(response, 200, snapshot(attempt));
+        const now = new Date(); const seed = 71 + requestedLevel.ordinal;
+        attempt = { id: randomUUID(), studentId: actor.id, levelId: requestedLevel.id, seed, slot: 0, activeOrder: generateLevelOrder(requestedLevel.id, seed, 0, 'easy'), responses: [], completed: false, createdAt: now.toISOString(), revision: 0, leaseEpoch: 1, writerTabId: command.tabId, leaseExpiresAt: new Date(now.getTime() + leaseDurationMs).toISOString(), receipts: [] };
+        state.attempts.push(attempt); await save(state); return send(response, 201, snapshot(attempt));
+      }
+      const match = url.pathname.match(/^\/api\/v1\/games\/place-value-factory\/attempts\/([^/]+)(?:\/orders\/([^/]+)\/responses|\/results)?$/);
+      if (match && actor.role === 'student') {
+        const state = await store(); const attempt = state.attempts.find((item) => item.id === match[1] && item.studentId === actor.id); if (!attempt) return send(response, 404, responseError('NOT_FOUND', 'Attempt not found.'));
+        if (request.method === 'GET' && url.pathname.endsWith('/results')) return attempt.completed ? send(response, 200, result(attempt)) : send(response, 409, responseError('NOT_COMPLETE', 'This attempt is not complete.'));
+        if (request.method === 'GET') return send(response, 200, snapshot(attempt));
+        if (request.method === 'POST' && match[2]) {
+          const body = await json(request); const command = commandFrom(body);
+          if (!command || !matchingKey(request, command)) return send(response, 422, responseError('INVALID_INPUT', 'A command and matching Idempotency-Key are required.'));
+          const payloadHash = hashPayload(body); const existing = receiptFor(attempt, actor, command.commandId, payloadHash);
+          if (existing === 'conflict') return send(response, 409, responseError('IDEMPOTENCY_CONFLICT', 'This command ID was used with a different request.'));
+          if (existing) return send(response, existing.status, existing.body);
+          if (command.expectedRevision !== attempt.revision) return send(response, 409, responseError('REVISION_CONFLICT', 'Progress changed. Reloading your saved work.', attempt.revision));
+          if (command.leaseEpoch !== attempt.leaseEpoch || (activeLease(attempt) && command.tabId !== attempt.writerTabId)) return send(response, 409, responseError('LEASE_LOST', 'Another tab is editing this attempt.'));
+          if (!activeLease(attempt)) { attempt.leaseEpoch += 1; attempt.writerTabId = command.tabId; }
+          attempt.leaseExpiresAt = new Date(Date.now() + leaseDurationMs).toISOString();
+          const order = orderFor(attempt); if (order.id !== match[2] || attempt.completed) return send(response, 409, responseError('ORDER_NOT_ACTIVE', 'That order is no longer active.'));
+          const validation = validateRepresentation(order, body.representationA, body.representationB ?? null);
+          attempt.responses.push({ order, representationA: body.representationA, representationB: body.representationB ?? null, validation, at: new Date().toISOString() });
+          if (validation.shipmentAccepted) { attempt.slot += 1; if (attempt.slot === 5) attempt.completed = true; else attempt.activeOrder = generateLevelOrder(attempt.levelId, attempt.seed, attempt.slot, nextDifficulty(attempt)); }
+          attempt.revision += 1;
+          const bodyOut = { commandId: command.commandId, committedAt: new Date().toISOString(), validation, snapshot: snapshot(attempt), ...(attempt.completed ? { result: result(attempt) } : {}) };
+          attempt.receipts.push({ actorId: actor.id, commandId: command.commandId, payloadHash, status: 200, body: bodyOut });
+          await save(state); return send(response, 200, bodyOut);
+        }
+      }
+      if (request.method === 'GET' && url.pathname === '/api/v1/teacher/classes/class-demo/games/place-value-factory/report' && actor.role === 'teacher') {
+        const state = await store(); const attempts = state.attempts.filter((item) => item.studentId === 'student-ava'); const responses = attempts.flatMap((item) => item.responses);
+        return send(response, 200, { classId: 'class-demo', students: [{ studentId: 'student-ava', alias: 'Ava', currentLevelId: attempts.some((item) => item.completed) ? 'level-2' : 'level-1', submittedN: responses.length, eventuallyCorrectN: responses.filter((item) => item.validation.shipmentAccepted).length, evidence: responses.map((item) => ({ target: item.order.target, vector: item.representationA, accepted: item.validation.shipmentAccepted })) }] });
+      }
+      return send(response, 404, responseError('NOT_FOUND', 'Route not found.'));
+    } catch { return send(response, 422, responseError('INVALID_INPUT', 'Request could not be processed.')); }
+  });
 }
-function orderFor(attempt: Attempt) { return attempt.activeOrder ?? generateLevelOrder(attempt.levelId, attempt.seed, attempt.slot, nextDifficulty(attempt)); }
-function snapshot(attempt: Attempt) { return { attemptId: attempt.id, status: attempt.completed ? 'completed' : 'active', shippedSlots: attempt.slot, activeOrder: attempt.completed ? null : orderFor(attempt) }; }
-function result(attempt: Attempt) { return { attemptId: attempt.id, completed: true, shipped: 5, eventuallyCorrect: 5, firstObjectiveCorrect: attempt.responses.filter((item: any) => item.validation.shipmentAccepted).length, efficiency: 100, mainStars: 2, evidence: attempt.responses }; }
-server.listen(port, () => console.log(`Place Value Factory API listening on http://localhost:${port}`));
+
+function hydrateAttempt(attempt: Partial<Attempt>): Attempt {
+  return { ...attempt, revision: attempt.revision ?? 0, leaseEpoch: attempt.leaseEpoch ?? 1, writerTabId: attempt.writerTabId ?? 'legacy-tab', leaseExpiresAt: attempt.leaseExpiresAt ?? new Date(0).toISOString(), receipts: attempt.receipts ?? [] } as Attempt;
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) createApiServer().listen(port, () => console.log(`Place Value Factory API listening on http://localhost:${port}`));
