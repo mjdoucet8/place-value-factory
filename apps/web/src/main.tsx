@@ -310,6 +310,38 @@ function App() {
       setNotice(`Could not ${action} — ${(error as Error).message}`);
     }
   };
+  const skipOrder = async () => {
+    const commandId = crypto.randomUUID();
+    setSaving(true);
+    try {
+      const data = await api(
+        `/games/place-value-factory/attempts/${attempt.attemptId}/orders/${attempt.activeOrder.id}/skip`,
+        {
+          method: "POST",
+          headers: { "x-session": session, "idempotency-key": commandId },
+          body: JSON.stringify({
+            commandId,
+            expectedRevision: attempt.revision,
+            leaseEpoch: attempt.leaseEpoch,
+            tabId,
+          }),
+        },
+      );
+      setAttempt(data.snapshot);
+      setQuantities([0, 0, 0, 0, 0, 0]);
+      setQuantitiesB([0, 0, 0, 0, 0, 0]);
+      setUndo(null);
+      setNotice(
+        "A replacement order is ready. It does not add mastery evidence.",
+      );
+    } catch (error) {
+      setNotice(
+        `Could not skip — ${(error as Error).message}. Skip unlocks after two saved attempts.`,
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
   if (screen === "login")
     return (
       <main className="login">
@@ -656,6 +688,9 @@ function App() {
         </button>
         <button className="ship" disabled={saving} onClick={ship}>
           {saving ? "Saving…" : "Ship order"}
+        </button>
+        <button className="secondary" disabled={saving} onClick={skipOrder}>
+          Skip after two saved tries
         </button>
         <button
           className="secondary"

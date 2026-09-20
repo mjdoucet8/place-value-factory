@@ -2,6 +2,26 @@
 
 Append-only after initial handoff. Corrections are new dated entries; never rewrite old outcomes. Claim template and workflow are in AGENTS.md.
 
+## 2026-09-20 | FE-04b | CLAIM | Frontend / Game UX
+
+Goal and scope: bind the controlled server-side skip/replacement action to an accessible student game control without duplicating eligibility or progression decisions in the browser.
+
+Owned paths: `apps/web/src/main.tsx`, `TASK_LOG.md`.
+
+Dependencies and contract version: contract v1.0; BE-03d skip command and attempt snapshot.
+
+Acceptance IDs: GAME-07, ORDER-05, MASTERY-02.
+
+## 2026-09-20 | FE-04b | HANDOFF | Frontend / Game UX
+
+Changes and artifacts: added a semantic “Skip after two saved tries” control. It sends the BE-03d idempotent command with the current revision and lease, leaves eligibility and replacement generation to the server, and clears local representations only after a replacement snapshot returns.
+
+Commands/manual checks and observed results: `npx prettier --write apps/web/src/main.tsx`, `npx tsc --noEmit`, `npm test` (41 tests), and `npm run build` passed.
+
+Evidence level: fictional API/UI integrated. Browser E2E, assistive-technology, and offline retry checks NOT RUN.
+
+Remaining risks or blockers: the display cannot pre-confirm skip eligibility without a server-owned field; the server rejection message is the authoritative feedback.
+
 ## 2026-09-20 | DOC-001 | HANDOFF | Product / Architecture
 
 Goal: create the Codex-ready Place Value Factory V1 implementation baseline from the supplied brief, four images and FrancoBot organizational reference.
