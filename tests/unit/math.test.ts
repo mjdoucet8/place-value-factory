@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import fixtures from '../fixtures/math_cases.json';
-import { DENOMINATIONS, adaptedDifficulty, alternateWitnessFor, assertValidOrder, difficultyFor, evidenceScore, generateLevelOrder, generateOrder, greedyMinimum, isIndependentFirst, summarizeMastery, updateScaffold, validateRepresentation, witnessFor } from '../../packages/game-engine/src/index.js';
+import { DENOMINATIONS, adaptedDifficulty, alternateWitnessFor, assertValidOrder, difficultyFor, evidenceScore, generateLevelOrder, generateOrder, greedyMinimum, isIndependentFirst, nextPracticeSkill, stageGate, summarizeMastery, updateScaffold, validateRepresentation, witnessFor } from '../../packages/game-engine/src/index.js';
 import { LEVELS } from '../../packages/config/src/index.js';
 import { dynamicProgrammingMinimum } from '../oracles/minimum-oracle.js';
 
@@ -96,5 +96,13 @@ describe('mastery and adaptation policy', () => {
     state = updateScaffold(state, 1, true);
     expect(state.remainingEasyOrders).toBe(0);
     expect(adaptedDifficulty(secure, state)).toBe('hard');
+  });
+
+  it('keeps stage gates separate from completed paths and selects a positive practice target', () => {
+    const secureOnes = Array.from({ length: 8 }, (_, index) => evidence(index));
+    expect(stageGate(1, secureOnes, new Date(at(10))).satisfied).toBe(false);
+    expect(nextPracticeSkill(['pv.ones', 'pv.tens'], secureOnes, new Date(at(10)))).toBe('pv.tens');
+    const allStageOne = ['pv.ones', 'pv.tens', 'pv.hundreds', 'pv.thousands', 'pv.tenThousands', 'pv.hundredThousands'].flatMap((skillId, skillIndex) => Array.from({ length: 8 }, (_, index) => evidence(index + skillIndex * 20, { skillId })));
+    expect(stageGate(1, allStageOne, new Date(at(200)))).toMatchObject({ satisfied: true, requiredSkillIds: expect.arrayContaining(['pv.ones', 'pv.hundredThousands']) });
   });
 });

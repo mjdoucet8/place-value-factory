@@ -148,6 +148,24 @@ Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (38 
 
 Evidence level: fictional API integrated; PostgreSQL runtime selection and progression/practice gates remain incomplete.
 
+## 2026-09-20 | GL-03c | CLAIM | Game Logic / Adaptive Learning
+
+Goal and scope: add pure stage-gate evaluation and deterministic next-practice skill selection based on persisted-style mastery evidence.
+
+Owned paths: `packages/config/`, `packages/game-engine/`, `tests/unit/`, `TASK_LOG.md`, `PROJECT_STATUS.md`.
+
+Dependencies and contract version: GL-03a evidence policy; contract v1.0 unchanged.
+
+Acceptance IDs: ADAPT-06, MAP-01 (gate logic portion), PROGRESS-01 (policy portion).
+
+## 2026-09-20 | GL-03c | HANDOFF | Game Logic / Adaptive Learning
+
+Changes and artifacts: added stage-specific secure-evidence gates and deterministic practice-target selection that prioritizes unknown, then lower-scoring prerequisites. Fixtures prove a completed-path-like evidence subset does not satisfy a stage gate and that all required secure skills do.
+
+Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (39 tests), and `npm run build` passed.
+
+Evidence level: logic verified. Server map/practice routes still need to consume these functions.
+
 ## 2026-09-20 | FE-04a | CLAIM | Frontend / Game UX
 
 Timestamp (UTC): 2026-09-20T15:29:49Z

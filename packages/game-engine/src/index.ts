@@ -1,5 +1,5 @@
 import { DENOMINATIONS, type Denomination, type OrderSpec, type Representation, type Validation } from '../../contracts/src/index.js';
-import { DIGIT_RANGES, LEVEL_ONE_SLOTS, levelById, type DifficultyBand } from '../../config/src/index.js';
+import { DIGIT_RANGES, LEVEL_ONE_SLOTS, STAGE_GATE_SKILLS, levelById, type DifficultyBand } from '../../config/src/index.js';
 
 export { DENOMINATIONS } from '../../contracts/src/index.js';
 export type { Denomination, OrderSpec, Representation, Validation } from '../../contracts/src/index.js';
@@ -246,4 +246,23 @@ export function updateScaffold(state: ScaffoldState, score: number, independentF
 
 export function adaptedDifficulty(mastery: MasterySummary, scaffold: ScaffoldState): DifficultyBand {
   return scaffold.remainingEasyOrders > 0 ? 'easy' : difficultyFor(mastery.status);
+}
+
+export function stageGate(stage: number, evidence: readonly EvidenceRecord[], now: Date = new Date()) {
+  const requiredSkillIds = STAGE_GATE_SKILLS[stage] ?? [];
+  const summaries = requiredSkillIds.map((skillId) => summarizeMastery(skillId, evidence, now));
+  return { requiredSkillIds, summaries, satisfied: requiredSkillIds.length > 0 && summaries.every((summary) => summary.status === 'secure') };
+}
+
+/** Select the lowest-scoring unsecure prerequisite, with unknown evidence first. */
+export function nextPracticeSkill(requiredSkillIds: readonly string[], evidence: readonly EvidenceRecord[], now: Date = new Date()): string | null {
+  const candidates = requiredSkillIds.map((skillId) => summarizeMastery(skillId, evidence, now)).filter((summary) => summary.status !== 'secure');
+  if (candidates.length === 0) return null;
+  candidates.sort((left, right) => {
+    const leftUnknown = left.score === null ? 0 : 1; const rightUnknown = right.score === null ? 0 : 1;
+    if (leftUnknown !== rightUnknown) return leftUnknown - rightUnknown;
+    if ((left.score ?? 0) !== (right.score ?? 0)) return (left.score ?? 0) - (right.score ?? 0);
+    return left.skillId.localeCompare(right.skillId);
+  });
+  return candidates[0].skillId;
 }

@@ -16,6 +16,15 @@ export const DIGIT_RANGES: Record<DifficultyBand, readonly [number, number]> = {
   easy: [1, 3], medium: [4, 6], hard: [7, 9],
 };
 
+export const STAGE_GATE_SKILLS: Readonly<Record<number, readonly string[]>> = {
+  1: ['pv.ones', 'pv.tens', 'pv.hundreds', 'pv.thousands', 'pv.tenThousands', 'pv.hundredThousands'],
+  2: ['standard.decompose', 'standard.zero'],
+  3: ['rename.100000_10000', 'rename.10000_1000', 'rename.1000_100', 'rename.100_10', 'rename.10_1', 'rename.multi'],
+  4: ['compose.allowed'],
+  5: ['compose.forbidden'],
+  6: ['reason.minimum', 'reason.exactTypes', 'reason.multiple'],
+};
+
 export type LevelMode = 'standard' | 'single' | 'restricted' | 'forbidden' | 'minimum' | 'exactTypes' | 'twoWays' | 'repack';
 export type LevelDefinition = { id: string; ordinal: number; title: string; zone: string; stage: number; mode: LevelMode; primarySkill: string; description: string };
 
