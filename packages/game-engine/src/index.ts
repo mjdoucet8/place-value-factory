@@ -157,3 +157,93 @@ export function alternateWitnessFor(order: OrderSpec): Representation | null {
   if (order.distinctRepresentations !== 2) return null;
   return [0, 0, 0, 0, 10, 0];
 }
+
+export type HintStep = 'none' | 'H1' | 'H2' | 'H3';
+export type ResolutionFacts = {
+  firstObjectiveCorrect: boolean;
+  wrongSubmissions: number;
+  highestHint: HintStep;
+  skipped: boolean;
+};
+export type EvidenceRecord = {
+  skillId: string;
+  score: number;
+  independentFirst: boolean;
+  attemptId: string;
+  signature: string;
+  committedAt: string;
+  eligible?: boolean;
+};
+export type MasteryStatus = 'unknown' | 'emerging' | 'developing' | 'secure';
+export type MasterySummary = {
+  skillId: string;
+  score: number | null;
+  sampleN: number;
+  independentFirstN: number;
+  distinctAttemptN: number;
+  status: MasteryStatus;
+  needsRefresh: boolean;
+  practiceSuggested: boolean;
+  lastEvidenceAt: string | null;
+};
+export type ScaffoldState = { lowScoreStreak: number; remainingEasyOrders: number; independentSuccesses: number };
+
+/** Policy precedence is H3, retry, H1/H2, then an independent first success. */
+export function evidenceScore(facts: ResolutionFacts): number {
+  if (facts.skipped) return 0;
+  if (facts.highestHint === 'H3') return 0.25;
+  if (facts.wrongSubmissions > 0) return 0.60;
+  if (!facts.firstObjectiveCorrect) return 0;
+  if (facts.highestHint === 'H1' || facts.highestHint === 'H2') return 0.80;
+  return 1;
+}
+
+export function isIndependentFirst(facts: ResolutionFacts): boolean {
+  return !facts.skipped && facts.firstObjectiveCorrect && facts.wrongSubmissions === 0 && facts.highestHint === 'none';
+}
+
+/** Deduplicate matching order signatures inside a rolling 24-hour evidence window. */
+export function eligibleEvidence(records: readonly EvidenceRecord[]): EvidenceRecord[] {
+  const latestFirst = [...records].filter((record) => record.eligible !== false).sort((a, b) => Date.parse(b.committedAt) - Date.parse(a.committedAt));
+  const seen = new Map<string, number>();
+  return latestFirst.filter((record) => {
+    const committedAt = Date.parse(record.committedAt);
+    const prior = seen.get(record.signature);
+    if (prior !== undefined && prior - committedAt < 24 * 60 * 60 * 1000) return false;
+    seen.set(record.signature, committedAt);
+    return true;
+  }).slice(0, 12);
+}
+
+export function summarizeMastery(skillId: string, records: readonly EvidenceRecord[], now: Date = new Date()): MasterySummary {
+  const evidence = eligibleEvidence(records.filter((record) => record.skillId === skillId));
+  const lastEvidenceAt = evidence[0]?.committedAt ?? null;
+  if (evidence.length === 0) return { skillId, score: null, sampleN: 0, independentFirstN: 0, distinctAttemptN: 0, status: 'unknown', needsRefresh: false, practiceSuggested: false, lastEvidenceAt };
+  const weighted = evidence.reduce((total, record, index) => total + record.score * 0.9 ** index, 0);
+  const weights = evidence.reduce((total, _, index) => total + 0.9 ** index, 0);
+  const score = weighted / weights;
+  const independentFirstN = evidence.filter((record) => record.independentFirst).length;
+  const distinctAttemptN = new Set(evidence.map((record) => record.attemptId)).size;
+  const newestFourIndependent = evidence.slice(0, 4).filter((record) => record.independentFirst).length;
+  const secure = score >= 0.85 && evidence.length >= 8 && independentFirstN >= 6 && distinctAttemptN >= 2 && newestFourIndependent >= 3;
+  const status: MasteryStatus = secure ? 'secure' : score < 0.5 ? 'emerging' : 'developing';
+  const needsRefresh = Date.parse(lastEvidenceAt) <= now.getTime() - 14 * 24 * 60 * 60 * 1000;
+  return { skillId, score, sampleN: evidence.length, independentFirstN, distinctAttemptN, status, needsRefresh, practiceSuggested: status !== 'secure' || needsRefresh, lastEvidenceAt };
+}
+
+export function difficultyFor(status: MasteryStatus): DifficultyBand {
+  return status === 'secure' ? 'hard' : status === 'developing' ? 'medium' : 'easy';
+}
+
+/** Update the per-skill scaffold only when that skill receives resolved evidence. */
+export function updateScaffold(state: ScaffoldState, score: number, independentFirst: boolean): ScaffoldState {
+  const lowScoreStreak = score <= 0.60 ? state.lowScoreStreak + 1 : 0;
+  const independentSuccesses = state.remainingEasyOrders > 0 && independentFirst ? state.independentSuccesses + 1 : 0;
+  if (independentSuccesses >= 2) return { lowScoreStreak: 0, remainingEasyOrders: 0, independentSuccesses: 0 };
+  if (lowScoreStreak >= 2) return { lowScoreStreak, remainingEasyOrders: 3, independentSuccesses: 0 };
+  return { lowScoreStreak, remainingEasyOrders: Math.max(0, state.remainingEasyOrders - 1), independentSuccesses };
+}
+
+export function adaptedDifficulty(mastery: MasterySummary, scaffold: ScaffoldState): DifficultyBand {
+  return scaffold.remainingEasyOrders > 0 ? 'easy' : difficultyFor(mastery.status);
+}

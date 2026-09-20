@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import fixtures from '../fixtures/math_cases.json';
-import { DENOMINATIONS, alternateWitnessFor, assertValidOrder, generateLevelOrder, generateOrder, greedyMinimum, validateRepresentation, witnessFor } from '../../packages/game-engine/src/index.js';
+import { DENOMINATIONS, adaptedDifficulty, alternateWitnessFor, assertValidOrder, difficultyFor, evidenceScore, generateLevelOrder, generateOrder, greedyMinimum, isIndependentFirst, summarizeMastery, updateScaffold, validateRepresentation, witnessFor } from '../../packages/game-engine/src/index.js';
 import { LEVELS } from '../../packages/config/src/index.js';
 import { dynamicProgrammingMinimum } from '../oracles/minimum-oracle.js';
 
@@ -53,5 +53,48 @@ describe('minimum oracle', () => {
       const order = generateLevelOrder(level.id, 71, slot);
       expect(validateRepresentation(order, witnessFor(order), alternateWitnessFor(order))).toMatchObject({ shipmentAccepted: true });
     }
+  });
+});
+
+describe('mastery and adaptation policy', () => {
+  const at = (day: number) => new Date(Date.UTC(2026, 0, day)).toISOString();
+  const evidence = (index: number, overrides: Record<string, unknown> = {}) => ({ skillId: 'pv.ones', score: 1, independentFirst: true, attemptId: `attempt-${index % 2}`, signature: `order-${index}`, committedAt: at(index + 1), ...overrides });
+
+  it('uses the documented evidence-score precedence and excludes time', () => {
+    expect(evidenceScore({ firstObjectiveCorrect: true, wrongSubmissions: 0, highestHint: 'none', skipped: false })).toBe(1);
+    expect(evidenceScore({ firstObjectiveCorrect: true, wrongSubmissions: 0, highestHint: 'H2', skipped: false })).toBe(0.8);
+    expect(evidenceScore({ firstObjectiveCorrect: true, wrongSubmissions: 2, highestHint: 'H2', skipped: false })).toBe(0.6);
+    expect(evidenceScore({ firstObjectiveCorrect: true, wrongSubmissions: 0, highestHint: 'H3', skipped: false })).toBe(0.25);
+    expect(evidenceScore({ firstObjectiveCorrect: true, wrongSubmissions: 0, highestHint: 'none', skipped: true })).toBe(0);
+    expect(isIndependentFirst({ firstObjectiveCorrect: true, wrongSubmissions: 0, highestHint: 'none', skipped: false })).toBe(true);
+  });
+
+  it('requires a sufficient, diverse independent sample for secure status', () => {
+    expect(summarizeMastery('pv.ones', Array.from({ length: 8 }, (_, index) => evidence(index)), new Date(at(10)))).toMatchObject({ status: 'secure', sampleN: 8, independentFirstN: 8, distinctAttemptN: 2 });
+    expect(summarizeMastery('pv.ones', Array.from({ length: 7 }, (_, index) => evidence(index)), new Date(at(10))).status).toBe('developing');
+    expect(summarizeMastery('pv.ones', Array.from({ length: 8 }, (_, index) => evidence(index, { attemptId: 'same-attempt' })), new Date(at(10))).status).toBe('developing');
+  });
+
+  it('deduplicates repeated signatures within 24 hours and marks absence as refresh, not score decay', () => {
+    const repeated = [evidence(1), evidence(2, { signature: 'order-1', committedAt: new Date(Date.UTC(2026, 0, 1, 12)).toISOString() })];
+    expect(summarizeMastery('pv.ones', repeated, new Date(at(3))).sampleN).toBe(1);
+    const summary = summarizeMastery('pv.ones', Array.from({ length: 8 }, (_, index) => evidence(index)), new Date(Date.UTC(2026, 1, 1)));
+    expect(summary).toMatchObject({ status: 'secure', needsRefresh: true });
+  });
+
+  it('selects bands from mastery and applies only a bounded per-skill scaffold', () => {
+    expect(difficultyFor('unknown')).toBe('easy');
+    expect(difficultyFor('developing')).toBe('medium');
+    expect(difficultyFor('secure')).toBe('hard');
+    let state = { lowScoreStreak: 0, remainingEasyOrders: 0, independentSuccesses: 0 };
+    state = updateScaffold(state, 0.6, false);
+    state = updateScaffold(state, 0.6, false);
+    expect(state.remainingEasyOrders).toBe(3);
+    const secure = summarizeMastery('pv.ones', Array.from({ length: 8 }, (_, index) => evidence(index)), new Date(at(10)));
+    expect(adaptedDifficulty(secure, state)).toBe('easy');
+    state = updateScaffold(state, 1, true);
+    state = updateScaffold(state, 1, true);
+    expect(state.remainingEasyOrders).toBe(0);
+    expect(adaptedDifficulty(secure, state)).toBe('hard');
   });
 });

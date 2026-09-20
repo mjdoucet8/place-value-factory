@@ -79,3 +79,29 @@ Evidence level: narrow fictional-data flow integrated.
 Remaining risks or blockers: JSON read/write is not transactional or multi-process safe; PostgreSQL migrations, database rollback tests, lease heartbeat/takeover routes, persistent browser outbox/retry, CSRF/session hardening, and browser E2E remain NOT RUN. This does not satisfy production persistence requirements.
 
 Next owner / reviewer: BE-02 PostgreSQL persistence and QA recovery review; then FE-02 durable outbox/reconciliation.
+
+## 2026-09-20 | GL-03a | CLAIM | Game Logic / Adaptive Learning
+
+Timestamp (UTC): 2026-09-20T15:16:18Z
+
+Goal and scope: implement pure, deterministic evidence scoring, mastery summaries, adaptive difficulty selection, and bounded scaffolding rules without persistence or UI changes.
+
+Owned paths: `packages/game-engine/src/index.ts`, `tests/unit/`, `TASK_LOG.md`, `PROJECT_STATUS.md`.
+
+Dependencies and contract version: immutable level/order configuration and contract v1.0; no contract-field change proposed.
+
+Acceptance IDs: ADAPT-01..04, ADAPT-06, REWARD-01, EFF-02 (logic portion).
+
+Expected outputs: policy fixtures proving timing parity, sample/diversity gates, score precedence, difficulty selection, and scaffolding exit behavior.
+
+## 2026-09-20 | GL-03a | HANDOFF | Game Logic / Adaptive Learning
+
+Changes and artifacts: added pure evidence score precedence, independent-first classification, rolling 24-hour signature deduplication, weighted 12-record mastery summaries, secure sample/independence/diversity gates, staleness as a scheduling flag, difficulty selection, and three-order per-skill scaffolding with a two-success exit.
+
+Commands/manual checks and observed results: `npx tsc --noEmit` passed; `npm test` passed 37 tests (35 unit and 2 integration).
+
+Evidence level: logic verified.
+
+Remaining risks or blockers: evidence is not yet persisted or applied to issued orders, progression gates and practice scheduling are not wired into the server/UI, and teacher reports do not yet read these summaries.
+
+Next owner / reviewer: BE-03 persists evidence atomically; GL-03b integrates adaptation and gate selection into issued orders.

@@ -40,3 +40,9 @@ All 30 baseline level definitions now live in immutable config and have a determ
 The fictional-data API now requires matching idempotency keys for starts and shipment responses, stores response receipts, validates optimistic revisions, and enforces a bounded single-writer lease. The game screen sends these fields and clearly disables editing while a shipment is being saved. Isolated integration tests verify exact duplicate replay, altered duplicate rejection, stale revision rejection, and a second active tab rejection.
 
 This is still a narrow development adapter, not PostgreSQL persistence: its JSON file has no cross-process transaction or rollback guarantee. Database migrations, durable browser outbox/reconciliation, lease heartbeat/takeover, CSRF/session hardening, browser E2E, and classroom evidence remain NOT RUN.
+
+## 2026-09-20 mastery-policy checkpoint
+
+Pure engine functions now calculate evidence scores, rolling weighted mastery, secure gates, difficulty bands, refresh flags, and reversible scaffolding without using speed or accessibility settings. Unit fixtures cover the score precedence, minimum secure sample, diversity, signature deduplication, staleness, and scaffold recovery.
+
+The server does not yet persist or use this policy when issuing orders, completing attempts, unlocking gates, scheduling practice, or reporting to teachers. This is logic verified only.
