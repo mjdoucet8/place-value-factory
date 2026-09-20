@@ -131,3 +131,27 @@ Evidence level: schema/repository implementation verified by type-check only; da
 Remaining risks or blockers: the active API remains on its fictional JSON adapter until the PostgreSQL repository is fully selected at runtime and exercised against a real database. No migration, rollback, serialization-conflict, or cross-process test evidence exists yet.
 
 Next owner / reviewer: provision a disposable PostgreSQL database, run/apply the migration, switch API persistence behind the repository boundary, and run DATA-01..04 integration tests.
+
+## 2026-09-20 | FE-04a | CLAIM | Frontend / Game UX
+
+Timestamp (UTC): 2026-09-20T15:29:49Z
+
+Goal and scope: make existing generated restricted, minimum, two-way, and renaming orders playable through semantic controls, including unavailable-machine states and non-drag exchange.
+
+Owned paths: `apps/web/src/main.tsx`, `apps/web/src/styles.css`, `TASK_LOG.md`, `PROJECT_STATUS.md`.
+
+Dependencies and contract version: contract v1.0; existing order flags and validator.
+
+Acceptance IDs: GAME-03, GAME-05, GAME-07, DESIGN-02, DESIGN-03 (partial), ORDER-05 UI binding.
+
+Expected outputs: dynamic objective/restriction copy, disabled controls, accessible exchange, and a second editable representation for two-way orders.
+
+## 2026-09-20 | FE-04a | HANDOFF | Frontend / Game UX
+
+Changes and artifacts: UI objective text now follows the issued order flags; unavailable machines are visibly and semantically disabled; students can exchange one crate for ten adjacent smaller crates through a labelled button; and two-way orders submit two independently editable vectors.
+
+Commands/manual checks and observed results: `npx tsc --noEmit`, `npm run build`, and `npm test` passed (37 tests).
+
+Evidence level: integrated with the fictional API flags; browser E2E and assistive-technology checks NOT RUN.
+
+Remaining risks or blockers: repack source decompositions, undo for Representation B, hint/pause dialogs, keyboard/device verification, and all browser fault recovery remain incomplete.
