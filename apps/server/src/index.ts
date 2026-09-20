@@ -14,7 +14,7 @@ type Order = ReturnType<typeof generateLevelOrder>;
 type ResponseRecord = { order: Order; representationA: unknown; representationB: unknown; validation: ReturnType<typeof validateRepresentation>; at: string };
 type Receipt = { actorId: string; commandId: string; payloadHash: string; status: number; body: unknown };
 type Attempt = {
-  id: string; studentId: string; levelId: string; seed: number; slot: number; activeOrder?: Order;
+  id: string; studentId: string; levelId: string; seed: number; slot: number; replacementIndex?: number; activeOrder?: Order;
   responses: ResponseRecord[]; completed: boolean; createdAt: string; revision: number; leaseEpoch: number;
   writerTabId: string; leaseExpiresAt: string; receipts: Receipt[]; evidence: EvidenceRecord[]; status?: 'active' | 'paused' | 'completed'; kind?: 'path' | 'practice'; practiceSkill?: string;
 };
@@ -126,7 +126,7 @@ export function createApiServer(dataPath = defaultDataPath): Server {
         if (attempt) return send(response, 200, snapshot(attempt));
         const now = new Date(); const seed = 71 + requestedLevel.ordinal;
         const gateSkills = requestedLevel.stage > 1 ? STAGE_GATE_SKILLS[requestedLevel.stage - 1] : STAGE_GATE_SKILLS[1]; const practiceSkill = isPractice ? nextPracticeSkill(gateSkills, evidence) ?? gateSkills[0] : undefined;
-        attempt = { id: randomUUID(), studentId: actor.id, levelId: requestedLevel.id, seed, slot: 0, activeOrder: isPractice && practiceSkill ? generatePracticeOrder(practiceSkill, seed, 0, 'easy') : generateLevelOrder(requestedLevel.id, seed, 0, 'easy'), responses: [], completed: false, status: 'active', createdAt: now.toISOString(), revision: 0, leaseEpoch: 1, writerTabId: command.tabId, leaseExpiresAt: new Date(now.getTime() + leaseDurationMs).toISOString(), receipts: [], evidence: [], kind: isPractice ? 'practice' : 'path', practiceSkill };
+        attempt = { id: randomUUID(), studentId: actor.id, levelId: requestedLevel.id, seed, slot: 0, replacementIndex: 0, activeOrder: isPractice && practiceSkill ? generatePracticeOrder(practiceSkill, seed, 0, 'easy') : generateLevelOrder(requestedLevel.id, seed, 0, 'easy'), responses: [], completed: false, status: 'active', createdAt: now.toISOString(), revision: 0, leaseEpoch: 1, writerTabId: command.tabId, leaseExpiresAt: new Date(now.getTime() + leaseDurationMs).toISOString(), receipts: [], evidence: [], kind: isPractice ? 'practice' : 'path', practiceSkill };
         state.attempts.push(attempt); await save(state); return send(response, 201, snapshot(attempt));
       }
       const stateChange = url.pathname.match(/^\/api\/v1\/games\/place-value-factory\/attempts\/([^/]+)\/(pause|resume)$/);
@@ -154,6 +154,17 @@ export function createApiServer(dataPath = defaultDataPath): Server {
         const payloadHash = hashPayload(body); const prior = receiptFor(attempt, actor, command.commandId, payloadHash); if (prior === 'conflict') return send(response, 409, responseError('IDEMPOTENCY_CONFLICT', 'This command ID was used with a different request.')); if (prior) return send(response, prior.status, prior.body);
         if (command.expectedRevision !== attempt.revision) return send(response, 409, responseError('REVISION_CONFLICT', 'Progress changed. Reloading your saved work.', attempt.revision));
         attempt.leaseEpoch += 1; attempt.writerTabId = command.tabId; attempt.leaseExpiresAt = new Date(Date.now() + leaseDurationMs).toISOString(); attempt.revision += 1;
+        const bodyOut = { commandId: command.commandId, snapshot: snapshot(attempt) }; attempt.receipts.push({ actorId: actor.id, commandId: command.commandId, payloadHash, status: 200, body: bodyOut }); await save(state); return send(response, 200, bodyOut);
+      }
+      const skip = url.pathname.match(/^\/api\/v1\/games\/place-value-factory\/attempts\/([^/]+)\/orders\/([^/]+)\/skip$/);
+      if (skip && request.method === 'POST' && actor.role === 'student') {
+        const body = await json(request); const command = commandFrom(body); if (!command || !matchingKey(request, command)) return send(response, 422, responseError('INVALID_INPUT', 'A command and matching Idempotency-Key are required.'));
+        const state = await store(); const attempt = state.attempts.find((item) => item.id === skip[1] && item.studentId === actor.id); if (!attempt || attempt.completed || attempt.status === 'paused') return send(response, 409, responseError('ORDER_NOT_ACTIVE', 'That order is not active.'));
+        const payloadHash = hashPayload(body); const prior = receiptFor(attempt, actor, command.commandId, payloadHash); if (prior === 'conflict') return send(response, 409, responseError('IDEMPOTENCY_CONFLICT', 'This command ID was used with a different request.')); if (prior) return send(response, prior.status, prior.body);
+        if (command.leaseEpoch !== attempt.leaseEpoch || attempt.writerTabId !== command.tabId) return send(response, 409, responseError('LEASE_LOST', 'Another tab is editing this attempt.')); if (command.expectedRevision !== attempt.revision) return send(response, 409, responseError('REVISION_CONFLICT', 'Progress changed. Reloading your saved work.', attempt.revision));
+        const order = orderFor(attempt); const wrongN = attempt.responses.filter((record) => record.order.id === order.id && !record.validation.objectiveMet).length; if (order.id !== skip[2] || wrongN < 2) return send(response, 409, responseError('ORDER_NOT_ACTIVE', 'Try two saved adjustments before skipping.'));
+        attempt.evidence.push({ skillId: order.primarySkill ?? 'unknown', score: 0, independentFirst: false, attemptId: attempt.id, signature: `${order.target}:${order.allowed.join(',')}:${order.mode ?? ''}`, committedAt: new Date().toISOString() });
+        attempt.replacementIndex = (attempt.replacementIndex ?? 0) + 1; const replacementSeed = attempt.seed + attempt.replacementIndex * 997; attempt.activeOrder = attempt.kind === 'practice' && attempt.practiceSkill ? generatePracticeOrder(attempt.practiceSkill, replacementSeed, attempt.slot, 'easy') : generateLevelOrder(attempt.levelId, replacementSeed, attempt.slot, 'easy'); attempt.revision += 1;
         const bodyOut = { commandId: command.commandId, snapshot: snapshot(attempt) }; attempt.receipts.push({ actorId: actor.id, commandId: command.commandId, payloadHash, status: 200, body: bodyOut }); await save(state); return send(response, 200, bodyOut);
       }
       const match = url.pathname.match(/^\/api\/v1\/games\/place-value-factory\/attempts\/([^/]+)(?:\/orders\/([^/]+)\/responses|\/results)?$/);
