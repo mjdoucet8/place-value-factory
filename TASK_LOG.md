@@ -260,6 +260,14 @@ Evidence level: fictional API implementation verified by existing suite; dedicat
 
 The preceding skip/replacement entry was logged before final source verification. The route implementation was not present in the committed tree and must be reimplemented with dedicated integration coverage. No skip/replacement feature is claimed by commit `6a8c8c0`.
 
+## 2026-09-20 | BE-03d | HANDOFF | Skip and replacement orders
+
+Changes and artifacts: reimplemented the skip route and added integration coverage for premature rejection, two saved misses, zero-evidence skip, same-slot replacement, and no fabricated shipment progress.
+
+Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (41 tests), and `npm run build` passed.
+
+Evidence level: fictional API integrated. Student Skip UI and browser E2E remain incomplete.
+
 ## 2026-09-20 | FE-04a | CLAIM | Frontend / Game UX
 
 Timestamp (UTC): 2026-09-20T15:29:49Z

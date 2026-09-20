@@ -67,4 +67,20 @@ describe('fictional-data command safety', () => {
     const oldWriter = await request(`/games/place-value-factory/attempts/${start.body.attemptId}/orders/${start.body.activeOrder.id}/responses`, { commandId: 'old-writer', expectedRevision: 0, leaseEpoch: 1, tabId: 'tab-a', representationA: canonical(start.body.activeOrder.target), representationB: null }, { ...studentHeaders, 'idempotency-key': 'old-writer' });
     expect(oldWriter.body.error.code).toBe('LEASE_LOST');
   });
+
+  it('requires two saved misses before replacing a skipped slot', async () => {
+    const start = await request('/games/place-value-factory/attempts', { commandId: 'start-skip', profileRevision: 0, tabId: 'tab-a', levelId: 'level-1' }, { ...studentHeaders, 'idempotency-key': 'start-skip' });
+    const skipPath = `/games/place-value-factory/attempts/${start.body.attemptId}/orders/${start.body.activeOrder.id}/skip`;
+    const skip = async (commandId: string, revision: number) => request(skipPath, { commandId, expectedRevision: revision, leaseEpoch: 1, tabId: 'tab-a' }, { ...studentHeaders, 'idempotency-key': commandId });
+    expect((await skip('skip-early', 0)).status).toBe(409);
+    let snapshot = start.body;
+    for (const commandId of ['wrong-1', 'wrong-2']) {
+      const response = await request(`/games/place-value-factory/attempts/${snapshot.attemptId}/orders/${snapshot.activeOrder.id}/responses`, { commandId, expectedRevision: snapshot.revision, leaseEpoch: snapshot.leaseEpoch, tabId: 'tab-a', representationA: [0, 0, 0, 0, 0, 0], representationB: null }, { ...studentHeaders, 'idempotency-key': commandId });
+      snapshot = response.body.snapshot;
+    }
+    const replacement = await skip('skip-ready', snapshot.revision);
+    expect(replacement.status).toBe(200);
+    expect(replacement.body.snapshot).toMatchObject({ shippedSlots: 0, revision: 3 });
+    expect(replacement.body.snapshot.activeOrder.id).not.toBe(start.body.activeOrder.id);
+  });
 });
