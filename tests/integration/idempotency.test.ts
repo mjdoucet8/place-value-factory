@@ -59,4 +59,12 @@ describe('fictional-data command safety', () => {
     expect((await request(responsePath, { ...command, commandId: 'stale-1' }, { ...studentHeaders, 'idempotency-key': 'stale-1' })).body.error.code).toBe('REVISION_CONFLICT');
     expect((await request(responsePath, { ...command, commandId: 'writer-2', expectedRevision: 1, tabId: 'tab-b' }, { ...studentHeaders, 'idempotency-key': 'writer-2' })).body.error.code).toBe('LEASE_LOST');
   });
+
+  it('takes over a lease explicitly and rejects the old epoch', async () => {
+    const start = await request('/games/place-value-factory/attempts', { commandId: 'start-3', profileRevision: 0, tabId: 'tab-a', levelId: 'level-1' }, { ...studentHeaders, 'idempotency-key': 'start-3' });
+    const takeover = await request(`/games/place-value-factory/attempts/${start.body.attemptId}/lease/takeover`, { commandId: 'takeover-1', expectedRevision: 0, leaseEpoch: 1, tabId: 'tab-b' }, { ...studentHeaders, 'idempotency-key': 'takeover-1' });
+    expect(takeover.body.snapshot).toMatchObject({ writerTabId: 'tab-b', leaseEpoch: 2, revision: 1 });
+    const oldWriter = await request(`/games/place-value-factory/attempts/${start.body.attemptId}/orders/${start.body.activeOrder.id}/responses`, { commandId: 'old-writer', expectedRevision: 0, leaseEpoch: 1, tabId: 'tab-a', representationA: canonical(start.body.activeOrder.target), representationB: null }, { ...studentHeaders, 'idempotency-key': 'old-writer' });
+    expect(oldWriter.body.error.code).toBe('LEASE_LOST');
+  });
 });

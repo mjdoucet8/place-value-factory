@@ -216,6 +216,14 @@ Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (39 
 
 Evidence level: fictional API/UI integrated; multi-tab browser E2E NOT RUN.
 
+## 2026-09-20 | BE-02d | UPDATE | Lease takeover
+
+Changes and artifacts: added an explicit idempotent lease-takeover route. The new writer receives a fresh epoch and revision; old-epoch response commands are rejected as `LEASE_LOST`. Added integration coverage for takeover and stale writer rejection.
+
+Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (40 tests), and `npm run build` passed.
+
+Evidence level: fictional API integration verified; takeover UI and browser two-tab E2E NOT RUN.
+
 ## 2026-09-20 | FE-04a | CLAIM | Frontend / Game UX
 
 Timestamp (UTC): 2026-09-20T15:29:49Z
