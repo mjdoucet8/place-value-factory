@@ -174,6 +174,16 @@ Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (39 
 
 Evidence level: fictional API integrated. Practice-attempt route/UI remains incomplete.
 
+## 2026-09-20 | BE-03 / FE-03 | HANDOFF | Backend / Data + Frontend / Game UX
+
+Changes and artifacts: added the student progress API, returning per-skill mastery summaries, completed levels, and the deterministic next practice skill. The map fetches and displays that recommendation alongside mastery-gated level availability.
+
+Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (39 tests), and `npm run build` passed.
+
+Evidence level: fictional API/UI integrated.
+
+Remaining risks or blockers: the recommendation does not yet start a dedicated practice attempt, and PostgreSQL is not the active runtime store.
+
 ## 2026-09-20 | FE-04a | CLAIM | Frontend / Game UX
 
 Timestamp (UTC): 2026-09-20T15:29:49Z
