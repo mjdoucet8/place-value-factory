@@ -200,6 +200,14 @@ Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (39 
 
 Evidence level: build-verified client recovery foundation; browser refresh/drop-reply E2E NOT RUN.
 
+## 2026-09-20 | FE-02c | UPDATE | Pending-command reconciliation
+
+Changes and artifacts: matching restored orders now replay one stored pending shipment with its original command ID, revision, lease epoch, tab ID, vectors, and idempotency key. A successful receipt replay replaces the local snapshot; an unavailable connection leaves the pending payload intact.
+
+Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (39 tests), and `npm run build` passed.
+
+Evidence level: build-verified; browser drop-reply E2E NOT RUN.
+
 ## 2026-09-20 | FE-04a | CLAIM | Frontend / Game UX
 
 Timestamp (UTC): 2026-09-20T15:29:49Z
