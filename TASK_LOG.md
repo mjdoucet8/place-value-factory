@@ -208,6 +208,14 @@ Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (39 
 
 Evidence level: build-verified; browser drop-reply E2E NOT RUN.
 
+## 2026-09-20 | BE-02c / FE-02d | UPDATE | Lease heartbeat
+
+Changes and artifacts: added idempotent lease-heartbeat endpoint and active-tab heartbeat scheduling. Heartbeats renew the writer expiry without incrementing educational revision; stale revision, epoch, and tab ownership remain rejected.
+
+Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (39 tests), and `npm run build` passed.
+
+Evidence level: fictional API/UI integrated; multi-tab browser E2E NOT RUN.
+
 ## 2026-09-20 | FE-04a | CLAIM | Frontend / Game UX
 
 Timestamp (UTC): 2026-09-20T15:29:49Z

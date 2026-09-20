@@ -129,6 +129,15 @@ export function createApiServer(dataPath = defaultDataPath): Server {
         attempt = { id: randomUUID(), studentId: actor.id, levelId: requestedLevel.id, seed, slot: 0, activeOrder: isPractice && practiceSkill ? generatePracticeOrder(practiceSkill, seed, 0, 'easy') : generateLevelOrder(requestedLevel.id, seed, 0, 'easy'), responses: [], completed: false, createdAt: now.toISOString(), revision: 0, leaseEpoch: 1, writerTabId: command.tabId, leaseExpiresAt: new Date(now.getTime() + leaseDurationMs).toISOString(), receipts: [], evidence: [], kind: isPractice ? 'practice' : 'path', practiceSkill };
         state.attempts.push(attempt); await save(state); return send(response, 201, snapshot(attempt));
       }
+      const heartbeat = url.pathname.match(/^\/api\/v1\/games\/place-value-factory\/attempts\/([^/]+)\/lease\/heartbeat$/);
+      if (heartbeat && request.method === 'POST' && actor.role === 'student') {
+        const body = await json(request); const command = commandFrom(body); if (!command || !matchingKey(request, command)) return send(response, 422, responseError('INVALID_INPUT', 'A command and matching Idempotency-Key are required.'));
+        const state = await store(); const attempt = state.attempts.find((item) => item.id === heartbeat[1] && item.studentId === actor.id); if (!attempt) return send(response, 404, responseError('NOT_FOUND', 'Attempt not found.'));
+        const payloadHash = hashPayload(body); const prior = receiptFor(attempt, actor, command.commandId, payloadHash); if (prior === 'conflict') return send(response, 409, responseError('IDEMPOTENCY_CONFLICT', 'This command ID was used with a different request.')); if (prior) return send(response, prior.status, prior.body);
+        if (command.expectedRevision !== attempt.revision) return send(response, 409, responseError('REVISION_CONFLICT', 'Progress changed. Reloading your saved work.', attempt.revision));
+        if (command.leaseEpoch !== attempt.leaseEpoch || attempt.writerTabId !== command.tabId) return send(response, 409, responseError('LEASE_LOST', 'Another tab is editing this attempt.'));
+        attempt.leaseExpiresAt = new Date(Date.now() + leaseDurationMs).toISOString(); const bodyOut = { commandId: command.commandId, leaseEpoch: attempt.leaseEpoch, leaseExpiresAt: attempt.leaseExpiresAt }; attempt.receipts.push({ actorId: actor.id, commandId: command.commandId, payloadHash, status: 200, body: bodyOut }); await save(state); return send(response, 200, bodyOut);
+      }
       const match = url.pathname.match(/^\/api\/v1\/games\/place-value-factory\/attempts\/([^/]+)(?:\/orders\/([^/]+)\/responses|\/results)?$/);
       if (match && actor.role === 'student') {
         const state = await store(); const attempt = state.attempts.find((item) => item.id === match[1] && item.studentId === actor.id); if (!attempt) return send(response, 404, responseError('NOT_FOUND', 'Attempt not found.'));
