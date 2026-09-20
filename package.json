@@ -27,6 +27,7 @@
     "@types/react-dom": "^19.1.9",
     "concurrently": "^9.1.2",
     "pg-mem": "^3.0.5",
+    "prettier": "^3.6.2",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"
