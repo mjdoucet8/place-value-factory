@@ -105,3 +105,29 @@ Evidence level: logic verified.
 Remaining risks or blockers: evidence is not yet persisted or applied to issued orders, progression gates and practice scheduling are not wired into the server/UI, and teacher reports do not yet read these summaries.
 
 Next owner / reviewer: BE-03 persists evidence atomically; GL-03b integrates adaptation and gate selection into issued orders.
+
+## 2026-09-20 | BE-03 / GL-03b | CLAIM | Backend / Data + Game Logic / Adaptive Learning
+
+Timestamp (UTC): 2026-09-20T15:19:51Z
+
+Goal and scope: introduce the PostgreSQL schema/repository boundary for durable attempts, orders, responses, receipts, and evidence; apply committed evidence to adaptive issuance in the server where the database adapter is configured.
+
+Owned paths: `apps/server/`, `db/migrations/`, root manifests/lockfile, `tests/integration/`, `TASK_LOG.md`, `PROJECT_STATUS.md`.
+
+Dependencies and contract version: contract v1.0 and GL-03a policy; PostgreSQL service unavailable locally at claim time.
+
+Acceptance IDs: DATA-01..04, ADAPT-01..05, TECH-02 (partial).
+
+Expected outputs: forward migration, parameterized repository, explicit database configuration path, and tests that retain fictional-data evidence limitations honestly.
+
+## 2026-09-20 | BE-03a | HANDOFF | Backend / Data
+
+Changes and artifacts: added a forward PostgreSQL migration for profiles, attempts, immutable orders, responses, actor-scoped command receipts, and per-order skill evidence. Added a parameterized repository that locks the attempt row, checks the receipt before the revision, inserts a response/evidence record, advances the order state, and writes the receipt in one serializable transaction. Added an idempotent migration runner and documented `DATABASE_URL` setup.
+
+Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (37 tests), and `npm run build` passed. `psql` and Docker are unavailable in this workspace, so `npm run db:migrate --workspace=@place-value-factory/server` is NOT RUN against a database.
+
+Evidence level: schema/repository implementation verified by type-check only; database integration NOT RUN.
+
+Remaining risks or blockers: the active API remains on its fictional JSON adapter until the PostgreSQL repository is fully selected at runtime and exercised against a real database. No migration, rollback, serialization-conflict, or cross-process test evidence exists yet.
+
+Next owner / reviewer: provision a disposable PostgreSQL database, run/apply the migration, switch API persistence behind the repository boundary, and run DATA-01..04 integration tests.

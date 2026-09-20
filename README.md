@@ -16,3 +16,7 @@ No install/start commands exist until the application is scaffolded. The foundat
 Requires Node 22/npm 10. Run `npm install`, `npm test`, `npx tsc --noEmit`, and `npm run build`. Start the API with `npm run start --workspace=-value-factory/server` (port 3101) and the web app with `npm run dev --workspace=-value-factory/web` (port 5173).
 
 Fictional student: `FACTORY5` / `ava` / `123456`; teacher: `teacher` / `factory-demo`. `db/local-development.json` is a server-owned development-only store, never a production student database.
+
+### PostgreSQL preparation
+
+The first forward migration is in `db/migrations/`. With a provisioned PostgreSQL 15+ database, set `DATABASE_URL` and run `npm run db:migrate --workspace=@place-value-factory/server`. No PostgreSQL service is bundled with this repository, and the JSON adapter remains the active local-development backend until the database repository integration is completed and tested.

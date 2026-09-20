@@ -46,3 +46,9 @@ This is still a narrow development adapter, not PostgreSQL persistence: its JSON
 Pure engine functions now calculate evidence scores, rolling weighted mastery, secure gates, difficulty bands, refresh flags, and reversible scaffolding without using speed or accessibility settings. Unit fixtures cover the score precedence, minimum secure sample, diversity, signature deduplication, staleness, and scaffold recovery.
 
 The server does not yet persist or use this policy when issuing orders, completing attempts, unlocking gates, scheduling practice, or reporting to teachers. This is logic verified only.
+
+## 2026-09-20 PostgreSQL foundation checkpoint
+
+A forward PostgreSQL schema, migration runner, and parameterized serializable transaction repository now exist for durable attempts, immutable orders, responses, receipts, and evidence. The repository is deliberately not yet the active API store: this workspace has no PostgreSQL client, database service, or container runtime, so migrations and database integration tests are NOT RUN.
+
+The JSON adapter remains fictional-data-only and is not production persistence. Selecting the database repository at runtime requires a disposable database verification first, including migration, rollback, receipt replay, lease, and concurrent transaction tests.
