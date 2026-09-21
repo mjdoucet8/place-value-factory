@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./styles.css";
 
 const api = async (path: string, options: RequestInit = {}) => {
-  const response = await fetch(`http://localhost:3101/api/v1${path}`, {
+  const response = await fetch(`/api/v1${path}`, {
     ...options,
     headers: { "content-type": "application/json", ...(options.headers ?? {}) },
   });
@@ -22,7 +22,7 @@ const places = [
   { value: 10, name: "Tens", icon: "✦" },
   { value: 1, name: "Ones", icon: "●" },
 ];
-type Screen = "login" | "map" | "game" | "results" | "teacher";
+type Screen = "login" | "map" | "game" | "results" | "teacher" | "settings";
 function App() {
   const [screen, setScreen] = useState<Screen>("login");
   const [session, setSession] = useState("");
@@ -33,12 +33,43 @@ function App() {
   const [notice, setNotice] = useState("");
   const [help, setHelp] = useState("");
   const [report, setReport] = useState<any>();
+  const [resultData, setResultData] = useState<any>();
+  const [settings, setSettings] = useState({
+    sound: false,
+    reducedMotion: false,
+    pressure: "calm",
+    textScale: "normal",
+  });
   const [map, setMap] = useState<any>();
   const [progress, setProgress] = useState<any>();
   const [saving, setSaving] = useState(false);
+  const [classCode, setClassCode] = useState("FACTORY5");
+  const [username, setUsername] = useState("ava");
+  const [pin, setPin] = useState("123456");
+  const [teacherPassword, setTeacherPassword] = useState("factory-demo");
+  const [showPin, setShowPin] = useState(false);
   const shiftTabUsed = useRef(false);
   const reconciled = useRef(new Set<string>());
   const tabId = useRef(crypto.randomUUID()).current;
+  useEffect(() => {
+    void api("/auth/session")
+      .then(async (data) => {
+        if (data.principal.role !== "student") return;
+        setSession("student-ava");
+        const profile = await api("/profile");
+        if (profile.activeAttemptId) {
+          const active = await api(
+            `/games/place-value-factory/attempts/${profile.activeAttemptId}`,
+          );
+          setAttempt(active);
+          setScreen("game");
+        } else {
+          await loadMap();
+          setScreen("map");
+        }
+      })
+      .catch(() => undefined);
+  }, []);
   useEffect(() => {
     if (screen === "game") {
       const saved = localStorage.getItem(
@@ -158,14 +189,44 @@ function App() {
     setMap(nextMap);
     setProgress(nextProgress);
   };
+  const openSettings = async () => {
+    try {
+      const profile = await api("/profile", {
+        headers: { "x-session": session },
+      });
+      setSettings(profile.settings);
+      setScreen("settings");
+    } catch (error) {
+      setNotice(`Could not load settings — ${(error as Error).message}`);
+    }
+  };
+  const saveSettings = async () => {
+    try {
+      await api("/profile/settings", {
+        method: "PATCH",
+        headers: { "x-session": session },
+        body: JSON.stringify({ settings }),
+      });
+      document.documentElement.dataset.textScale = settings.textScale;
+      document.documentElement.dataset.motion = settings.reducedMotion
+        ? "reduced"
+        : "standard";
+      setNotice(
+        "Settings saved. They never change the math, stars, or mastery.",
+      );
+      setScreen("map");
+    } catch (error) {
+      setNotice(`Could not save settings — ${(error as Error).message}`);
+    }
+  };
   const login = async (teacher = false) => {
     try {
       await api(teacher ? "/auth/teacher/session" : "/auth/student/session", {
         method: "POST",
         body: JSON.stringify(
           teacher
-            ? { username: "teacher", password: "factory-demo" }
-            : { classCode: "FACTORY5", username: "ava", pin: "123456" },
+            ? { username: "teacher", password: teacherPassword }
+            : { classCode, username, pin },
         ),
       });
       setSession(teacher ? "teacher-dev" : "student-ava");
@@ -256,8 +317,10 @@ function App() {
           : feedback(data.validation.feedbackCode),
       );
       setAttempt(data.snapshot);
-      if (data.result) setScreen("results");
-      else if (data.validation.shipmentAccepted) {
+      if (data.result) {
+        setResultData(data.result);
+        setScreen("results");
+      } else if (data.validation.shipmentAccepted) {
         setQuantities([0, 0, 0, 0, 0, 0]);
         setQuantitiesB([0, 0, 0, 0, 0, 0]);
       }
@@ -377,15 +440,94 @@ function App() {
       setSaving(false);
     }
   };
+  const startTransfer = async () => {
+    const commandId = crypto.randomUUID();
+    try {
+      const data = await api(
+        `/games/place-value-factory/attempts/${attempt.attemptId}/transfer`,
+        {
+          method: "POST",
+          headers: { "x-session": session, "idempotency-key": commandId },
+          body: JSON.stringify({
+            commandId,
+            expectedRevision: attempt.revision,
+            leaseEpoch: attempt.leaseEpoch,
+            tabId,
+          }),
+        },
+      );
+      setAttempt(data.snapshot);
+      setQuantities([0, 0, 0, 0, 0, 0]);
+      setQuantitiesB([0, 0, 0, 0, 0, 0]);
+      setNotice("Extra challenge ready. It is optional and untimed.");
+      setScreen("game");
+    } catch (error) {
+      setNotice(
+        `Could not start the extra challenge — ${(error as Error).message}`,
+      );
+    }
+  };
   if (screen === "login")
     return (
       <main className="login">
         <h1>Place Value Factory</h1>
-        <p>Development accounts only. Student: Ava / FACTORY5 / 123456.</p>
-        <button onClick={() => login(false)}>Student login as Ava</button>
-        <button className="secondary" onClick={() => login(true)}>
-          Teacher login
-        </button>
+        <p>Development mode uses fictional accounts only.</p>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            void login(false);
+          }}
+        >
+          <label>
+            Class code
+            <input
+              autoComplete="organization"
+              value={classCode}
+              onChange={(event) => setClassCode(event.target.value)}
+            />
+          </label>
+          <label>
+            Username
+            <input
+              autoComplete="username"
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
+            />
+          </label>
+          <label>
+            Six-digit PIN
+            <input
+              inputMode="numeric"
+              autoComplete="current-password"
+              type={showPin ? "text" : "password"}
+              pattern="[0-9]{6}"
+              maxLength={6}
+              value={pin}
+              onChange={(event) => setPin(event.target.value)}
+            />
+          </label>
+          <button
+            className="secondary"
+            type="button"
+            onClick={() => setShowPin((visible) => !visible)}
+          >
+            {showPin ? "Hide PIN" : "Show PIN"}
+          </button>
+          <button type="submit">Student login</button>
+        </form>
+        <details>
+          <summary>Teacher development login</summary>
+          <label>
+            Teacher password
+            <input
+              type="password"
+              autoComplete="current-password"
+              value={teacherPassword}
+              onChange={(event) => setTeacherPassword(event.target.value)}
+            />
+          </label>
+          <button onClick={() => login(true)}>Teacher login</button>
+        </details>
         {notice && <p role="alert">{notice}</p>}
       </main>
     );
@@ -394,7 +536,12 @@ function App() {
       <main>
         <header>
           <h1>Factory Map</h1>
-          <span>Ava · Progress is saved</span>
+          <span>
+            Ava · Progress is saved{" "}
+            <button className="secondary" onClick={openSettings}>
+              Settings
+            </button>
+          </span>
         </header>
         {progress?.nextPracticeSkillId && (
           <section className="practice-card">
@@ -443,15 +590,90 @@ function App() {
         ))}
       </main>
     );
+  if (screen === "settings")
+    return (
+      <main className="login">
+        <h1>Factory settings</h1>
+        <p>
+          These supports are saved for this fictional profile and never change
+          game rewards.
+        </p>
+        <label>
+          <input
+            type="checkbox"
+            checked={settings.sound}
+            onChange={(event) =>
+              setSettings({ ...settings, sound: event.target.checked })
+            }
+          />{" "}
+          Sound
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={settings.reducedMotion}
+            onChange={(event) =>
+              setSettings({ ...settings, reducedMotion: event.target.checked })
+            }
+          />{" "}
+          Reduce motion
+        </label>
+        <label>
+          Factory scenery
+          <select
+            value={settings.pressure}
+            onChange={(event) =>
+              setSettings({
+                ...settings,
+                pressure: event.target.value as "calm" | "busy",
+              })
+            }
+          >
+            <option value="calm">Calm</option>
+            <option value="busy">Busy (cosmetic)</option>
+          </select>
+        </label>
+        <label>
+          Text size
+          <select
+            value={settings.textScale}
+            onChange={(event) =>
+              setSettings({
+                ...settings,
+                textScale: event.target.value as "normal" | "large",
+              })
+            }
+          >
+            <option value="normal">Normal</option>
+            <option value="large">Large</option>
+          </select>
+        </label>
+        <button onClick={saveSettings}>Save settings</button>
+        <button className="secondary" onClick={() => setScreen("map")}>
+          Back to map
+        </button>
+      </main>
+    );
   if (screen === "results")
     return (
       <main className="results">
         <h1>Level complete!</h1>
         <p>You saved five server-validated shipments.</p>
-        <div className="stars" aria-label="Two earned stars">
-          ★★☆
+        <div
+          className="stars"
+          aria-label={`${resultData?.bestLevelStars ?? 2} earned stars`}
+        >
+          {(resultData?.bestLevelStars ?? 2) === 3 ? "★★★" : "★★☆"}
         </div>
-        <p>Complete · All orders correct · Extra challenge available later</p>
+        <p>
+          Complete · All orders correct · Extra challenge is optional and
+          untimed
+        </p>
+        {resultData?.transferStar ? (
+          <p role="status">Extra challenge complete — third star saved.</p>
+        ) : (
+          <button onClick={startTransfer}>Try the extra challenge</button>
+        )}
         <button
           onClick={async () => {
             await loadMap();
@@ -558,6 +780,13 @@ function App() {
         <h1>Place Value Factory</h1>
         <span>Shipment {attempt.shippedSlots + 1} of 5</span>
       </header>
+      <aside className="robot-guide" aria-label="Factory guide">
+        <span aria-hidden="true">🤖</span>
+        <p>
+          Build the target with the open crate machines. Your total updates as
+          you pack.
+        </p>
+      </aside>
       {attempt.writerTabId !== tabId && (
         <aside className="takeover" role="status">
           <p>This attempt is open in another tab.</p>
@@ -572,6 +801,18 @@ function App() {
         <strong>{order.target.toLocaleString()}</strong>
         <p>{objective}</p>
       </section>
+      {order.sourceRepresentation && (
+        <section
+          className="source-representation"
+          aria-labelledby="source-heading"
+        >
+          <h2 id="source-heading">Read-only source crates</h2>
+          <p>
+            Start with this normal place-value packing, then repack it using the
+            open machines: {order.sourceRepresentation.join(", ")}.
+          </p>
+        </section>
+      )}
       <section className="help" aria-labelledby="help-heading">
         <h2 id="help-heading">Need a hand?</h2>
         <p>

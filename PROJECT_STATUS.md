@@ -18,7 +18,6 @@ Pending before a real-student rollout: school-authorized hosting/data arrangemen
 
 All application acceptance IDs: NOT RUN. Update this file with evidence levels and commit references, not optimistic percentages.
 
-
 ## 2026-09-19 implementation checkpoint
 
 Implemented: root npm TypeScript workspace; pure engine and independent oracle; fixture-driven tests; fictional-data Node API; server-owned JSON persistence; semantic React login/map/game/results/teacher report.
@@ -52,3 +51,9 @@ The server does not yet persist or use this policy when issuing orders, completi
 A forward PostgreSQL schema, migration runner, and parameterized serializable transaction repository now exist for durable attempts, immutable orders, responses, receipts, and evidence. The repository is deliberately not yet the active API store: this workspace has no PostgreSQL client, database service, or container runtime, so migrations and database integration tests are NOT RUN.
 
 The JSON adapter remains fictional-data-only and is not production persistence. Selecting the database repository at runtime requires a disposable database verification first, including migration, rollback, receipt replay, lease, and concurrent transaction tests.
+
+## 2026-09-21 integrated completion audit
+
+The local fictional-data application now has a 46-test passing suite, TypeScript check and production web build. The audited, implemented local path includes deterministic validation/generation/mastery, all configured levels, restricted/minimum/exact/two-way/repack metadata, ordered H1-H3 supports, pause/resume, skip replacement, leases/takeover, recovery across a JSON-store restart, a five-shipment completion, an optional transfer third star, profile settings, and teacher-report reconciliation.
+
+The acceptance checklist and exact commands are in `docs/COMPLETION_CHECKLIST.md` and `docs/QA_EVIDENCE.md`. This is **integrated fictional-data evidence**, not classroom-ready or production-security evidence. Playwright Chromium covers the primary student/teacher journey and refresh/takeover recovery. Manual screen-reader/representative-device accessibility, real PostgreSQL migration/rollback/concurrency, school identity/hosting/retention approval, and classroom network/load testing are still NOT RUN. The JSON adapter remains development-only.

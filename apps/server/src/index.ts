@@ -28,7 +28,9 @@ import {
 } from "../../../packages/config/src/index.js";
 
 const port = Number(process.env.PORT ?? 3101);
-const defaultDataPath = resolve(process.cwd(), "db/local-development.json");
+const defaultDataPath = process.env.PVF_DATA_PATH
+  ? resolve(process.env.PVF_DATA_PATH)
+  : resolve(process.cwd(), "db/local-development.json");
 const leaseDurationMs = 60_000;
 
 type Order = ReturnType<typeof generateLevelOrder>;
@@ -66,11 +68,19 @@ type Attempt = {
   receipts: Receipt[];
   evidence: EvidenceRecord[];
   supportEvents: SupportEvent[];
+  transferOrder?: Order;
+  transferStar?: boolean;
   status?: "active" | "paused" | "completed";
   kind?: "path" | "practice";
   practiceSkill?: string;
 };
-type Store = { attempts: Attempt[] };
+type Settings = {
+  sound: boolean;
+  reducedMotion: boolean;
+  pressure: "calm" | "busy";
+  textScale: "normal" | "large";
+};
+type Store = { attempts: Attempt[]; settings?: Record<string, Settings> };
 type Actor = { id: string; role: "student" | "teacher" };
 type Command = {
   commandId: string;
@@ -131,20 +141,29 @@ export function createApiServer(dataPath = defaultDataPath): Server {
   async function store(): Promise<Store> {
     try {
       const parsed = JSON.parse(await readFile(dataPath, "utf8")) as Store;
-      return { attempts: parsed.attempts.map(hydrateAttempt) };
+      return {
+        attempts: parsed.attempts.map(hydrateAttempt),
+        settings: parsed.settings ?? {},
+      };
     } catch {
-      return { attempts: [] };
+      return { attempts: [], settings: {} };
     }
   }
   async function save(value: Store) {
     await mkdir(dirname(dataPath), { recursive: true });
     await writeFile(dataPath, JSON.stringify(value, null, 2));
   }
-  function send(response: ServerResponse, status: number, body?: unknown) {
+  function send(
+    response: ServerResponse,
+    status: number,
+    body?: unknown,
+    extraHeaders: Record<string, string> = {},
+  ) {
     response.writeHead(status, {
       "content-type": "application/json",
       "access-control-allow-origin": "*",
       "access-control-allow-headers": "content-type,x-session,idempotency-key",
+      ...extraHeaders,
     });
     response.end(body === undefined ? undefined : JSON.stringify(body));
   }
@@ -162,7 +181,11 @@ export function createApiServer(dataPath = defaultDataPath): Server {
     return parsed as Record<string, unknown>;
   }
   function principal(request: IncomingMessage): Actor | null {
-    const value = request.headers["x-session"];
+    const cookieSession = request.headers.cookie
+      ?.split(";")
+      .map((part) => part.trim().split("="))
+      .find(([name]) => name === "pvf_session")?.[1];
+    const value = request.headers["x-session"] ?? cookieSession;
     if (value === "student-ava") return { id: "student-ava", role: "student" };
     if (value === "teacher-dev") return { id: "teacher-dev", role: "teacher" };
     return null;
@@ -211,14 +234,16 @@ export function createApiServer(dataPath = defaultDataPath): Server {
       shippedSlots: attempt.slot,
       skippedOrders: 0,
       correctedSlots: correctedSlots(attempt),
-      currentHintStep: attempt.completed
-        ? "none"
-        : highestHint(attempt, orderFor(attempt).id),
+      currentHintStep:
+        attempt.completed && !attempt.transferOrder
+          ? "none"
+          : highestHint(attempt, orderFor(attempt).id),
       acknowledgedCommandIds: attempt.receipts
         .map((receipt) => receipt.commandId)
         .slice(-20),
       achievedTier: "Trainee",
-      activeOrder: attempt.completed ? null : orderFor(attempt),
+      activeOrder:
+        attempt.completed && !attempt.transferOrder ? null : orderFor(attempt),
     };
   }
   function mapFor(attempts: Attempt[]) {
@@ -303,8 +328,8 @@ export function createApiServer(dataPath = defaultDataPath): Server {
       skippedOrders: 0,
       efficiency: Math.max(0, 100 - 6 * correctedSlots(attempt)),
       mainStars: 2,
-      transferStar: false,
-      bestLevelStars: 2,
+      transferStar: attempt.transferStar ?? false,
+      bestLevelStars: attempt.transferStar ? 3 : 2,
       newlyUnlockedLevelIds: [
         `level-${Math.min(30, Number(attempt.levelId.slice(6)) + 1)}`,
       ],
@@ -334,6 +359,7 @@ export function createApiServer(dataPath = defaultDataPath): Server {
   }
   function orderFor(attempt: Attempt) {
     return (
+      attempt.transferOrder ??
       attempt.activeOrder ??
       (attempt.kind === "practice" && attempt.practiceSkill
         ? generatePracticeOrder(
@@ -402,14 +428,21 @@ export function createApiServer(dataPath = defaultDataPath): Server {
             item.pin === body.pin,
         );
         return student
-          ? send(response, 200, {
-              principal: {
-                id: student.id,
-                role: "student",
-                classId: "class-demo",
+          ? send(
+              response,
+              200,
+              {
+                principal: {
+                  id: student.id,
+                  role: "student",
+                  classId: "class-demo",
+                },
+                csrfToken: "local-dev",
               },
-              csrfToken: "local-dev",
-            })
+              {
+                "set-cookie": `pvf_session=${student.id}; HttpOnly; SameSite=Lax; Path=/api/v1`,
+              },
+            )
           : send(
               response,
               401,
@@ -429,10 +462,17 @@ export function createApiServer(dataPath = defaultDataPath): Server {
             item.username === body.username && item.password === body.password,
         );
         return teacher
-          ? send(response, 200, {
-              principal: { id: teacher.id, role: "teacher" },
-              csrfToken: "local-dev",
-            })
+          ? send(
+              response,
+              200,
+              {
+                principal: { id: teacher.id, role: "teacher" },
+                csrfToken: "local-dev",
+              },
+              {
+                "set-cookie": `pvf_session=${teacher.id}; HttpOnly; SameSite=Lax; Path=/api/v1`,
+              },
+            )
           : send(
               response,
               401,
@@ -443,6 +483,20 @@ export function createApiServer(dataPath = defaultDataPath): Server {
             );
       }
       const actor = principal(request);
+      if (request.method === "GET" && url.pathname === "/api/v1/auth/session")
+        return actor
+          ? send(response, 200, {
+              principal: {
+                id: actor.id,
+                role: actor.role,
+                ...(actor.role === "student" ? { classId: "class-demo" } : {}),
+              },
+            })
+          : send(
+              response,
+              401,
+              responseError("SESSION_EXPIRED", "Please sign in."),
+            );
       if (!actor)
         return send(
           response,
@@ -463,6 +517,41 @@ export function createApiServer(dataPath = defaultDataPath): Server {
             ),
           ),
         );
+      if (
+        request.method === "GET" &&
+        url.pathname === "/api/v1/profile" &&
+        actor.role === "student"
+      ) {
+        const state = await store();
+        const attempts = state.attempts.filter(
+          (attempt) => attempt.studentId === actor.id,
+        );
+        const map = mapFor(attempts);
+        return send(response, 200, {
+          studentAlias:
+            students.find((student) => student.id === actor.id)?.alias ??
+            "Student",
+          gameKey: "place-value-factory",
+          highestUnlockedLevelId: map.highestUnlockedLevelId,
+          achievedTier: "Trainee",
+          totalStars: attempts
+            .filter((attempt) => attempt.completed)
+            .reduce(
+              (total, attempt) => total + (attempt.transferStar ? 3 : 2),
+              0,
+            ),
+          maxStars: 90,
+          settings: state.settings?.[actor.id] ?? {
+            sound: false,
+            reducedMotion: false,
+            pressure: "calm",
+            textScale: "normal",
+          },
+          revision: map.profileRevision,
+          activeAttemptId:
+            attempts.find((attempt) => !attempt.completed)?.id ?? null,
+        });
+      }
       if (
         request.method === "GET" &&
         url.pathname === "/api/v1/games/place-value-factory/progress" &&
@@ -500,6 +589,31 @@ export function createApiServer(dataPath = defaultDataPath): Server {
             .filter((attempt) => attempt.completed)
             .map((attempt) => attempt.levelId),
         });
+      }
+      if (
+        request.method === "PATCH" &&
+        url.pathname === "/api/v1/profile/settings" &&
+        actor.role === "student"
+      ) {
+        const body = await json(request);
+        const settings = body.settings as Partial<Settings> | undefined;
+        if (
+          !settings ||
+          typeof settings.sound !== "boolean" ||
+          typeof settings.reducedMotion !== "boolean" ||
+          (settings.pressure !== "calm" && settings.pressure !== "busy") ||
+          (settings.textScale !== "normal" && settings.textScale !== "large")
+        )
+          return send(
+            response,
+            422,
+            responseError("INVALID_INPUT", "Choose supported settings."),
+          );
+        const state = await store();
+        state.settings ??= {};
+        state.settings[actor.id] = settings as Settings;
+        await save(state);
+        return send(response, 200, { settings: state.settings[actor.id] });
       }
       if (
         request.method === "POST" &&
@@ -1061,6 +1175,97 @@ export function createApiServer(dataPath = defaultDataPath): Server {
         await save(state);
         return send(response, 200, bodyOut);
       }
+      const transfer = url.pathname.match(
+        /^\/api\/v1\/games\/place-value-factory\/attempts\/([^/]+)\/transfer$/,
+      );
+      if (transfer && request.method === "POST" && actor.role === "student") {
+        const body = await json(request);
+        const command = commandFrom(body);
+        if (!command || !matchingKey(request, command))
+          return send(
+            response,
+            422,
+            responseError(
+              "INVALID_INPUT",
+              "A command and matching Idempotency-Key are required.",
+            ),
+          );
+        const state = await store();
+        const attempt = state.attempts.find(
+          (item) => item.id === transfer[1] && item.studentId === actor.id,
+        );
+        if (!attempt || !attempt.completed)
+          return send(
+            response,
+            409,
+            responseError(
+              "NOT_COMPLETE",
+              "Finish the five main shipments first.",
+            ),
+          );
+        const payloadHash = hashPayload(body);
+        const prior = receiptFor(
+          attempt,
+          actor,
+          command.commandId,
+          payloadHash,
+        );
+        if (prior === "conflict")
+          return send(
+            response,
+            409,
+            responseError(
+              "IDEMPOTENCY_CONFLICT",
+              "This command ID was used with a different request.",
+            ),
+          );
+        if (prior) return send(response, prior.status, prior.body);
+        if (command.expectedRevision !== attempt.revision)
+          return send(
+            response,
+            409,
+            responseError(
+              "REVISION_CONFLICT",
+              "Progress changed. Reloading your saved work.",
+              attempt.revision,
+            ),
+          );
+        if (attempt.transferOrder)
+          return send(response, 200, {
+            commandId: command.commandId,
+            snapshot: snapshot(attempt),
+          });
+        const base = generateLevelOrder(
+          attempt.levelId,
+          attempt.seed + 10_007,
+          4,
+          "easy",
+        );
+        attempt.transferOrder = {
+          ...base,
+          id: `${base.id}-transfer`,
+          sourceRepresentation: undefined,
+        };
+        attempt.writerTabId = command.tabId;
+        attempt.leaseEpoch += 1;
+        attempt.leaseExpiresAt = new Date(
+          Date.now() + leaseDurationMs,
+        ).toISOString();
+        attempt.revision += 1;
+        const bodyOut = {
+          commandId: command.commandId,
+          snapshot: snapshot(attempt),
+        };
+        attempt.receipts.push({
+          actorId: actor.id,
+          commandId: command.commandId,
+          payloadHash,
+          status: 200,
+          body: bodyOut,
+        });
+        await save(state);
+        return send(response, 200, bodyOut);
+      }
       const match = url.pathname.match(
         /^\/api\/v1\/games\/place-value-factory\/attempts\/([^/]+)(?:\/orders\/([^/]+)\/responses|\/results)?$/,
       );
@@ -1144,9 +1349,11 @@ export function createApiServer(dataPath = defaultDataPath): Server {
             Date.now() + leaseDurationMs,
           ).toISOString();
           const order = orderFor(attempt);
+          const isTransfer =
+            attempt.completed && Boolean(attempt.transferOrder);
           if (
             order.id !== match[2] ||
-            attempt.completed ||
+            (attempt.completed && !isTransfer) ||
             attempt.status === "paused"
           )
             return send(
@@ -1187,23 +1394,28 @@ export function createApiServer(dataPath = defaultDataPath): Server {
               signature: `${order.target}:${order.allowed.join(",")}:${order.mode ?? ""}`,
               committedAt: new Date().toISOString(),
             });
-            attempt.slot += 1;
-            if (attempt.slot === 5) attempt.completed = true;
-            else
-              attempt.activeOrder =
-                attempt.kind === "practice" && attempt.practiceSkill
-                  ? generatePracticeOrder(
-                      attempt.practiceSkill,
-                      attempt.seed,
-                      attempt.slot,
-                      nextDifficulty(attempt),
-                    )
-                  : generateLevelOrder(
-                      attempt.levelId,
-                      attempt.seed,
-                      attempt.slot,
-                      nextDifficulty(attempt),
-                    );
+            if (isTransfer) {
+              attempt.transferStar = true;
+              attempt.transferOrder = undefined;
+            } else {
+              attempt.slot += 1;
+              if (attempt.slot === 5) attempt.completed = true;
+              else
+                attempt.activeOrder =
+                  attempt.kind === "practice" && attempt.practiceSkill
+                    ? generatePracticeOrder(
+                        attempt.practiceSkill,
+                        attempt.seed,
+                        attempt.slot,
+                        nextDifficulty(attempt),
+                      )
+                    : generateLevelOrder(
+                        attempt.levelId,
+                        attempt.seed,
+                        attempt.slot,
+                        nextDifficulty(attempt),
+                      );
+            }
           }
           attempt.revision += 1;
           const bodyOut = {
@@ -1211,7 +1423,9 @@ export function createApiServer(dataPath = defaultDataPath): Server {
             committedAt: new Date().toISOString(),
             validation,
             snapshot: snapshot(attempt),
-            ...(attempt.completed ? { result: result(attempt) } : {}),
+            ...(attempt.completed && !attempt.transferOrder
+              ? { result: result(attempt) }
+              : {}),
           };
           attempt.receipts.push({
             actorId: actor.id,
@@ -1226,6 +1440,35 @@ export function createApiServer(dataPath = defaultDataPath): Server {
       }
       if (
         request.method === "GET" &&
+        url.pathname === "/api/v1/teacher/classes" &&
+        actor.role === "teacher"
+      )
+        return send(response, 200, {
+          classes: [
+            {
+              id: "class-demo",
+              name: "Factory 5",
+              timezone: "America/Toronto",
+              studentCount: students.length,
+            },
+          ],
+        });
+      if (
+        request.method === "GET" &&
+        url.pathname === "/api/v1/teacher/classes/class-demo/students" &&
+        actor.role === "teacher"
+      )
+        return send(response, 200, {
+          students: students.map(({ id, alias, username }) => ({
+            id,
+            alias,
+            username,
+            enabled: true,
+          })),
+          nextCursor: null,
+        });
+      if (
+        request.method === "GET" &&
         url.pathname ===
           "/api/v1/teacher/classes/class-demo/games/place-value-factory/report" &&
         actor.role === "teacher"
@@ -1235,8 +1478,18 @@ export function createApiServer(dataPath = defaultDataPath): Server {
           (item) => item.studentId === "student-ava",
         );
         const responses = attempts.flatMap((item) => item.responses);
+        const firstPerOrder = new Map<string, ResponseRecord>();
+        for (const response of responses)
+          if (!firstPerOrder.has(response.order.id))
+            firstPerOrder.set(response.order.id, response);
+        const first = [...firstPerOrder.values()];
+        const firstWrong = first.filter(
+          (item) => !item.validation.objectiveMet,
+        );
+        const evidence = attempts.flatMap((attempt) => attempt.evidence);
         return send(response, 200, {
           classId: "class-demo",
+          timezone: "America/Toronto",
           students: [
             {
               studentId: "student-ava",
@@ -1245,9 +1498,30 @@ export function createApiServer(dataPath = defaultDataPath): Server {
                 ? "level-2"
                 : "level-1",
               submittedN: responses.length,
+              firstObjectiveCorrectN: first.filter(
+                (item) => item.validation.objectiveMet,
+              ).length,
+              firstValueCorrectN: first.filter(
+                (item) => item.validation.valueMatches,
+              ).length,
               eventuallyCorrectN: responses.filter(
                 (item) => item.validation.shipmentAccepted,
               ).length,
+              firstWrongN: firstWrong.length,
+              correctionSuccessN: firstWrong.filter((item) =>
+                responses.some(
+                  (candidate) =>
+                    candidate.order.id === item.order.id &&
+                    candidate.validation.shipmentAccepted,
+                ),
+              ).length,
+              primaryPracticeSkillId: nextPracticeSkill(
+                STAGE_GATE_SKILLS[1],
+                evidence,
+              ),
+              skills: [...new Set(evidence.map((item) => item.skillId))]
+                .sort()
+                .map((skillId) => summarizeMastery(skillId, evidence)),
               evidence: responses.map((item) => ({
                 target: item.order.target,
                 vector: item.representationA,
@@ -1255,6 +1529,7 @@ export function createApiServer(dataPath = defaultDataPath): Server {
               })),
             },
           ],
+          nextCursor: null,
         });
       }
       return send(

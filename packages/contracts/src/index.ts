@@ -1,10 +1,24 @@
 export const DENOMINATIONS = [100000, 10000, 1000, 100, 10, 1] as const;
 export type Denomination = (typeof DENOMINATIONS)[number];
-export type Representation = readonly [number, number, number, number, number, number];
-export type FeedbackCode = 'SHIPMENT_CORRECT' | 'UNDERPRODUCTION' | 'OVERPRODUCTION' |
-  'MACHINE_UNAVAILABLE' | 'STANDARD_REQUIRED' | 'TYPE_COUNT' | 'SAME_REPRESENTATION' |
-  'CAN_REPACK' | 'INVALID_INPUT';
-export type DifficultyBand = 'easy' | 'medium' | 'hard';
+export type Representation = readonly [
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+];
+export type FeedbackCode =
+  | "SHIPMENT_CORRECT"
+  | "UNDERPRODUCTION"
+  | "OVERPRODUCTION"
+  | "MACHINE_UNAVAILABLE"
+  | "STANDARD_REQUIRED"
+  | "TYPE_COUNT"
+  | "SAME_REPRESENTATION"
+  | "CAN_REPACK"
+  | "INVALID_INPUT";
+export type DifficultyBand = "easy" | "medium" | "hard";
 
 export interface OrderSpec {
   id: string;
@@ -17,6 +31,8 @@ export interface OrderSpec {
   difficultyBand?: DifficultyBand;
   primarySkill?: string;
   mode?: string;
+  /** A read-only starting decomposition shown only for a repack task. */
+  sourceRepresentation?: Representation | null;
 }
 
 export interface Validation {

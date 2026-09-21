@@ -40,7 +40,6 @@ P-05 Final approval of original art assets and any deliberate change from calmer
 
 ID; date; status; context; proposal; alternatives; mathematical/product impact; contracts/migrations affected; reviewers; owner approval if changing an accepted requirement; rollout and rollback; superseded ID. Do not delete old decisions.
 
-
 ## Foundation implementation record
 
 F-01; 2026-09-19; RECOMMENDED BASELINE; repository contained only the handoff package. Local stack: Node 22.23.2/npm 10.9.8, TypeScript 5.8.3, React 19.1.1, Vite 7.1.7, Vitest 3.2.7 and tsx 4.20.3, locked in package-lock.json.
@@ -48,3 +47,5 @@ F-01; 2026-09-19; RECOMMENDED BASELINE; repository contained only the handoff pa
 F-02; 2026-09-19; RECOMMENDED BASELINE; contract v1.0 uses strict six-element vectors and shared order/validation boundaries. Server recomputes from its stored order; it does not accept client totals.
 
 F-03; 2026-09-19; RECOMMENDED BASELINE; JSON persistence and fictional accounts are development-only. PostgreSQL remains required before real-student use.
+
+F-04; 2026-09-21; RECOMMENDED BASELINE; upgraded the Vite development/build dependency to 7.3.6 after an audit reported high-severity development-server advisories. `npm audit --omit=dev --audit-level=high` then reported no production vulnerabilities. This does not change the selected architecture or permit production use of the JSON adapter.

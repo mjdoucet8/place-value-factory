@@ -308,4 +308,67 @@ describe("fictional-data command safety", () => {
       ),
     ).toMatchObject({ score: 0.25, independentFirstN: 0 });
   });
+
+  it("awards the optional transfer star once without changing the five main shipments", async () => {
+    let start = await request(
+      "/games/place-value-factory/attempts",
+      {
+        commandId: "start-transfer",
+        profileRevision: 0,
+        tabId: "tab-a",
+        levelId: "level-1",
+      },
+      { ...studentHeaders, "idempotency-key": "start-transfer" },
+    );
+    let snapshot = start.body;
+    for (let index = 0; index < 5; index++) {
+      const response = await request(
+        `/games/place-value-factory/attempts/${snapshot.attemptId}/orders/${snapshot.activeOrder.id}/responses`,
+        {
+          commandId: `main-transfer-${index}`,
+          expectedRevision: snapshot.revision,
+          leaseEpoch: snapshot.leaseEpoch,
+          tabId: "tab-a",
+          representationA: canonical(snapshot.activeOrder.target),
+          representationB: null,
+        },
+        { ...studentHeaders, "idempotency-key": `main-transfer-${index}` },
+      );
+      snapshot = response.body.snapshot;
+    }
+    expect(snapshot).toMatchObject({
+      status: "completed",
+      shippedSlots: 5,
+      activeOrder: null,
+    });
+    const transfer = await request(
+      `/games/place-value-factory/attempts/${snapshot.attemptId}/transfer`,
+      {
+        commandId: "start-extra",
+        expectedRevision: snapshot.revision,
+        leaseEpoch: snapshot.leaseEpoch,
+        tabId: "tab-a",
+      },
+      { ...studentHeaders, "idempotency-key": "start-extra" },
+    );
+    expect(transfer.body.snapshot.activeOrder).toBeTruthy();
+    const extra = transfer.body.snapshot.activeOrder;
+    const resolved = await request(
+      `/games/place-value-factory/attempts/${snapshot.attemptId}/orders/${extra.id}/responses`,
+      {
+        commandId: "finish-extra",
+        expectedRevision: transfer.body.snapshot.revision,
+        leaseEpoch: transfer.body.snapshot.leaseEpoch,
+        tabId: "tab-a",
+        representationA: canonical(extra.target),
+        representationB: null,
+      },
+      { ...studentHeaders, "idempotency-key": "finish-extra" },
+    );
+    expect(resolved.body.result).toMatchObject({
+      shipped: 5,
+      transferStar: true,
+      bestLevelStars: 3,
+    });
+  });
 });

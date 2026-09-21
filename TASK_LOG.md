@@ -2,6 +2,28 @@
 
 Append-only after initial handoff. Corrections are new dated entries; never rewrite old outcomes. Claim template and workflow are in AGENTS.md.
 
+## 2026-09-21 | PA-04 / GL-04 / BE-04 / FE-05 / QA-02 | CLAIM
+
+Goal and scope: complete all locally verifiable Place Value Factory V1 behavior from the existing integrated prototype, reconcile source against the specification, add browser/integration evidence, and leave only genuine external deployment/classroom prerequisites.
+
+Owned paths: `docs/`, `PROJECT_STATUS.md`, `README.md`, `TASK_LOG.md`, `apps/`, `packages/`, `db/`, `tests/`.
+
+Dependencies and contract version: contract v1.0; preserve accepted mathematical, privacy, accessibility, idempotency and isolation invariants.
+
+Acceptance IDs: all locally executable IDs in the V1 acceptance register; external evidence is explicitly recorded rather than fabricated.
+
+## 2026-09-21 | PA-04 / GL-04 / BE-04 / FE-05 / QA-02 | HANDOFF
+
+Changes and artifacts: added a living acceptance checklist and local QA evidence record; corrected Level 1 configured slot attribution and band generation; added repack source metadata; added server-authoritative optional transfer/third-star resolution; expanded fictional profile/settings and teacher-report data; added an accessible settings/login flow, repack display, transfer result action and responsive/focus CSS; added restart/journey and transfer regression coverage.
+
+Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (46 tests across unit, API integration, journey/restart and pg-mem repository paths), `npm run build`, and `npm run test:e2e` (Playwright Chromium primary student/teacher journey) passed. A generated gameplay screenshot was visually inspected. The available computer-use runtime had no interactive browser surface, but the repeatable browser suite supplies the recorded browser evidence.
+
+Evidence level: integrated fictional-data API and build verification; browser/device/classroom evidence remains NOT RUN.
+
+Remaining risks or blockers: real PostgreSQL migration/rollback/concurrency and runtime selection; school identity/hosting/retention approval; manual screen-reader, actual simultaneous multi-tab/offline/private-mode, representative-device/reflow and classroom-network/load verification require unavailable tooling or external infrastructure. JSON persistence is development-only.
+
+Next owner / reviewer: QA with a browser-capable environment and disposable PostgreSQL instance; school owner for identity, hosting and retention decisions.
+
 ## 2026-09-20 | FE-04b | CLAIM | Frontend / Game UX
 
 Goal and scope: bind the controlled server-side skip/replacement action to an accessible student game control without duplicating eligibility or progression decisions in the browser.
@@ -52,7 +74,6 @@ Decisions: written math governs screenshot copy; no design chronology inferred f
 
 Handoff: PA-01 inspects actual repository, agrees contract schemas and dependency versions; GL-01 begins validator with QA oracle. See PROJECT_STATUS.md and DECISIONS.md for pending owner choices.
 
-
 ## 2026-09-19 | PA-01 / GL-01 / QA-01 / BE-01 / FE-01 | HANDOFF
 
 Implemented: npm TypeScript workspace, shared contracts, deterministic pure validator/minimum/generator, independent dynamic-programming oracle, fixture tests, fictional local auth, server-owned JSON persistence, semantic React map/game/results/teacher report.
@@ -60,7 +81,6 @@ Implemented: npm TypeScript workspace, shared contracts, deterministic pure vali
 Actual results: `npm test` passed 29 tests; `npx tsc --noEmit` passed; `npm run build` passed. Local API flow logged in fictional Ava, committed five canonical shipments, reloaded completion, and teacher report returned persistedEvidence:5.
 
 Evidence: mathematical requirements logic verified; narrow fictional API journey integrated. Browser E2E, PostgreSQL, secure production auth, leases/idempotency, full 30-level progression, accessibility/device testing and classroom evidence remain incomplete.
-
 
 ## 2026-09-19 | PA-01 | CLAIM | Product / Architecture
 
