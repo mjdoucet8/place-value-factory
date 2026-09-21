@@ -4,6 +4,7 @@ export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: false,
   retries: 0,
+  timeout: 15_000,
   use: {
     baseURL: "http://127.0.0.1:5181",
     browserName: "chromium",

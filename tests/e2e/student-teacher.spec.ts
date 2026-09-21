@@ -22,7 +22,7 @@ test("student completes five saved orders, settings, and optional transfer; teac
     page.getByRole("heading", { name: "Factory Map" }),
   ).toBeVisible();
   await page
-    .getByRole("button", { name: "Start", exact: true })
+    .getByRole("button", { name: /Start( practice)?/ })
     .first()
     .click();
   await expect(page.getByText("CURRENT ORDER")).toBeVisible();
