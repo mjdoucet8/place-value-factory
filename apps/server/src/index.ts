@@ -211,6 +211,9 @@ export function createApiServer(dataPath = defaultDataPath): Server {
       shippedSlots: attempt.slot,
       skippedOrders: 0,
       correctedSlots: correctedSlots(attempt),
+      currentHintStep: attempt.completed
+        ? "none"
+        : highestHint(attempt, orderFor(attempt).id),
       acknowledgedCommandIds: attempt.receipts
         .map((receipt) => receipt.commandId)
         .slice(-20),

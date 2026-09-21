@@ -31,6 +31,7 @@ function App() {
   const [quantitiesB, setQuantitiesB] = useState([0, 0, 0, 0, 0, 0]);
   const [undo, setUndo] = useState<number[] | null>(null);
   const [notice, setNotice] = useState("");
+  const [help, setHelp] = useState("");
   const [report, setReport] = useState<any>();
   const [map, setMap] = useState<any>();
   const [progress, setProgress] = useState<any>();
@@ -57,6 +58,9 @@ function App() {
       );
     }
   }, [screen, attempt?.attemptId, attempt?.activeOrder?.id]);
+  useEffect(() => {
+    setHelp("");
+  }, [attempt?.activeOrder?.id]);
   useEffect(() => {
     if (screen === "game" && attempt?.activeOrder)
       localStorage.setItem(
@@ -342,6 +346,37 @@ function App() {
       setSaving(false);
     }
   };
+  const requestHelp = async () => {
+    const steps = ["H1", "H2", "H3"] as const;
+    const current = steps.indexOf(attempt.currentHintStep);
+    const step = steps[Math.min(current + 1, steps.length - 1)];
+    const commandId = crypto.randomUUID();
+    setSaving(true);
+    try {
+      const data = await api(
+        `/games/place-value-factory/attempts/${attempt.attemptId}/orders/${attempt.activeOrder.id}/hints`,
+        {
+          method: "POST",
+          headers: { "x-session": session, "idempotency-key": commandId },
+          body: JSON.stringify({
+            commandId,
+            step,
+            expectedRevision: attempt.revision,
+            leaseEpoch: attempt.leaseEpoch,
+            tabId,
+          }),
+        },
+      );
+      setAttempt(data.snapshot);
+      setHelp(
+        `${step}: ${data.hint.params.message}${data.hint.workedExample ? ` Example: ${data.hint.workedExample.target.toLocaleString()}.` : ""}`,
+      );
+    } catch (error) {
+      setNotice(`Could not get help — ${(error as Error).message}`);
+    } finally {
+      setSaving(false);
+    }
+  };
   if (screen === "login")
     return (
       <main className="login">
@@ -536,6 +571,19 @@ function App() {
         </p>
         <strong>{order.target.toLocaleString()}</strong>
         <p>{objective}</p>
+      </section>
+      <section className="help" aria-labelledby="help-heading">
+        <h2 id="help-heading">Need a hand?</h2>
+        <p>
+          Help is optional. It does not change your shipment, but the saved
+          support step is included in learning evidence.
+        </p>
+        <button className="secondary" disabled={saving} onClick={requestHelp}>
+          {attempt.currentHintStep === "H3"
+            ? "Show H3 help again"
+            : `Get ${["H1", "H2", "H3"][["H1", "H2", "H3"].indexOf(attempt.currentHintStep) + 1] ?? "H1"} help`}
+        </button>
+        {help && <p role="status">{help}</p>}
       </section>
       <p className="monitor" aria-live="polite">
         Representation A totals <strong>{total.toLocaleString()}</strong>
