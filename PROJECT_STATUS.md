@@ -71,3 +71,11 @@ Browser draft/pending persistence is now guarded against unavailable or quota-ex
 ## 2026-09-22 two-tab recovery checkpoint
 
 Playwright Chromium now opens the same active attempt in two pages. The second tab takes over the lease, a shipment from the stale tab is rejected with the authoritative lease-loss message, and the new writer successfully saves the following shipment. Deliberate drop-after-commit/before-reply remains NOT RUN.
+
+## 2026-09-22 pre-art milestone
+
+The student frontend is now separated into reusable login, map, level-introduction, progress, settings, gameplay, machine-editor, results, teacher and development-gallery components. Route-shaped browser history covers the specified student URLs, including a refreshable saved-results route. Shared CSS design tokens establish the stable semantic layer that original artwork will decorate.
+
+The development-only visual gallery covers map locked/unlocked/resume, level introduction, progress, calm/busy play, restricted/minimum/exact-types/two-way/repack objectives, incorrect/correct/pending/offline/storage/takeover/pause/help states, loading/error/empty states and two-/three-star results. Playwright now verifies six journeys, including quantity preservation after a wrong response, progress/practice visibility, advanced-mode fixture rendering and drop-after-commit/before-reply receipt recovery.
+
+Verified at this checkpoint: `npm test` (46 tests), `npx tsc --noEmit`, `npm run build`, and `npm run test:e2e` (6 Chromium journeys) passed. The semantic UI/state surface is ready for original artwork integration. Production identity, real PostgreSQL runtime verification, roster lifecycle, retention/deletion, manual assistive-technology/device review and classroom load/network evidence remain outside this milestone.

@@ -2,6 +2,7 @@ node_modules/
 dist/
 coverage/
 db/local-development.json
+db/e2e-local-development.json
 apps/server/db/e2e-local-development.json
 test-results/
 playwright-report/

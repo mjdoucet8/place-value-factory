@@ -357,6 +357,15 @@ export function createApiServer(dataPath = defaultDataPath): Server {
     for (const record of attempt.responses)
       if (!firstPerOrder.has(record.order.id))
         firstPerOrder.set(record.order.id, record);
+    let currentStreak = 0;
+    let bestStreak = 0;
+    for (const record of firstPerOrder.values()) {
+      currentStreak = record.validation.objectiveMet ? currentStreak + 1 : 0;
+      bestStreak = Math.max(bestStreak, currentStreak);
+    }
+    const skillStatuses = [
+      ...new Set(attempt.evidence.map((item) => item.skillId)),
+    ].map((skillId) => summarizeMastery(skillId, attempt.evidence));
     return {
       attemptId: attempt.id,
       completed: true,
@@ -369,6 +378,8 @@ export function createApiServer(dataPath = defaultDataPath): Server {
         (item) => item.validation.valueMatches,
       ).length,
       eventuallyCorrect: 5,
+      bestStreak,
+      skillStatuses,
       correctedSlots: correctedSlots(attempt),
       skippedOrders: 0,
       efficiency: Math.max(0, 100 - 6 * correctedSlots(attempt)),

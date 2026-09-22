@@ -1,6 +1,23 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
+import {
+  PLACES,
+  type Screen,
+  type SelectedLevel,
+  type Settings,
+} from "./models.js";
+import { LoginScreen } from "./screens/LoginScreen.js";
+import { MapScreen } from "./screens/MapScreen.js";
+import { LevelIntroScreen } from "./screens/LevelIntroScreen.js";
+import { ProgressScreen } from "./screens/ProgressScreen.js";
+import { SettingsScreen } from "./screens/SettingsScreen.js";
+import { ResultsScreen } from "./screens/ResultsScreen.js";
+import { TeacherScreen } from "./screens/TeacherScreen.js";
+import { GameScreen } from "./screens/GameScreen.js";
+import { StateGallery } from "./screens/StateGallery.js";
+
+const places = PLACES;
 
 const api = async (path: string, options: RequestInit = {}) => {
   const response = await fetch(`/api/v1${path}`, {
@@ -38,17 +55,26 @@ const deviceStorage = {
     }
   },
 };
-const places = [
-  { value: 100000, name: "Hundred thousands", icon: "◆" },
-  { value: 10000, name: "Ten thousands", icon: "●" },
-  { value: 1000, name: "Thousands", icon: "▲" },
-  { value: 100, name: "Hundreds", icon: "■" },
-  { value: 10, name: "Tens", icon: "✦" },
-  { value: 1, name: "Ones", icon: "●" },
-];
-type Screen = "login" | "map" | "game" | "results" | "teacher" | "settings";
+const pathFor = (screen: Screen, attempt?: any, level?: SelectedLevel) => {
+  if (screen === "login") return "/student/login";
+  if (screen === "map") return "/games/place-value-factory";
+  if (screen === "level-intro")
+    return `/games/place-value-factory/levels/${level?.id ?? "level-1"}`;
+  if (screen === "progress") return "/games/place-value-factory/progress";
+  if (screen === "settings") return "/games/place-value-factory/settings";
+  if (screen === "results")
+    return `/games/place-value-factory/attempts/${attempt?.attemptId ?? "current"}/results`;
+  if (screen === "game")
+    return `/games/place-value-factory/attempts/${attempt?.attemptId ?? "current"}`;
+  if (screen === "teacher")
+    return "/teacher/classes/class-demo/games/place-value-factory";
+  return "/dev/place-value-factory/states";
+};
+
 function App() {
-  const [screen, setScreen] = useState<Screen>("login");
+  const [screen, setScreen] = useState<Screen>(() =>
+    window.location.pathname.startsWith("/dev/") ? "state-gallery" : "login",
+  );
   const [session, setSession] = useState("");
   const [attempt, setAttempt] = useState<any>();
   const [quantities, setQuantities] = useState([0, 0, 0, 0, 0, 0]);
@@ -59,7 +85,7 @@ function App() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [report, setReport] = useState<any>();
   const [resultData, setResultData] = useState<any>();
-  const [settings, setSettings] = useState({
+  const [settings, setSettings] = useState<Settings>({
     sound: false,
     reducedMotion: false,
     pressure: "calm",
@@ -67,6 +93,8 @@ function App() {
   });
   const [map, setMap] = useState<any>();
   const [progress, setProgress] = useState<any>();
+  const [selectedLevel, setSelectedLevel] = useState<SelectedLevel>();
+  const [starting, setStarting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [storageUnavailable, setStorageUnavailable] = useState(false);
   const [classCode, setClassCode] = useState("FACTORY5");
@@ -79,21 +107,102 @@ function App() {
   const helpTrigger = useRef<HTMLButtonElement>(null);
   const helpDialog = useRef<HTMLDivElement>(null);
   const tabId = useRef(crypto.randomUUID()).current;
+  const navigate = (
+    next: Screen,
+    options: { replace?: boolean; attempt?: any; level?: SelectedLevel } = {},
+  ) => {
+    setScreen(next);
+    const path = pathFor(
+      next,
+      options.attempt ?? attempt,
+      options.level ?? selectedLevel,
+    );
+    window.history[options.replace ? "replaceState" : "pushState"](
+      {},
+      "",
+      path,
+    );
+  };
   useEffect(() => {
+    const onPopState = () => {
+      const path = window.location.pathname;
+      if (path === "/student/login") setScreen("login");
+      else if (path.endsWith("/progress")) setScreen("progress");
+      else if (path.endsWith("/settings")) setScreen("settings");
+      else if (path.endsWith("/results")) setScreen("results");
+      else if (path.includes("/levels/")) setScreen("level-intro");
+      else if (path.includes("/attempts/")) setScreen("game");
+      else if (path.startsWith("/teacher/")) setScreen("teacher");
+      else if (path.startsWith("/dev/")) setScreen("state-gallery");
+      else setScreen("map");
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+  useEffect(() => {
+    if (window.location.pathname.startsWith("/dev/")) return;
     void api("/auth/session")
       .then(async (data) => {
+        if (data.principal.role === "teacher") {
+          setSession("teacher-dev");
+          setReport(
+            await api(
+              "/teacher/classes/class-demo/games/place-value-factory/report",
+              { headers: { "x-session": "teacher-dev" } },
+            ),
+          );
+          navigate("teacher", { replace: true });
+          return;
+        }
         if (data.principal.role !== "student") return;
         setSession("student-ava");
         const profile = await api("/profile");
+        setSettings(profile.settings);
+        const requestedPath = window.location.pathname;
+        const requestedResultAttempt = requestedPath.match(
+          /\/attempts\/([^/]+)\/results$/,
+        )?.[1];
+        if (requestedResultAttempt) {
+          const [savedAttempt, savedResult] = await Promise.all([
+            api(`/games/place-value-factory/attempts/${requestedResultAttempt}`),
+            api(
+              `/games/place-value-factory/attempts/${requestedResultAttempt}/results`,
+            ),
+          ]);
+          setAttempt(savedAttempt);
+          setResultData(savedResult);
+          navigate("results", { replace: true, attempt: savedAttempt });
+          return;
+        }
         if (profile.activeAttemptId) {
           const active = await api(
             `/games/place-value-factory/attempts/${profile.activeAttemptId}`,
           );
           setAttempt(active);
-          setScreen("game");
+          navigate("game", { replace: true, attempt: active });
         } else {
-          await loadMap();
-          setScreen("map");
+          const loaded = await loadMap();
+          const requestedLevelId = requestedPath.match(
+            /\/levels\/(level-\d+)/,
+          )?.[1];
+          if (requestedLevelId) {
+            for (const zone of loaded.map.zones) {
+              const level = zone.levels.find(
+                (item: any) => item.id === requestedLevelId,
+              );
+              if (level) {
+                const selected = { ...level, zoneName: zone.name };
+                setSelectedLevel(selected);
+                navigate("level-intro", { replace: true, level: selected });
+                return;
+              }
+            }
+          }
+          if (requestedPath.endsWith("/progress"))
+            navigate("progress", { replace: true });
+          else if (requestedPath.endsWith("/settings"))
+            navigate("settings", { replace: true });
+          else navigate("map", { replace: true });
         }
       })
       .catch(() => undefined);
@@ -244,9 +353,11 @@ function App() {
               : feedback(data.validation.feedbackCode),
           );
         })
-        .catch(() => {
+        .catch((error) => {
           reconciled.current.delete(key);
-          setNotice("Saved shipment is waiting for a connection.");
+          setNotice(
+            `Saved shipment is waiting for a connection — ${(error as Error).message}`,
+          );
         });
     } catch {
       deviceStorage.remove(key);
@@ -260,6 +371,7 @@ function App() {
     ]);
     setMap(nextMap);
     setProgress(nextProgress);
+    return { map: nextMap, progress: nextProgress };
   };
   const openSettings = async () => {
     try {
@@ -267,7 +379,7 @@ function App() {
         headers: { "x-session": session },
       });
       setSettings(profile.settings);
-      setScreen("settings");
+      navigate("settings");
     } catch (error) {
       setNotice(`Could not load settings — ${(error as Error).message}`);
     }
@@ -286,7 +398,7 @@ function App() {
       setNotice(
         "Settings saved. They never change the math, stars, or mastery.",
       );
-      setScreen("map");
+      navigate("map");
     } catch (error) {
       setNotice(`Could not save settings — ${(error as Error).message}`);
     }
@@ -309,10 +421,21 @@ function App() {
             { headers: { "x-session": "teacher-dev" } },
           ),
         );
-        setScreen("teacher");
+        navigate("teacher");
       } else {
+        const profile = await api("/profile", {
+          headers: { "x-session": "student-ava" },
+        });
+        setSettings(profile.settings);
+        if (profile.activeAttemptId) {
+          const active = await api(
+            `/games/place-value-factory/attempts/${profile.activeAttemptId}`,
+            { headers: { "x-session": "student-ava" } },
+          );
+          setAttempt(active);
+        }
         await loadMap();
-        setScreen("map");
+        navigate("map");
       }
     } catch (error) {
       setNotice((error as Error).message);
@@ -322,22 +445,29 @@ function App() {
     levelId = "level-1",
     kind: "path" | "practice" = "path",
   ) => {
+    setStarting(true);
     const commandId = crypto.randomUUID();
-    const data = await api("/games/place-value-factory/attempts", {
-      method: "POST",
-      headers: { "x-session": session, "idempotency-key": commandId },
-      body: JSON.stringify({
-        commandId,
-        profileRevision: map?.profileRevision ?? 0,
-        tabId,
-        levelId,
-        kind,
-      }),
-    });
-    setAttempt(data);
-    setQuantities([0, 0, 0, 0, 0, 0]);
-    setQuantitiesB([0, 0, 0, 0, 0, 0]);
-    setScreen("game");
+    try {
+      const data = await api("/games/place-value-factory/attempts", {
+        method: "POST",
+        headers: { "x-session": session, "idempotency-key": commandId },
+        body: JSON.stringify({
+          commandId,
+          profileRevision: map?.profileRevision ?? 0,
+          tabId,
+          levelId,
+          kind,
+        }),
+      });
+      setAttempt(data);
+      setQuantities([0, 0, 0, 0, 0, 0]);
+      setQuantitiesB([0, 0, 0, 0, 0, 0]);
+      navigate("game", { attempt: data });
+    } catch (error) {
+      setNotice(`Could not start — ${(error as Error).message}`);
+    } finally {
+      setStarting(false);
+    }
   };
   const ship = async () => {
     if (saving) return;
@@ -392,7 +522,7 @@ function App() {
       setAttempt(data.snapshot);
       if (data.result) {
         setResultData(data.result);
-        setScreen("results");
+        navigate("results", { attempt: data.snapshot });
       } else if (data.validation.shipmentAccepted) {
         setQuantities([0, 0, 0, 0, 0, 0]);
         setQuantitiesB([0, 0, 0, 0, 0, 0]);
@@ -444,7 +574,7 @@ function App() {
       setAttempt(data.snapshot);
       if (action === "pause") {
         await loadMap();
-        setScreen("map");
+        navigate("map");
       }
     } catch (error) {
       setNotice(`Could not ${action} — ${(error as Error).message}`);
@@ -533,599 +663,151 @@ function App() {
       setQuantities([0, 0, 0, 0, 0, 0]);
       setQuantitiesB([0, 0, 0, 0, 0, 0]);
       setNotice("Extra challenge ready. It is optional and untimed.");
-      setScreen("game");
+      navigate("game", { attempt: data.snapshot });
     } catch (error) {
       setNotice(
         `Could not start the extra challenge — ${(error as Error).message}`,
       );
     }
   };
+  const chooseLevel = (level: SelectedLevel) => {
+    setSelectedLevel(level);
+    setNotice("");
+    navigate("level-intro", { level });
+  };
+  const findLevel = (levelId: string): SelectedLevel | undefined => {
+    for (const zone of map?.zones ?? []) {
+      const level = zone.levels.find((item: any) => item.id === levelId);
+      if (level) return { ...level, zoneName: zone.name };
+    }
+    return undefined;
+  };
+  const returnToMap = async () => {
+    await loadMap();
+    navigate("map");
+  };
+  if (screen === "state-gallery") return <StateGallery />;
   if (screen === "login")
     return (
-      <main className="login">
-        <h1>Place Value Factory</h1>
-        <p>Development mode uses fictional accounts only.</p>
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            void login(false);
-          }}
-        >
-          <label>
-            Class code
-            <input
-              autoComplete="organization"
-              value={classCode}
-              onChange={(event) => setClassCode(event.target.value)}
-            />
-          </label>
-          <label>
-            Username
-            <input
-              autoComplete="username"
-              value={username}
-              onChange={(event) => setUsername(event.target.value)}
-            />
-          </label>
-          <label>
-            Six-digit PIN
-            <input
-              inputMode="numeric"
-              autoComplete="current-password"
-              type={showPin ? "text" : "password"}
-              pattern="[0-9]{6}"
-              maxLength={6}
-              value={pin}
-              onChange={(event) => setPin(event.target.value)}
-            />
-          </label>
-          <button
-            className="secondary"
-            type="button"
-            onClick={() => setShowPin((visible) => !visible)}
-          >
-            {showPin ? "Hide PIN" : "Show PIN"}
-          </button>
-          <button type="submit">Student login</button>
-        </form>
-        <details>
-          <summary>Teacher development login</summary>
-          <label>
-            Teacher password
-            <input
-              type="password"
-              autoComplete="current-password"
-              value={teacherPassword}
-              onChange={(event) => setTeacherPassword(event.target.value)}
-            />
-          </label>
-          <button onClick={() => login(true)}>Teacher login</button>
-        </details>
-        {notice && <p role="alert">{notice}</p>}
-      </main>
+      <LoginScreen
+        classCode={classCode}
+        username={username}
+        pin={pin}
+        teacherPassword={teacherPassword}
+        showPin={showPin}
+        notice={notice}
+        onClassCode={setClassCode}
+        onUsername={setUsername}
+        onPin={setPin}
+        onTeacherPassword={setTeacherPassword}
+        onTogglePin={() => setShowPin((value) => !value)}
+        onStudentLogin={() => void login(false)}
+        onTeacherLogin={() => void login(true)}
+      />
     );
   if (screen === "map")
     return (
-      <main>
-        <header>
-          <h1>Factory Map</h1>
-          <span>
-            Ava · Progress is saved{" "}
-            <button className="secondary" onClick={openSettings}>
-              Settings
-            </button>
-          </span>
-        </header>
-        {progress?.nextPracticeSkillId && (
-          <section className="practice-card">
-            <h2>Practice recommendation</h2>
-            <p>
-              Build more evidence for{" "}
-              <strong>{progress.nextPracticeSkillId}</strong> before your next
-              stage gate.
-            </p>
-            <button
-              onClick={() =>
-                start(map?.highestUnlockedLevelId ?? "level-1", "practice")
-              }
-            >
-              Start practice
-            </button>
-          </section>
-        )}
-        {map?.zones.map((zone: any) => (
-          <section className="map" key={zone.id}>
-            <h2>{zone.name}</h2>
-            <ol aria-label={`${zone.name} levels`}>
-              {zone.levels.map((level: any) => (
-                <li key={level.id}>
-                  <strong>
-                    Level {level.id.replace("level-", "")}: {level.title}
-                  </strong>
-                  <br />
-                  <small>
-                    Stage {level.stage} · {level.status}
-                  </small>
-                  <br />
-                  {level.status === "unlocked" ? (
-                    <button onClick={() => start(level.id)}>Start</button>
-                  ) : (
-                    <span>
-                      {level.status === "completed"
-                        ? "Completed"
-                        : level.prerequisiteSummary}
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ol>
-          </section>
-        ))}
-      </main>
+      <MapScreen
+        map={map}
+        progress={progress}
+        activeAttempt={
+          attempt && attempt.status !== "completed" ? attempt : null
+        }
+        onSettings={() => void openSettings()}
+        onProgress={() => navigate("progress")}
+        onResume={() => navigate("game", { attempt })}
+        onPractice={() =>
+          void start(map?.highestUnlockedLevelId ?? "level-1", "practice")
+        }
+        onSelectLevel={chooseLevel}
+      />
+    );
+  if (screen === "level-intro" && selectedLevel)
+    return (
+      <LevelIntroScreen
+        level={selectedLevel}
+        settings={settings}
+        starting={starting}
+        onStart={() => void start(selectedLevel.id)}
+        onBack={() => navigate("map")}
+      />
+    );
+  if (screen === "progress")
+    return (
+      <ProgressScreen
+        progress={progress}
+        onPractice={() =>
+          void start(map?.highestUnlockedLevelId ?? "level-1", "practice")
+        }
+        onBack={() => navigate("map")}
+      />
     );
   if (screen === "settings")
     return (
-      <main className="login">
-        <h1>Factory settings</h1>
-        <p>
-          These supports are saved for this fictional profile and never change
-          game rewards.
-        </p>
-        <label>
-          <input
-            type="checkbox"
-            checked={settings.sound}
-            onChange={(event) =>
-              setSettings({ ...settings, sound: event.target.checked })
-            }
-          />{" "}
-          Sound
-        </label>
-        <label>
-          <input
-            type="checkbox"
-            checked={settings.reducedMotion}
-            onChange={(event) =>
-              setSettings({ ...settings, reducedMotion: event.target.checked })
-            }
-          />{" "}
-          Reduce motion
-        </label>
-        <label>
-          Factory scenery
-          <select
-            value={settings.pressure}
-            onChange={(event) =>
-              setSettings({
-                ...settings,
-                pressure: event.target.value as "calm" | "busy",
-              })
-            }
-          >
-            <option value="calm">Calm</option>
-            <option value="busy">Busy (cosmetic)</option>
-          </select>
-        </label>
-        <label>
-          Text size
-          <select
-            value={settings.textScale}
-            onChange={(event) =>
-              setSettings({
-                ...settings,
-                textScale: event.target.value as "normal" | "large",
-              })
-            }
-          >
-            <option value="normal">Normal</option>
-            <option value="large">Large</option>
-          </select>
-        </label>
-        <button onClick={saveSettings}>Save settings</button>
-        <button className="secondary" onClick={() => setScreen("map")}>
-          Back to map
-        </button>
-      </main>
+      <SettingsScreen
+        settings={settings}
+        onChange={setSettings}
+        onSave={() => void saveSettings()}
+        onBack={() => navigate("map")}
+      />
     );
   if (screen === "results")
     return (
-      <main className="results">
-        <h1>Level complete!</h1>
-        <p>{resultData?.shipped ?? 5} server-validated shipments saved.</p>
-        <dl className="result-counters">
-          <div>
-            <dt>First try</dt>
-            <dd>
-              {resultData?.firstObjectiveCorrect ?? 0}/
-              {resultData?.shipped ?? 5}
-            </dd>
-          </div>
-          <div>
-            <dt>Eventually correct</dt>
-            <dd>
-              {resultData?.eventuallyCorrect ?? 0}/{resultData?.shipped ?? 5}
-            </dd>
-          </div>
-          <div>
-            <dt>This-level efficiency</dt>
-            <dd>{resultData?.efficiency ?? 100}%</dd>
-          </div>
-        </dl>
-        <div
-          className="stars"
-          aria-label={`${resultData?.bestLevelStars ?? 2} earned stars`}
-        >
-          {(resultData?.bestLevelStars ?? 2) === 3 ? "★★★" : "★★☆"}
-        </div>
-        <p>
-          Complete · All orders correct · Extra challenge is optional and
-          untimed
-        </p>
-        {resultData?.transferStar ? (
-          <p role="status">Extra challenge complete — third star saved.</p>
-        ) : (
-          <button onClick={startTransfer}>Try the extra challenge</button>
-        )}
-        <button
-          onClick={async () => {
-            await loadMap();
-            setScreen("map");
-          }}
-        >
-          Back to map
-        </button>
-      </main>
+      <ResultsScreen
+        result={resultData}
+        onTransfer={() => void startTransfer()}
+        onReplay={() => {
+          const level = findLevel(attempt.levelId);
+          if (level) chooseLevel(level);
+        }}
+        onNext={() => {
+          const level = findLevel(resultData?.newlyUnlockedLevelIds?.[0]);
+          if (level) chooseLevel(level);
+          else void returnToMap();
+        }}
+        onProgress={() => navigate("progress")}
+        onMap={() => void returnToMap()}
+      />
     );
-  if (screen === "teacher")
+  if (screen === "teacher") return <TeacherScreen report={report} />;
+  if (screen === "game" && attempt)
     return (
-      <main>
-        <header>
-          <h1>Teacher evidence</h1>
-          <span>Fictional development account</span>
-        </header>
-        <section className="report">
-          <h2>Ava</h2>
-          <p>
-            {report.students[0].submittedN} submitted orders ·{" "}
-            {report.students[0].eventuallyCorrectN} accepted shipments
-          </p>
-          <table>
-            <caption>Stored shipment evidence</caption>
-            <thead>
-              <tr>
-                <th>Target</th>
-                <th>Crates</th>
-                <th>Saved</th>
-              </tr>
-            </thead>
-            <tbody>
-              {report.students[0].evidence.map((row: any, index: number) => (
-                <tr key={index}>
-                  <td>{row.target.toLocaleString()}</td>
-                  <td>{row.vector.join(", ")}</td>
-                  <td>{row.accepted ? "Yes" : "No"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-      </main>
-    );
-  const order = attempt.activeOrder;
-  const total = quantities.reduce(
-    (sum, amount, index) => sum + amount * places[index].value,
-    0,
-  );
-  const moveQuantityFocus = (nextIndex: number) =>
-    document.getElementById(`quantity-${nextIndex}`)?.focus();
-  const quantityShortcutDown = (event: React.KeyboardEvent, index: number) => {
-    if (event.key === "Tab" && event.shiftKey && index > 0) {
-      event.preventDefault();
-      shiftTabUsed.current = true;
-      moveQuantityFocus(index - 1);
-    }
-  };
-  const quantityShortcutUp = (event: React.KeyboardEvent, index: number) => {
-    if (event.key === "Shift") {
-      if (!shiftTabUsed.current && index < places.length - 1)
-        moveQuantityFocus(index + 1);
-      shiftTabUsed.current = false;
-    }
-  };
-  const objective =
-    order.distinctRepresentations === 2
-      ? "Build two different crate representations of this target."
-      : order.minimumRequired
-        ? "Use the fewest crates with the open machines."
-        : order.exactTypes
-          ? `Use exactly ${order.exactTypes} crate sizes.`
-          : order.allowed.length < 6
-            ? `Use only: ${order.allowed.map((value: number) => value.toLocaleString()).join(", ")}.`
-            : order.canonicalRequired
-              ? "Use normal place value: 0–9 crates of each size."
-              : "Build this target with the open machines.";
-  if (attempt.status === "paused")
-    return (
-      <main className="results">
-        <h1>Mission paused</h1>
-        <p>
-          Your draft is kept on this device and your saved order is ready to
-          resume.
-        </p>
-        <button onClick={() => changeAttemptState("resume")}>
-          Resume mission
-        </button>
-        <button
-          className="secondary"
-          onClick={async () => {
-            await loadMap();
-            setScreen("map");
-          }}
-        >
-          Back to map
-        </button>
-      </main>
+      <GameScreen
+        attempt={attempt}
+        quantities={quantities}
+        quantitiesB={quantitiesB}
+        undo={undo}
+        notice={notice}
+        help={help}
+        helpOpen={helpOpen}
+        saving={saving}
+        storageUnavailable={storageUnavailable}
+        tabId={tabId}
+        helpTrigger={helpTrigger}
+        helpDialog={helpDialog}
+        setQuantities={setQuantities}
+        setQuantitiesB={setQuantitiesB}
+        setUndo={setUndo}
+        onHelpOpen={() => setHelpOpen(true)}
+        onHelpClose={() => {
+          setHelpOpen(false);
+          requestAnimationFrame(() => helpTrigger.current?.focus());
+        }}
+        onHelp={() => void requestHelp()}
+        onTakeOver={() => void takeOver()}
+        onShip={() => void ship()}
+        onSkip={() => void skipOrder()}
+        onPause={() => void changeAttemptState("pause")}
+        onResume={() => void changeAttemptState("resume")}
+        onMap={() => void returnToMap()}
+      />
     );
   return (
     <main>
-      <header>
-        <h1>Place Value Factory</h1>
-        <span>Shipment {attempt.shippedSlots + 1} of 5</span>
-      </header>
-      <aside className="robot-guide" aria-label="Factory guide">
-        <span aria-hidden="true">🤖</span>
-        <p>
-          Build the target with the open crate machines. Your total updates as
-          you pack.
-        </p>
-      </aside>
-      {attempt.writerTabId !== tabId && (
-        <aside className="takeover" role="status">
-          <p>This attempt is open in another tab.</p>
-          <button onClick={takeOver}>Take over this attempt</button>
-        </aside>
-      )}
-      <section className="current-order" aria-labelledby="order-heading">
-        <p id="order-heading">
-          CURRENT ORDER ·{" "}
-          <span className="difficulty">{order.difficultyBand} practice</span>
-        </p>
-        <strong>{order.target.toLocaleString()}</strong>
-        <p>{objective}</p>
+      <section className="loading-state" aria-busy="true">
+        <h1>Loading the factory…</h1>
+        <p>Preparing your saved screen.</p>
       </section>
-      {order.sourceRepresentation && (
-        <section
-          className="source-representation"
-          aria-labelledby="source-heading"
-        >
-          <h2 id="source-heading">Read-only source crates</h2>
-          <p>
-            Start with this normal place-value packing, then repack it using the
-            open machines: {order.sourceRepresentation.join(", ")}.
-          </p>
-        </section>
-      )}
-      <section className="help" aria-labelledby="help-heading">
-        <h2 id="help-heading">Need a hand?</h2>
-        <p>
-          Help is optional. It does not change your shipment, but the saved
-          support step is included in learning evidence.
-        </p>
-        <button
-          className="secondary"
-          ref={helpTrigger}
-          disabled={saving}
-          onClick={() => setHelpOpen(true)}
-        >
-          Open help
-        </button>
-      </section>
-      {helpOpen && (
-        <div className="dialog-backdrop">
-          <section
-            className="help-dialog"
-            ref={helpDialog}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="help-dialog-title"
-          >
-            <h2 id="help-dialog-title">Step-by-step help</h2>
-            <p>
-              Help is optional. It does not change your shipment, but the saved
-              support step is included in learning evidence.
-            </p>
-            <button disabled={saving} onClick={requestHelp}>
-              {attempt.currentHintStep === "H3"
-                ? "Show H3 help again"
-                : `Get ${["H1", "H2", "H3"][["H1", "H2", "H3"].indexOf(attempt.currentHintStep) + 1] ?? "H1"} help`}
-            </button>
-            {help && <p role="status">{help}</p>}
-            <button
-              className="secondary"
-              onClick={() => {
-                setHelpOpen(false);
-                requestAnimationFrame(() => helpTrigger.current?.focus());
-              }}
-            >
-              Close help
-            </button>
-          </section>
-        </div>
-      )}
-      <p className="monitor" aria-live="polite">
-        Representation A totals <strong>{total.toLocaleString()}</strong>
-      </p>
-      {storageUnavailable && (
-        <p role="status">
-          Device storage is unavailable. Your current draft stays in this tab,
-          but it cannot be restored after refresh or close.
-        </p>
-      )}
-      <section
-        className="machines"
-        aria-label="Representation A place value machines"
-      >
-        {places.map((place, index) => (
-          <article
-            className={`machine machine-${index}`}
-            key={place.value}
-            aria-disabled={!order.allowed.includes(place.value)}
-          >
-            <h2>
-              {place.icon} {place.name}
-            </h2>
-            <p>
-              {place.value.toLocaleString()} each{" "}
-              {!order.allowed.includes(place.value) &&
-                "· Closed for this order"}
-            </p>
-            <label htmlFor={`quantity-${index}`}>Crate quantity</label>
-            <div>
-              <button
-                aria-label={`Remove one ${place.name} crate`}
-                disabled={saving || !order.allowed.includes(place.value)}
-                onClick={() =>
-                  setQuantities((q) =>
-                    q.map((value, i) =>
-                      i === index ? Math.max(0, value - 1) : value,
-                    ),
-                  )
-                }
-              >
-                −
-              </button>
-              <input
-                id={`quantity-${index}`}
-                inputMode="numeric"
-                type="number"
-                min="0"
-                max="999999"
-                disabled={saving || !order.allowed.includes(place.value)}
-                value={quantities[index]}
-                onFocus={(event) => {
-                  if (event.currentTarget.value === "0")
-                    event.currentTarget.select();
-                }}
-                onChange={(event) => {
-                  const value = Number(event.target.value);
-                  if (Number.isInteger(value) && value >= 0)
-                    setQuantities((q) =>
-                      q.map((amount, i) => (i === index ? value : amount)),
-                    );
-                }}
-              />
-              <button
-                aria-label={`Add one ${place.name} crate`}
-                disabled={saving || !order.allowed.includes(place.value)}
-                onClick={() =>
-                  setQuantities((q) =>
-                    q.map((value, i) => (i === index ? value + 1 : value)),
-                  )
-                }
-              >
-                +
-              </button>
-            </div>
-            {index < 5 && (
-              <button
-                className="exchange"
-                disabled={
-                  saving ||
-                  quantities[index] < 1 ||
-                  !order.allowed.includes(place.value) ||
-                  !order.allowed.includes(places[index + 1].value)
-                }
-                onClick={() =>
-                  setQuantities((q) =>
-                    q.map((value, i) =>
-                      i === index
-                        ? value - 1
-                        : i === index + 1
-                          ? value + 10
-                          : value,
-                    ),
-                  )
-                }
-              >
-                Exchange 1 for 10 smaller crates
-              </button>
-            )}
-          </article>
-        ))}
-      </section>
-      {order.distinctRepresentations === 2 && (
-        <section
-          className="second-representation"
-          aria-labelledby="representation-b-heading"
-        >
-          <h2 id="representation-b-heading">Representation B</h2>
-          <p>
-            Make a different valid crate vector. It must still total{" "}
-            {order.target.toLocaleString()}.
-          </p>
-          <div>
-            {places.map((place, index) => (
-              <label key={place.value}>
-                {place.name}
-                <input
-                  inputMode="numeric"
-                  type="number"
-                  min="0"
-                  max="999999"
-                  disabled={saving || !order.allowed.includes(place.value)}
-                  value={quantitiesB[index]}
-                  onChange={(event) => {
-                    const value = Number(event.target.value);
-                    if (Number.isInteger(value) && value >= 0)
-                      setQuantitiesB((q) =>
-                        q.map((amount, i) => (i === index ? value : amount)),
-                      );
-                  }}
-                />
-              </label>
-            ))}
-          </div>
-        </section>
-      )}
-      <section className="controls">
-        <button
-          className="secondary"
-          disabled={saving}
-          onClick={() => {
-            setUndo(quantities);
-            setQuantities([0, 0, 0, 0, 0, 0]);
-          }}
-        >
-          Clear all
-        </button>
-        <button
-          className="secondary"
-          disabled={!undo || saving}
-          onClick={() => {
-            if (undo) setQuantities(undo);
-          }}
-        >
-          Undo
-        </button>
-        <button className="ship" disabled={saving} onClick={ship}>
-          {saving ? "Saving…" : "Ship order"}
-        </button>
-        <button className="secondary" disabled={saving} onClick={skipOrder}>
-          Skip after two saved tries
-        </button>
-        <button
-          className="secondary"
-          disabled={saving}
-          onClick={() => changeAttemptState("pause")}
-        >
-          Pause mission
-        </button>
-      </section>
-      {notice && (
-        <p className="notice" role="status">
-          {notice}
-        </p>
-      )}
     </main>
   );
 }

@@ -25,6 +25,10 @@ npm run dev
 
 `npm run dev` starts the API at http://127.0.0.1:3101 and the web app at http://127.0.0.1:5181. The test suite includes deterministic math/oracle tests, fictional API journey/restart tests, idempotency/lease/help/skip/transfer coverage, and a pg-mem repository transaction test.
 
+### Pre-art visual development
+
+The development-only state gallery is available at http://127.0.0.1:5181/dev/place-value-factory/states. It renders deterministic fictional map, introduction, progress, gameplay, recovery, error and results states using the same components as the application. See `docs/VISUAL_STATE_GALLERY.md` for stable fixture names and `docs/ASSET_MANIFEST.md` for required provenance. Use this surface when integrating original artwork; never paint live text, quantities, controls, stars or level status into background images.
+
 Fictional student: `FACTORY5` / `ava` / `123456`; teacher: `teacher` / `factory-demo`. `db/local-development.json` is a server-owned development-only store, never a production student database. Do not put real student records or credentials in it.
 
 ### PostgreSQL preparation

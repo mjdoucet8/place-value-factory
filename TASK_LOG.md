@@ -2,6 +2,28 @@
 
 Append-only after initial handoff. Corrections are new dated entries; never rewrite old outcomes. Claim template and workflow are in AGENTS.md.
 
+## 2026-09-22 | FE-10 / QA-07 / PA-05 | CLAIM
+
+Goal and scope: complete the pre-art milestone by preserving the verified recovery/report checkpoint, componentizing the student UI, establishing route-shaped navigation and complete visual states, and adding browser evidence for advanced modes and dropped-reply recovery.
+
+Owned paths: `apps/web/src/`, `apps/server/src/index.ts`, `tests/`, `docs/`, root status/readme/ignore files.
+
+Dependencies and contract version: API contract v1.0; no production identity, deployment, artwork or JSON-adapter replacement.
+
+Acceptance IDs: INTRO-01..03, MAP-01..03, RESULT-01..03, PROGRESS-01..02, GAME-04..07, RECOVERY-02..04/07, ACCESS-01..02/05..07, DESIGN-01..04 (pre-art structure and evidence).
+
+## 2026-09-22 | FE-10 / QA-07 / PA-05 | HANDOFF
+
+Changes and artifacts: preserved the preceding recovery/report/help work in commit `1b3f184`; split the React UI into reusable screens plus a shared machine editor and model definitions; added route-shaped history, a dedicated level introduction, detailed progress/results, resume banner, refreshable results, teacher empty/table states and centralized design tokens. Added a deterministic development gallery documented in `docs/VISUAL_STATE_GALLERY.md`, covering the complete pre-art state inventory without changing progress. Results now include authoritative best streak and per-skill summaries.
+
+Browser evidence: the primary journey submits a wrong answer, verifies the quantity remains editable, corrects it, completes five orders, refreshes saved results, completes transfer, reviews settings/progress and opens teacher evidence. Separate journeys cover unavailable storage, two-tab takeover, help focus restoration, drop-after-commit/before-reply receipt recovery and advanced-mode/state fixtures.
+
+Commands and observed results: `npm test` passed 46 tests; `npx tsc --noEmit` passed; `npm run build` passed; `npm run test:e2e` passed 6 Chromium journeys; `git diff --check` passed.
+
+Evidence level: integrated fictional-data UI/API plus deterministic visual-regression surface. Ready for original artwork integration, not production or classroom release.
+
+Remaining external/later work: original art generation/integration; production identity/session/CSRF and roster lifecycle; real PostgreSQL migration/rollback/concurrency; retention/deletion; manual screen-reader, representative-device/zoom, load and classroom-network evidence.
+
 ## 2026-09-22 | BE-05 / QA-03 | CLAIM
 
 Goal and scope: make the fictional teacher-report/evidence read path class-owner scoped and add a regression proving a teacher from a different fictional class cannot read a student's exact evidence.

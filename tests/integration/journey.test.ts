@@ -126,6 +126,16 @@ describe("fictional student and teacher journey", () => {
       snapshot = saved.body.snapshot;
     }
     expect(snapshot).toMatchObject({ status: "completed", shippedSlots: 5 });
+    const results = await app.request(
+      `/games/place-value-factory/attempts/${snapshot.attemptId}/results`,
+    );
+    expect(results.body).toMatchObject({
+      firstObjectiveCorrect: 4,
+      eventuallyCorrect: 5,
+      bestStreak: 4,
+      bestLevelStars: 2,
+    });
+    expect(results.body.skillStatuses.length).toBeGreaterThan(0);
     const profile = await app.request("/profile");
     expect(profile.body).toMatchObject({
       totalStars: 2,

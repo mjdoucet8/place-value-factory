@@ -14,6 +14,17 @@ async function fillCanonicalOrder(page: Page) {
   }
 }
 
+async function startFirstMission(page: Page) {
+  await page
+    .getByRole("button", { name: /View mission|Replay mission/ })
+    .first()
+    .click();
+  await expect(page.getByRole("heading", { name: /Level \d+/ })).toBeVisible();
+  await page
+    .getByRole("button", { name: /Start mission|Replay level/ })
+    .click();
+}
+
 test("student completes five saved orders, settings, and optional transfer; teacher sees evidence", async ({
   page,
   browser,
@@ -23,10 +34,7 @@ test("student completes five saved orders, settings, and optional transfer; teac
   await expect(
     page.getByRole("heading", { name: "Factory Map" }),
   ).toBeVisible();
-  await page
-    .getByRole("button", { name: /Start( practice)?/ })
-    .first()
-    .click();
+  await startFirstMission(page);
   await expect(page.getByText("CURRENT ORDER")).toBeVisible();
   await page.locator("#quantity-0").fill("2");
   await page.screenshot({
@@ -37,6 +45,10 @@ test("student completes five saved orders, settings, and optional transfer; teac
   await expect(page.locator("#quantity-0")).toHaveValue("2");
   const takeOver = page.getByRole("button", { name: "Take over this attempt" });
   if (await takeOver.isVisible()) await takeOver.click();
+  await page.locator("#quantity-0").fill("1");
+  await page.getByRole("button", { name: "Ship order" }).click();
+  await expect(page.getByText("That is too many crates.")).toBeVisible();
+  await expect(page.locator("#quantity-0")).toHaveValue("1");
   for (let index = 0; index < 5; index++) {
     await fillCanonicalOrder(page);
     await page.getByRole("button", { name: "Ship order" }).click();
@@ -49,6 +61,11 @@ test("student completes five saved orders, settings, and optional transfer; teac
   await expect(page.getByText("First try")).toBeVisible();
   await expect(page.getByText("Eventually correct")).toBeVisible();
   await expect(page.getByText("This-level efficiency")).toBeVisible();
+  await expect(page.getByText("Best streak")).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { name: "Level complete!" }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Try the extra challenge" }).click();
   await expect(page.getByText("CURRENT ORDER")).toBeVisible();
   await fillCanonicalOrder(page);
@@ -61,6 +78,12 @@ test("student completes five saved orders, settings, and optional transfer; teac
   await expect(
     page.getByRole("heading", { name: "Factory Map" }),
   ).toBeVisible();
+  await page.getByRole("button", { name: "Progress" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Factory Progress" }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: /Practice/ })).toBeVisible();
+  await page.getByRole("button", { name: "Back to map" }).click();
 
   const teacher = await browser.newPage();
   await teacher.goto("/");
@@ -83,10 +106,7 @@ test("keeps play usable when browser storage cannot save a draft", async ({
   });
   await page.goto("/");
   await page.getByRole("button", { name: "Student login" }).click();
-  await page
-    .getByRole("button", { name: /Start( practice)?/ })
-    .first()
-    .click();
+  await startFirstMission(page);
   await expect(
     page.getByText(
       /Device storage is unavailable\. Your current draft stays in this tab/,
@@ -102,10 +122,7 @@ test("a second tab takes over and the stale writer cannot ship", async ({
 }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Student login" }).click();
-  await page
-    .getByRole("button", { name: /Start( practice)?/ })
-    .first()
-    .click();
+  await startFirstMission(page);
   await expect(page.getByText("CURRENT ORDER")).toBeVisible();
 
   const secondTab = await page.context().newPage();
@@ -142,10 +159,7 @@ test("help dialog traps focus and Escape restores its trigger", async ({
 }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Student login" }).click();
-  await page
-    .getByRole("button", { name: /Start( practice)?/ })
-    .first()
-    .click();
+  await startFirstMission(page);
   const trigger = page.getByRole("button", { name: "Open help" });
   await trigger.click();
   await expect(
@@ -154,4 +168,83 @@ test("help dialog traps focus and Escape restores its trigger", async ({
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(trigger).toBeFocused();
+});
+
+test("recovers a shipment whose server reply was dropped after commit", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Student login" }).click();
+  if (
+    await page.getByRole("button", { name: "Resume saved mission" }).isVisible()
+  )
+    await page.getByRole("button", { name: "Resume saved mission" }).click();
+  else await startFirstMission(page);
+  await expect(page.getByText("CURRENT ORDER")).toBeVisible();
+  const takeOver = page.getByRole("button", { name: "Take over this attempt" });
+  if (await takeOver.isVisible()) await takeOver.click();
+  const shipmentBefore = Number(
+    (await page.locator("header span").innerText()).match(/\d+/)?.[0],
+  );
+  let dropped = false;
+  await page.route("**/responses", async (route) => {
+    if (dropped) return route.continue();
+    dropped = true;
+    await route.fetch();
+    await route.abort("connectionfailed");
+  });
+  await fillCanonicalOrder(page);
+  await page.getByRole("button", { name: "Ship order" }).click();
+  await expect(page.getByText(/Not saved/)).toBeVisible();
+  await page.unroute("**/responses");
+  await page.reload();
+  await expect(page.getByText("Saved shipment restored.")).toBeVisible();
+  await expect(
+    page.getByText(`Shipment ${shipmentBefore + 1} of 5`),
+  ).toBeVisible();
+});
+
+test("renders deterministic advanced-mode visual fixtures", async ({
+  page,
+}) => {
+  const states = [
+    ["restricted", "Use only:"],
+    ["minimum", "Use the fewest crates"],
+    ["exactTypes", "Use exactly 2 crate sizes"],
+    ["twoWays", "Representation B"],
+    ["repack", "Read-only source crates"],
+    ["takeover", "Take over this attempt"],
+    ["storage", "Device storage is unavailable"],
+  ] as const;
+  for (const [fixture, expected] of states) {
+    await page.goto(`/dev/place-value-factory/states?fixture=${fixture}`);
+    await expect(
+      page.getByText(expected, { exact: false }).first(),
+    ).toBeVisible();
+  }
+  await page.goto("/dev/place-value-factory/states?fixture=results-three");
+  await expect(page.getByLabel("3 earned stars")).toBeVisible();
+  await page.goto("/dev/place-value-factory/states?fixture=map-resume");
+  await expect(
+    page.getByRole("button", { name: "Resume saved mission" }),
+  ).toBeVisible();
+  await page.goto("/dev/place-value-factory/states?fixture=map");
+  await expect(page.getByText("Complete Level 2 first")).toBeVisible();
+  await page.goto("/dev/place-value-factory/states?fixture=progress");
+  await expect(page.getByText("Still gathering evidence")).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/dev/place-value-factory/states?fixture=calm");
+  await expect(page.getByRole("button", { name: "Ship order" })).toBeVisible();
+  await expect(page.locator(".machine")).toHaveCount(6);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/dev/place-value-factory/states?fixture=loading");
+  await expect(page.locator(".skeleton").first()).toHaveCSS(
+    "animation-name",
+    "none",
+  );
 });
