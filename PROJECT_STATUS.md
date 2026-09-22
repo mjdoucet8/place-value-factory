@@ -57,3 +57,17 @@ The JSON adapter remains fictional-data-only and is not production persistence. 
 The local fictional-data application now has a 46-test passing suite, TypeScript check and production web build. The audited, implemented local path includes deterministic validation/generation/mastery, all configured levels, restricted/minimum/exact/two-way/repack metadata, ordered H1-H3 supports, pause/resume, skip replacement, leases/takeover, recovery across a JSON-store restart, a five-shipment completion, an optional transfer third star, profile settings, and teacher-report reconciliation.
 
 The acceptance checklist and exact commands are in `docs/COMPLETION_CHECKLIST.md` and `docs/QA_EVIDENCE.md`. This is **integrated fictional-data evidence**, not classroom-ready or production-security evidence. Playwright Chromium covers the primary student/teacher journey and refresh/takeover recovery. Manual screen-reader/representative-device accessibility, real PostgreSQL migration/rollback/concurrency, school identity/hosting/retention approval, and classroom network/load testing are still NOT RUN. The JSON adapter remains development-only.
+
+## 2026-09-22 teacher-report integrity checkpoint
+
+The fictional teacher report now uses an order-level submitted denominator, so a wrong answer followed by a correction is one submitted order rather than two. Its ISO date window can yield explicit zero-evidence counts, and the fictional adapter owner-scopes both class reports and exact order evidence; a second teacher cannot read the seeded class's report or response. `npx tsc --noEmit`, `npm test` (46 tests), `npm run build`, and `npm run test:e2e` passed.
+
+This is still only an integrated fictional-data report slice. Roster provision/reset/revoke, report pagination/individual drilldowns, production identity/session hardening, and durable PostgreSQL report queries remain incomplete or externally unverified.
+
+## 2026-09-22 browser-storage recovery checkpoint
+
+Browser draft/pending persistence is now guarded against unavailable or quota-exhausted device storage. Gameplay remains usable in memory, but it tells the student not to refresh or close because unsaved work cannot be restored. The existing Playwright journey plus an injected storage-failure journey passed; deliberate drop-reply and simultaneous two-tab browser fault injection are still NOT RUN.
+
+## 2026-09-22 two-tab recovery checkpoint
+
+Playwright Chromium now opens the same active attempt in two pages. The second tab takes over the lease, a shipment from the stale tab is rejected with the authoritative lease-loss message, and the new writer successfully saves the following shipment. Deliberate drop-after-commit/before-reply remains NOT RUN.

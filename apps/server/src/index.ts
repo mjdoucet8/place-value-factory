@@ -80,7 +80,11 @@ type Settings = {
   pressure: "calm" | "busy";
   textScale: "normal" | "large";
 };
-type Store = { attempts: Attempt[]; settings?: Record<string, Settings> };
+type Store = {
+  attempts: Attempt[];
+  settings?: Record<string, Settings>;
+  studentAccess?: Record<string, boolean>;
+};
 type Actor = { id: string; role: "student" | "teacher" };
 type Command = {
   commandId: string;
@@ -95,14 +99,41 @@ const students = [
     pin: "123456",
     alias: "Ava",
     classCode: "FACTORY5",
+    classId: "class-demo",
   },
 ];
 const teachers = [
-  { id: "teacher-dev", username: "teacher", password: "factory-demo" },
+  {
+    id: "teacher-dev",
+    username: "teacher",
+    password: "factory-demo",
+    classIds: ["class-demo"],
+  },
+  {
+    id: "teacher-other",
+    username: "other-teacher",
+    password: "other-demo",
+    classIds: ["class-other"],
+  },
+];
+const classes = [
+  { id: "class-demo", name: "Factory 5", timezone: "America/Toronto" },
+  { id: "class-other", name: "Other Factory", timezone: "America/Toronto" },
 ];
 
+function stableJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(",")}]`;
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${stableJson(record[key])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
 function hashPayload(body: unknown) {
-  return createHash("sha256").update(JSON.stringify(body)).digest("hex");
+  return createHash("sha256").update(stableJson(body)).digest("hex");
 }
 function isNonNegativeInteger(value: unknown): value is number {
   return typeof value === "number" && Number.isInteger(value) && value >= 0;
@@ -144,9 +175,10 @@ export function createApiServer(dataPath = defaultDataPath): Server {
       return {
         attempts: parsed.attempts.map(hydrateAttempt),
         settings: parsed.settings ?? {},
+        studentAccess: parsed.studentAccess ?? {},
       };
     } catch {
-      return { attempts: [], settings: {} };
+      return { attempts: [], settings: {}, studentAccess: {} };
     }
   }
   async function save(value: Store) {
@@ -188,7 +220,20 @@ export function createApiServer(dataPath = defaultDataPath): Server {
     const value = request.headers["x-session"] ?? cookieSession;
     if (value === "student-ava") return { id: "student-ava", role: "student" };
     if (value === "teacher-dev") return { id: "teacher-dev", role: "teacher" };
+    if (value === "teacher-other")
+      return { id: "teacher-other", role: "teacher" };
     return null;
+  }
+  function ownsClass(actor: Actor, classId: string) {
+    return (
+      actor.role === "teacher" &&
+      teachers
+        .find((teacher) => teacher.id === actor.id)
+        ?.classIds.includes(classId)
+    );
+  }
+  function classForStudent(studentId: string) {
+    return students.find((student) => student.id === studentId)?.classId;
   }
   function receiptFor(
     attempt: Attempt,
@@ -427,7 +472,8 @@ export function createApiServer(dataPath = defaultDataPath): Server {
             item.username === String(body.username).trim().toLowerCase() &&
             item.pin === body.pin,
         );
-        return student
+        const state = await store();
+        return student && state.studentAccess?.[student.id] !== false
           ? send(
               response,
               200,
@@ -435,7 +481,7 @@ export function createApiServer(dataPath = defaultDataPath): Server {
                 principal: {
                   id: student.id,
                   role: "student",
-                  classId: "class-demo",
+                  classId: student.classId,
                 },
                 csrfToken: "local-dev",
               },
@@ -489,7 +535,9 @@ export function createApiServer(dataPath = defaultDataPath): Server {
               principal: {
                 id: actor.id,
                 role: actor.role,
-                ...(actor.role === "student" ? { classId: "class-demo" } : {}),
+                ...(actor.role === "student"
+                  ? { classId: classForStudent(actor.id) }
+                  : {}),
               },
             })
           : send(
@@ -503,6 +551,15 @@ export function createApiServer(dataPath = defaultDataPath): Server {
           401,
           responseError("SESSION_EXPIRED", "Please sign in."),
         );
+      if (actor.role === "student") {
+        const state = await store();
+        if (state.studentAccess?.[actor.id] === false)
+          return send(
+            response,
+            403,
+            responseError("ACCESS_DISABLED", "Access is disabled."),
+          );
+      }
       if (
         request.method === "GET" &&
         url.pathname === "/api/v1/games/place-value-factory/map" &&
@@ -1444,68 +1501,204 @@ export function createApiServer(dataPath = defaultDataPath): Server {
         actor.role === "teacher"
       )
         return send(response, 200, {
-          classes: [
-            {
-              id: "class-demo",
-              name: "Factory 5",
-              timezone: "America/Toronto",
-              studentCount: students.length,
-            },
-          ],
+          classes: classes
+            .filter((item) => ownsClass(actor, item.id))
+            .map((item) => ({
+              ...item,
+              studentCount: students.filter(
+                (student) => student.classId === item.id,
+              ).length,
+            })),
         });
+      const teacherStudents = url.pathname.match(
+        /^\/api\/v1\/teacher\/classes\/([^/]+)\/students$/,
+      );
       if (
+        teacherStudents &&
         request.method === "GET" &&
-        url.pathname === "/api/v1/teacher/classes/class-demo/students" &&
         actor.role === "teacher"
-      )
+      ) {
+        if (!ownsClass(actor, teacherStudents[1]))
+          return send(
+            response,
+            404,
+            responseError("NOT_FOUND", "Class not found."),
+          );
+        const state = await store();
         return send(response, 200, {
-          students: students.map(({ id, alias, username }) => ({
-            id,
-            alias,
-            username,
-            enabled: true,
-          })),
+          students: students
+            .filter((student) => student.classId === teacherStudents[1])
+            .map(({ id, alias, username }) => ({
+              id,
+              alias,
+              username,
+              enabled: state.studentAccess?.[id] !== false,
+            })),
           nextCursor: null,
         });
+      }
+      const studentAccess = url.pathname.match(
+        /^\/api\/v1\/teacher\/students\/([^/]+)\/access$/,
+      );
       if (
+        studentAccess &&
+        request.method === "PATCH" &&
+        actor.role === "teacher"
+      ) {
+        const body = await json(request);
+        const student = students.find((item) => item.id === studentAccess[1]);
+        if (
+          !student ||
+          !ownsClass(actor, student.classId) ||
+          typeof body.enabled !== "boolean" ||
+          typeof body.commandId !== "string"
+        )
+          return send(
+            response,
+            404,
+            responseError("NOT_FOUND", "Student not found."),
+          );
+        const state = await store();
+        state.studentAccess ??= {};
+        state.studentAccess[student.id] = body.enabled;
+        await save(state);
+        return send(response, 200, {
+          student: {
+            id: student.id,
+            alias: student.alias,
+            enabled: body.enabled,
+          },
+        });
+      }
+      const teacherEvidence = url.pathname.match(
+        /^\/api\/v1\/teacher\/orders\/([^/]+)\/evidence$/,
+      );
+      if (
+        teacherEvidence &&
         request.method === "GET" &&
-        url.pathname ===
-          "/api/v1/teacher/classes/class-demo/games/place-value-factory/report" &&
         actor.role === "teacher"
       ) {
         const state = await store();
-        const attempts = state.attempts.filter(
-          (item) => item.studentId === "student-ava",
+        const attempt = state.attempts.find((item) =>
+          item.responses.some(
+            (response) => response.order.id === teacherEvidence[1],
+          ),
         );
-        const responses = attempts.flatMap((item) => item.responses);
-        const firstPerOrder = new Map<string, ResponseRecord>();
-        for (const response of responses)
-          if (!firstPerOrder.has(response.order.id))
-            firstPerOrder.set(response.order.id, response);
-        const first = [...firstPerOrder.values()];
-        const firstWrong = first.filter(
-          (item) => !item.validation.objectiveMet,
+        const responses = attempt?.responses.filter(
+          (response) => response.order.id === teacherEvidence[1],
         );
-        const evidence = attempts.flatMap((attempt) => attempt.evidence);
+        if (
+          !attempt ||
+          !responses?.length ||
+          !ownsClass(actor, classForStudent(attempt.studentId) ?? "")
+        )
+          return send(
+            response,
+            404,
+            responseError("NOT_FOUND", "Order evidence not found."),
+          );
+        const order = responses[0].order;
         return send(response, 200, {
-          classId: "class-demo",
-          timezone: "America/Toronto",
-          students: [
-            {
-              studentId: "student-ava",
-              alias: "Ava",
-              currentLevelId: attempts.some((item) => item.completed)
-                ? "level-2"
+          order,
+          firstResponse: responses[0],
+          finalResponse: responses.at(-1),
+          supports: attempt.supportEvents.filter(
+            (event) => event.orderId === order.id,
+          ),
+          evidence:
+            attempt.evidence.find(
+              (item) =>
+                item.signature ===
+                `${order.target}:${order.allowed.join(",")}:${order.mode ?? ""}`,
+            ) ?? null,
+        });
+      }
+      const classReport = url.pathname.match(
+        /^\/api\/v1\/teacher\/classes\/([^/]+)\/games\/place-value-factory\/report$/,
+      );
+      if (classReport && request.method === "GET" && actor.role === "teacher") {
+        const classId = classReport[1];
+        if (!ownsClass(actor, classId))
+          return send(
+            response,
+            404,
+            responseError("NOT_FOUND", "Class not found."),
+          );
+        const state = await store();
+        const now = new Date();
+        const defaultFrom = new Date(now);
+        defaultFrom.setUTCDate(defaultFrom.getUTCDate() - 6);
+        defaultFrom.setUTCHours(0, 0, 0, 0);
+        const from = url.searchParams.has("from")
+          ? new Date(url.searchParams.get("from") ?? "")
+          : defaultFrom;
+        const to = url.searchParams.has("to")
+          ? new Date(url.searchParams.get("to") ?? "")
+          : new Date(now.getTime() + 1);
+        if (
+          Number.isNaN(from.getTime()) ||
+          Number.isNaN(to.getTime()) ||
+          from >= to
+        )
+          return send(
+            response,
+            422,
+            responseError("INVALID_INPUT", "Use an increasing ISO date range."),
+          );
+        const classStudents = students.filter(
+          (student) => student.classId === classId,
+        );
+        return send(response, 200, {
+          classId,
+          timezone: classes.find((item) => item.id === classId)?.timezone,
+          from: from.toISOString(),
+          to: to.toISOString(),
+          asOf: now.toISOString(),
+          students: classStudents.map((student) => {
+            const attempts = state.attempts.filter(
+              (attempt) => attempt.studentId === student.id,
+            );
+            const responses = attempts.flatMap((attempt) => attempt.responses);
+            const firstPerOrder = new Map<string, ResponseRecord>();
+            for (const item of responses)
+              if (!firstPerOrder.has(item.order.id))
+                firstPerOrder.set(item.order.id, item);
+            const submitted = [...firstPerOrder.values()].filter((item) => {
+              const committedAt = new Date(item.at);
+              return committedAt >= from && committedAt < to;
+            });
+            const submittedIds = new Set(
+              submitted.map((item) => item.order.id),
+            );
+            const firstWrong = submitted.filter(
+              (item) => !item.validation.objectiveMet,
+            );
+            const evidence = attempts.flatMap((attempt) => attempt.evidence);
+            const completed = attempts.filter((attempt) => attempt.completed);
+            const lastActivity =
+              responses
+                .map((item) => item.at)
+                .sort()
+                .at(-1) ?? null;
+            return {
+              studentId: student.id,
+              alias: student.alias,
+              currentLevelId: completed.length
+                ? `level-${Math.min(30, Math.max(...completed.map((item) => Number(item.levelId.slice(6)))) + 1)}`
                 : "level-1",
-              submittedN: responses.length,
-              firstObjectiveCorrectN: first.filter(
+              submittedN: submitted.length,
+              firstObjectiveCorrectN: submitted.filter(
                 (item) => item.validation.objectiveMet,
               ).length,
-              firstValueCorrectN: first.filter(
+              firstValueCorrectN: submitted.filter(
                 (item) => item.validation.valueMatches,
               ).length,
-              eventuallyCorrectN: responses.filter(
-                (item) => item.validation.shipmentAccepted,
+              eventuallyCorrectN: submitted.filter((item) =>
+                responses.some(
+                  (candidate) =>
+                    candidate.order.id === item.order.id &&
+                    candidate.validation.shipmentAccepted,
+                ),
               ).length,
               firstWrongN: firstWrong.length,
               correctionSuccessN: firstWrong.filter((item) =>
@@ -1519,16 +1712,20 @@ export function createApiServer(dataPath = defaultDataPath): Server {
                 STAGE_GATE_SKILLS[1],
                 evidence,
               ),
+              lastActivityAt: lastActivity,
               skills: [...new Set(evidence.map((item) => item.skillId))]
                 .sort()
                 .map((skillId) => summarizeMastery(skillId, evidence)),
-              evidence: responses.map((item) => ({
-                target: item.order.target,
-                vector: item.representationA,
-                accepted: item.validation.shipmentAccepted,
-              })),
-            },
-          ],
+              evidence: responses
+                .filter((item) => submittedIds.has(item.order.id))
+                .map((item) => ({
+                  orderId: item.order.id,
+                  target: item.order.target,
+                  vector: item.representationA,
+                  accepted: item.validation.shipmentAccepted,
+                })),
+            };
+          }),
           nextCursor: null,
         });
       }

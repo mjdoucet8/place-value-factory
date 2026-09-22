@@ -2,6 +2,100 @@
 
 Append-only after initial handoff. Corrections are new dated entries; never rewrite old outcomes. Claim template and workflow are in AGENTS.md.
 
+## 2026-09-22 | BE-05 / QA-03 | CLAIM
+
+Goal and scope: make the fictional teacher-report/evidence read path class-owner scoped and add a regression proving a teacher from a different fictional class cannot read a student's exact evidence.
+
+Owned paths: `apps/server/src/index.ts`, `tests/integration/journey.test.ts`, `TASK_LOG.md`, `PROJECT_STATUS.md`, `docs/COMPLETION_CHECKLIST.md`, `docs/QA_EVIDENCE.md`.
+
+Dependencies and contract version: API contract v1.0; existing teacher evidence route and fictional identity adapter.
+
+Acceptance IDs: REPORT-02, REPORT-04, SEC-01 (fictional-adapter scope).
+
+## 2026-09-22 | BE-05 / QA-03 | HANDOFF
+
+Changes and artifacts: scoped fictional teacher classes to explicit owner IDs; class/student listing, class reports, and exact order evidence now return 404 outside the teacher's class. Report aggregation counts one submitted order from its first response, recognizes a later accepted correction for that same order, includes explicit zero counts for an empty ISO date window, and returns current activity metadata.
+
+Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (46 tests), `npm run build`, and `npm run test:e2e` passed. The integration journey verifies a five-order denominator from six response records, empty-window zeros, and second-teacher denial of both report and evidence routes.
+
+Evidence level: integrated fictional-data API and browser journey.
+
+Remaining risks or blockers: roster provisioning/reset/revoke, report pagination and individual drilldowns, database-backed report authorization, production sessions/CSRF, and real PostgreSQL concurrency remain incomplete or NOT RUN.
+
+Next owner / reviewer: BE/QA for local fictional roster lifecycle and recovery fault coverage; school owner and infrastructure for production identity and PostgreSQL verification.
+
+## 2026-09-22 | FE-06 / QA-04 | CLAIM
+
+Goal and scope: make browser draft and pending-command storage degrade safely when device storage is blocked or full, without claiming recoverability that was not saved.
+
+Owned paths: `apps/web/src/main.tsx`, `tests/e2e/student-teacher.spec.ts`, `TASK_LOG.md`, `PROJECT_STATUS.md`, `docs/COMPLETION_CHECKLIST.md`, `docs/QA_EVIDENCE.md`.
+
+Dependencies and contract version: API contract v1.0; existing local draft/pending-command behavior.
+
+Acceptance IDs: RECOVERY-07, RECOVERY-03 (degraded browser-storage behavior).
+
+## 2026-09-22 | FE-06 / QA-04 | HANDOFF
+
+Changes and artifacts: replaced direct browser-storage calls with a failure-tolerant device-storage adapter. If storage is unavailable, the game retains the active in-memory draft, continues an immediate save request, and persistently states that refresh/close cannot recover the draft. It never reports a failed local write as saved recovery state.
+
+Commands/manual checks and observed results: `npx tsc --noEmit` and `npm test` (46 tests) passed. `npm run test:e2e` passed 2 Chromium journeys, including one that forces `Storage.setItem` to throw and then ships a canonical order successfully.
+
+Evidence level: integrated browser and fictional-data API verification.
+
+Remaining risks or blockers: direct network drop-after-commit and true simultaneous-two-tab fault injection remain untested; storage uses localStorage rather than the specified profile-scoped IndexedDB outbox and remains development-only.
+
+Next owner / reviewer: FE/QA recovery fault coverage; BE for durable production persistence and identity lifecycle.
+
+## 2026-09-22 | FE-06 / QA-04 | UPDATE
+
+Changes and artifacts: corrected the Playwright server data path so the configured pre-run cleanup and the API resolve the same root-level fictional E2E store. This prevents successive browser runs from silently inheriting prior attempts. Payload receipts now use deterministic key-sorted JSON hashing, avoiding property-order-only false conflicts.
+
+Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (46 tests), `npm run build`, and `npm run test:e2e` (2 Playwright Chromium journeys) passed.
+
+Evidence level: integrated fictional-data verification.
+
+## 2026-09-22 | FE-07 / QA-05 | CLAIM
+
+Goal and scope: add a true multi-tab browser lease fault test proving takeover rejects a stale writer while preserving the committed attempt for the new writer.
+
+Owned paths: `tests/e2e/student-teacher.spec.ts`, `TASK_LOG.md`, `PROJECT_STATUS.md`, `docs/COMPLETION_CHECKLIST.md`, `docs/QA_EVIDENCE.md`.
+
+Dependencies and contract version: API contract v1.0; existing lease/takeover endpoint and game UI.
+
+Acceptance IDs: RECOVERY-04, PLAY-02.
+
+## 2026-09-22 | FE-07 / QA-05 | HANDOFF
+
+Changes and artifacts: added a three-page-state Chromium fault journey using two same-context browser tabs. It opens an attempt, performs an explicit writer takeover, verifies that the original tab's shipment is rejected as another-tab editing, and verifies the new writer advances to shipment 2 of 5.
+
+Commands/manual checks and observed results: `npm run test:e2e` passed 3 Playwright Chromium journeys. The multi-tab test exercised the actual UI and fictional API lease endpoint rather than mocking a response.
+
+Evidence level: integrated fictional-data browser verification.
+
+Remaining risks or blockers: deliberate drop-after-commit/before-reply recovery, IndexedDB outbox behavior, actual private-mode/browser variants, and real database restart/rollback remain incomplete or NOT RUN.
+
+Next owner / reviewer: FE/QA recovery drop-reply test; BE for durable production persistence and identity lifecycle.
+
+## 2026-09-22 | FE-08 / QA-06 | HANDOFF
+
+Changes and artifacts: replaced inline Help output with a labelled modal dialog. Its keyboard handler traps Tab within the dialog, Escape closes it, and both close paths restore focus to the Open help trigger. H1-H3 persistence remains server-owned.
+
+Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (46 tests), and `npm run build` passed. `npm run test:e2e` passed 4 Chromium journeys; the new journey opens the Help dialog, presses Escape, and verifies focus restoration.
+
+Evidence level: integrated fictional-data browser verification.
+
+Remaining risks or blockers: manual screen-reader review, full results/progress detail, real-device reflow, and production identity/persistence remain incomplete or NOT RUN.
+
+## 2026-09-22 | FE-09 | HANDOFF
+
+Changes and artifacts: results now render the authoritative five-shipment count, first-objective fraction, eventually-correct fraction, and this-level efficiency from the server result rather than illustrative values.
+
+Commands/manual checks and observed results: `npx tsc --noEmit`, `npm test` (46 tests), and `npm run build` passed.
+
+Evidence level: integrated fictional-data UI/build verification.
+
+Remaining risks or blockers: results still lack the full skill-status, streak, retry/next-level detail and manual assistive-technology review required for complete RESULT coverage.
+
 ## 2026-09-21 | PA-04 / GL-04 / BE-04 / FE-05 / QA-02 | CLAIM
 
 Goal and scope: complete all locally verifiable Place Value Factory V1 behavior from the existing integrated prototype, reconcile source against the specification, add browser/integration evidence, and leave only genuine external deployment/classroom prerequisites.

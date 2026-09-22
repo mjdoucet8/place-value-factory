@@ -14,6 +14,30 @@ const api = async (path: string, options: RequestInit = {}) => {
     );
   return body;
 };
+const deviceStorage = {
+  read(key: string) {
+    try {
+      return window.localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  write(key: string, value: string) {
+    try {
+      window.localStorage.setItem(key, value);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+  remove(key: string) {
+    try {
+      window.localStorage.removeItem(key);
+    } catch {
+      // Storage is an optional recovery enhancement, not an interaction requirement.
+    }
+  },
+};
 const places = [
   { value: 100000, name: "Hundred thousands", icon: "◆" },
   { value: 10000, name: "Ten thousands", icon: "●" },
@@ -32,6 +56,7 @@ function App() {
   const [undo, setUndo] = useState<number[] | null>(null);
   const [notice, setNotice] = useState("");
   const [help, setHelp] = useState("");
+  const [helpOpen, setHelpOpen] = useState(false);
   const [report, setReport] = useState<any>();
   const [resultData, setResultData] = useState<any>();
   const [settings, setSettings] = useState({
@@ -43,6 +68,7 @@ function App() {
   const [map, setMap] = useState<any>();
   const [progress, setProgress] = useState<any>();
   const [saving, setSaving] = useState(false);
+  const [storageUnavailable, setStorageUnavailable] = useState(false);
   const [classCode, setClassCode] = useState("FACTORY5");
   const [username, setUsername] = useState("ava");
   const [pin, setPin] = useState("123456");
@@ -50,6 +76,8 @@ function App() {
   const [showPin, setShowPin] = useState(false);
   const shiftTabUsed = useRef(false);
   const reconciled = useRef(new Set<string>());
+  const helpTrigger = useRef<HTMLButtonElement>(null);
+  const helpDialog = useRef<HTMLDivElement>(null);
   const tabId = useRef(crypto.randomUUID()).current;
   useEffect(() => {
     void api("/auth/session")
@@ -72,14 +100,14 @@ function App() {
   }, []);
   useEffect(() => {
     if (screen === "game") {
-      const saved = localStorage.getItem(
+      const saved = deviceStorage.read(
         `pvf:draft:${attempt?.attemptId}:${attempt?.activeOrder?.id}`,
       );
       if (saved) {
         try {
           setQuantities(JSON.parse(saved));
         } catch {
-          localStorage.removeItem(
+          deviceStorage.remove(
             `pvf:draft:${attempt?.attemptId}:${attempt?.activeOrder?.id}`,
           );
         }
@@ -91,13 +119,52 @@ function App() {
   }, [screen, attempt?.attemptId, attempt?.activeOrder?.id]);
   useEffect(() => {
     setHelp("");
+    setHelpOpen(false);
   }, [attempt?.activeOrder?.id]);
   useEffect(() => {
+    if (!helpOpen) return;
+    const dialog = helpDialog.current;
+    const focusable = () => [
+      ...(dialog?.querySelectorAll<HTMLElement>(
+        "button:not([disabled]), [href], input:not([disabled])",
+      ) ?? []),
+    ];
+    const close = () => {
+      setHelpOpen(false);
+      requestAnimationFrame(() => helpTrigger.current?.focus());
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        close();
+      }
+      if (event.key === "Tab") {
+        const targets = focusable();
+        if (!targets.length) return;
+        const first = targets[0];
+        const last = targets.at(-1)!;
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    requestAnimationFrame(() => focusable()[0]?.focus());
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [helpOpen]);
+  useEffect(() => {
     if (screen === "game" && attempt?.activeOrder)
-      localStorage.setItem(
-        `pvf:draft:${attempt.attemptId}:${attempt.activeOrder.id}`,
-        JSON.stringify(quantities),
-      );
+      if (
+        !deviceStorage.write(
+          `pvf:draft:${attempt.attemptId}:${attempt.activeOrder.id}`,
+          JSON.stringify(quantities),
+        )
+      )
+        setStorageUnavailable(true);
   }, [screen, attempt?.attemptId, attempt?.activeOrder?.id, quantities]);
   useEffect(() => {
     if (screen !== "game" || !attempt?.activeOrder) return;
@@ -146,11 +213,16 @@ function App() {
     const key = `pvf:pending:${attempt.attemptId}`;
     if (reconciled.current.has(key)) return;
     reconciled.current.add(key);
-    const raw = localStorage.getItem(key);
+    const raw = deviceStorage.read(key);
     if (!raw) return;
     try {
       const pending = JSON.parse(raw);
-      if (pending.orderId !== attempt.activeOrder.id) return;
+      const command =
+        pending.payload ??
+        (() => {
+          const { orderId, ...legacy } = pending;
+          return { ...legacy, activeMs: 0 };
+        })();
       setNotice("Checking a saved shipment…");
       void api(
         `/games/place-value-factory/attempts/${attempt.attemptId}/orders/${pending.orderId}/responses`,
@@ -158,13 +230,13 @@ function App() {
           method: "POST",
           headers: {
             "x-session": session,
-            "idempotency-key": pending.commandId,
+            "idempotency-key": command.commandId,
           },
-          body: JSON.stringify({ ...pending, activeMs: 0 }),
+          body: JSON.stringify(command),
         },
       )
         .then((data) => {
-          localStorage.removeItem(key);
+          deviceStorage.remove(key);
           setAttempt(data.snapshot);
           setNotice(
             data.validation.shipmentAccepted
@@ -177,7 +249,7 @@ function App() {
           setNotice("Saved shipment is waiting for a connection.");
         });
     } catch {
-      localStorage.removeItem(key);
+      deviceStorage.remove(key);
     }
   }, [screen, attempt?.attemptId, attempt?.activeOrder?.id, session]);
   const loadMap = async () => {
@@ -273,42 +345,43 @@ function App() {
     setNotice("Saving your shipment…");
     const commandId = crypto.randomUUID();
     try {
-      localStorage.setItem(
+      // This live tab owns the first send. A fresh page load performs recovery
+      // from the stored command, avoiding a second concurrent send here.
+      reconciled.current.add(`pvf:pending:${attempt.attemptId}`);
+      const payload = {
+        commandId,
+        expectedRevision: attempt.revision,
+        leaseEpoch: attempt.leaseEpoch,
+        tabId,
+        representationA: quantities,
+        representationB:
+          attempt.activeOrder.distinctRepresentations === 2
+            ? quantitiesB
+            : null,
+        activeMs: 0,
+      };
+      const pendingStored = deviceStorage.write(
         `pvf:pending:${attempt.attemptId}`,
         JSON.stringify({
           orderId: attempt.activeOrder.id,
-          commandId,
-          expectedRevision: attempt.revision,
-          leaseEpoch: attempt.leaseEpoch,
-          tabId,
-          representationA: quantities,
-          representationB:
-            attempt.activeOrder.distinctRepresentations === 2
-              ? quantitiesB
-              : null,
+          payload,
         }),
       );
+      if (!pendingStored) setStorageUnavailable(true);
+      if (!pendingStored)
+        setNotice(
+          "Device storage is unavailable. Keep this tab open while this shipment is saving; a refresh cannot restore it.",
+        );
       const data = await api(
         `/games/place-value-factory/attempts/${attempt.attemptId}/orders/${attempt.activeOrder.id}/responses`,
         {
           method: "POST",
           headers: { "x-session": session, "idempotency-key": commandId },
-          body: JSON.stringify({
-            commandId,
-            expectedRevision: attempt.revision,
-            leaseEpoch: attempt.leaseEpoch,
-            tabId,
-            representationA: quantities,
-            representationB:
-              attempt.activeOrder.distinctRepresentations === 2
-                ? quantitiesB
-                : null,
-            activeMs: 0,
-          }),
+          body: JSON.stringify(payload),
         },
       );
-      localStorage.removeItem(`pvf:pending:${attempt.attemptId}`);
-      localStorage.removeItem(
+      deviceStorage.remove(`pvf:pending:${attempt.attemptId}`);
+      deviceStorage.remove(
         `pvf:draft:${attempt.attemptId}:${attempt.activeOrder.id}`,
       );
       setNotice(
@@ -658,7 +731,26 @@ function App() {
     return (
       <main className="results">
         <h1>Level complete!</h1>
-        <p>You saved five server-validated shipments.</p>
+        <p>{resultData?.shipped ?? 5} server-validated shipments saved.</p>
+        <dl className="result-counters">
+          <div>
+            <dt>First try</dt>
+            <dd>
+              {resultData?.firstObjectiveCorrect ?? 0}/
+              {resultData?.shipped ?? 5}
+            </dd>
+          </div>
+          <div>
+            <dt>Eventually correct</dt>
+            <dd>
+              {resultData?.eventuallyCorrect ?? 0}/{resultData?.shipped ?? 5}
+            </dd>
+          </div>
+          <div>
+            <dt>This-level efficiency</dt>
+            <dd>{resultData?.efficiency ?? 100}%</dd>
+          </div>
+        </dl>
         <div
           className="stars"
           aria-label={`${resultData?.bestLevelStars ?? 2} earned stars`}
@@ -819,16 +911,56 @@ function App() {
           Help is optional. It does not change your shipment, but the saved
           support step is included in learning evidence.
         </p>
-        <button className="secondary" disabled={saving} onClick={requestHelp}>
-          {attempt.currentHintStep === "H3"
-            ? "Show H3 help again"
-            : `Get ${["H1", "H2", "H3"][["H1", "H2", "H3"].indexOf(attempt.currentHintStep) + 1] ?? "H1"} help`}
+        <button
+          className="secondary"
+          ref={helpTrigger}
+          disabled={saving}
+          onClick={() => setHelpOpen(true)}
+        >
+          Open help
         </button>
-        {help && <p role="status">{help}</p>}
       </section>
+      {helpOpen && (
+        <div className="dialog-backdrop">
+          <section
+            className="help-dialog"
+            ref={helpDialog}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="help-dialog-title"
+          >
+            <h2 id="help-dialog-title">Step-by-step help</h2>
+            <p>
+              Help is optional. It does not change your shipment, but the saved
+              support step is included in learning evidence.
+            </p>
+            <button disabled={saving} onClick={requestHelp}>
+              {attempt.currentHintStep === "H3"
+                ? "Show H3 help again"
+                : `Get ${["H1", "H2", "H3"][["H1", "H2", "H3"].indexOf(attempt.currentHintStep) + 1] ?? "H1"} help`}
+            </button>
+            {help && <p role="status">{help}</p>}
+            <button
+              className="secondary"
+              onClick={() => {
+                setHelpOpen(false);
+                requestAnimationFrame(() => helpTrigger.current?.focus());
+              }}
+            >
+              Close help
+            </button>
+          </section>
+        </div>
+      )}
       <p className="monitor" aria-live="polite">
         Representation A totals <strong>{total.toLocaleString()}</strong>
       </p>
+      {storageUnavailable && (
+        <p role="status">
+          Device storage is unavailable. Your current draft stays in this tab,
+          but it cannot be restored after refresh or close.
+        </p>
+      )}
       <section
         className="machines"
         aria-label="Representation A place value machines"

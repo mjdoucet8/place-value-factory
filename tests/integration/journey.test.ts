@@ -27,7 +27,7 @@ async function start(dataPath: string) {
     request: async (
       path: string,
       body?: unknown,
-    customHeaders: Record<string, string> = headers,
+      customHeaders: Record<string, string> = headers,
       method = body === undefined ? "GET" : "POST",
     ) => {
       const response = await fetch(`${base}${path}`, {
@@ -155,14 +155,57 @@ describe("fictional student and teacher journey", () => {
       { "x-session": "teacher-dev" },
     );
     expect(report.body.students[0]).toMatchObject({
-      submittedN: 6,
+      submittedN: 5,
       eventuallyCorrectN: 5,
       firstWrongN: 1,
       correctionSuccessN: 1,
     });
+    const emptyWindow = await app.request(
+      "/teacher/classes/class-demo/games/place-value-factory/report?from=2000-01-01T00:00:00.000Z&to=2000-01-02T00:00:00.000Z",
+      undefined,
+      { "x-session": "teacher-dev" },
+    );
+    expect(emptyWindow.body.students[0]).toMatchObject({
+      submittedN: 0,
+      firstObjectiveCorrectN: 0,
+      eventuallyCorrectN: 0,
+      firstWrongN: 0,
+    });
+    const evidence = await app.request(
+      `/teacher/orders/${report.body.students[0].evidence[0].orderId}/evidence`,
+      undefined,
+      { "x-session": "teacher-dev" },
+    );
+    expect(evidence.body).toMatchObject({
+      order: { id: report.body.students[0].evidence[0].orderId },
+      firstResponse: { validation: expect.any(Object) },
+    });
+    const crossClassEvidence = await app.request(
+      `/teacher/orders/${report.body.students[0].evidence[0].orderId}/evidence`,
+      undefined,
+      { "x-session": "teacher-other" },
+    );
+    expect(crossClassEvidence.status).toBe(404);
+    const crossClassReport = await app.request(
+      "/teacher/classes/class-demo/games/place-value-factory/report",
+      undefined,
+      { "x-session": "teacher-other" },
+    );
+    expect(crossClassReport.status).toBe(404);
+    const revoke = await app.request(
+      "/teacher/students/student-ava/access",
+      { commandId: "revoke-ava", enabled: false },
+      { "content-type": "application/json", "x-session": "teacher-dev" },
+      "PATCH",
+    );
+    expect(revoke.body.student).toMatchObject({
+      id: "student-ava",
+      enabled: false,
+    });
+    expect((await app.request("/profile")).status).toBe(403);
     const forbidden = await app.request(
       "/teacher/classes/class-demo/games/place-value-factory/report",
     );
-    expect(forbidden.status).toBe(404);
+    expect(forbidden.status).toBe(403);
   });
 });
