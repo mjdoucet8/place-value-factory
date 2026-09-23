@@ -51,6 +51,66 @@ function canonical(target: number) {
 }
 
 describe("fictional-data command safety", () => {
+  it("issues distinct persisted order identities when replaying the same deterministic level", async () => {
+    const issuedIds = new Set<string>();
+    const targets: number[][] = [];
+    for (let run = 0; run < 2; run++) {
+      const startKey = `repeat-start-${run}`;
+      const started = await request(
+        "/games/place-value-factory/attempts",
+        {
+          commandId: startKey,
+          profileRevision: run,
+          tabId: "tab-a",
+          levelId: "level-1",
+        },
+        { ...studentHeaders, "idempotency-key": startKey },
+      );
+      expect(started.status).toBe(201);
+      let snapshot = started.body;
+      targets.push([]);
+      for (let slot = 0; slot < 5; slot++) {
+        const order = snapshot.activeOrder;
+        expect(issuedIds.has(order.id)).toBe(false);
+        expect(order.id.startsWith(`${snapshot.attemptId}.`)).toBe(true);
+        issuedIds.add(order.id);
+        targets[run].push(order.target);
+        const key = `repeat-answer-${run}-${slot}`;
+        const answer = await request(
+          `/games/place-value-factory/attempts/${snapshot.attemptId}/orders/${order.id}/responses`,
+          {
+            commandId: key,
+            expectedRevision: snapshot.revision,
+            leaseEpoch: snapshot.leaseEpoch,
+            tabId: "tab-a",
+            representationA: canonical(order.target),
+            representationB: null,
+          },
+          { ...studentHeaders, "idempotency-key": key },
+        );
+        expect(answer.status).toBe(200);
+        snapshot = answer.body.snapshot;
+      }
+    }
+    expect(targets[0]).toEqual(targets[1]);
+    expect(issuedIds.size).toBe(10);
+    const report = await request(
+      "/teacher/classes/class-demo/games/place-value-factory/report",
+      undefined,
+      { "x-session": "teacher-dev" },
+    );
+    expect(report.body.students[0].submittedN).toBe(10);
+    for (const orderId of issuedIds) {
+      const evidence = await request(
+        `/teacher/orders/${orderId}/evidence`,
+        undefined,
+        { "x-session": "teacher-dev" },
+      );
+      expect(evidence.status).toBe(200);
+      expect(evidence.body.evidence.orderId).toBe(orderId);
+    }
+  });
+
   it("replays the original response for a duplicate command without adding a second response", async () => {
     const start = await request(
       "/games/place-value-factory/attempts",

@@ -8,6 +8,8 @@ import {
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { Pool } from "pg";
+import { PostgresRuntimeStore } from "./runtime-store.js";
 import {
   difficultyFor,
   evidenceScore,
@@ -35,6 +37,8 @@ const leaseDurationMs = 60_000;
 
 type Order = ReturnType<typeof generateLevelOrder>;
 type ResponseRecord = {
+  commandId?: string;
+  activeMs?: number;
   order: Order;
   representationA: unknown;
   representationB: unknown;
@@ -50,7 +54,7 @@ type Receipt = {
 };
 type HintStep = "H1" | "H2" | "H3";
 type SupportEvent = { orderId: string; step: HintStep; at: string };
-type Attempt = {
+export type Attempt = {
   id: string;
   studentId: string;
   levelId: string;
@@ -66,7 +70,7 @@ type Attempt = {
   writerTabId: string;
   leaseExpiresAt: string;
   receipts: Receipt[];
-  evidence: EvidenceRecord[];
+  evidence: (EvidenceRecord & { orderId?: string })[];
   supportEvents: SupportEvent[];
   transferOrder?: Order;
   transferStar?: boolean;
@@ -80,7 +84,7 @@ type Settings = {
   pressure: "calm" | "busy";
   textScale: "normal" | "large";
 };
-type Store = {
+export type Store = {
   attempts: Attempt[];
   settings?: Record<string, Settings>;
   studentAccess?: Record<string, boolean>;
@@ -168,8 +172,24 @@ function startCommandFrom(
     : null;
 }
 
-export function createApiServer(dataPath = defaultDataPath): Server {
+export function createApiServer(
+  dataPath = defaultDataPath,
+  options: { database?: Pool } = {},
+): Server {
+  if (process.env.NODE_ENV === "production" || process.env.PVF_MODE === "pilot")
+    throw new Error(
+      "Secure identity configuration is required; the development identity adapter cannot run in pilot or production mode.",
+    );
+  const database = options.database;
+  const sqlStore = database ? new PostgresRuntimeStore(database) : null;
+  type Reply = {
+    status: number;
+    body?: unknown;
+    extraHeaders: Record<string, string>;
+  };
+  const pendingReplies = new WeakMap<ServerResponse, Reply | null>();
   async function store(): Promise<Store> {
+    if (sqlStore) return sqlStore.load();
     try {
       const parsed = JSON.parse(await readFile(dataPath, "utf8")) as Store;
       return {
@@ -177,11 +197,14 @@ export function createApiServer(dataPath = defaultDataPath): Server {
         settings: parsed.settings ?? {},
         studentAccess: parsed.studentAccess ?? {},
       };
-    } catch {
-      return { attempts: [], settings: {}, studentAccess: {} };
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT")
+        return { attempts: [], settings: {}, studentAccess: {} };
+      throw error;
     }
   }
   async function save(value: Store) {
+    if (sqlStore) return sqlStore.save(value);
     await mkdir(dirname(dataPath), { recursive: true });
     await writeFile(dataPath, JSON.stringify(value, null, 2));
   }
@@ -191,6 +214,10 @@ export function createApiServer(dataPath = defaultDataPath): Server {
     body?: unknown,
     extraHeaders: Record<string, string> = {},
   ) {
+    if (pendingReplies.has(response)) {
+      pendingReplies.set(response, { status, body, extraHeaders });
+      return;
+    }
     response.writeHead(status, {
       "content-type": "application/json",
       "access-control-allow-origin": "*",
@@ -417,20 +444,26 @@ export function createApiServer(dataPath = defaultDataPath): Server {
     return (
       attempt.transferOrder ??
       attempt.activeOrder ??
-      (attempt.kind === "practice" && attempt.practiceSkill
-        ? generatePracticeOrder(
-            attempt.practiceSkill,
-            attempt.seed,
-            attempt.slot,
-            nextDifficulty(attempt),
-          )
-        : generateLevelOrder(
-            attempt.levelId,
-            attempt.seed,
-            attempt.slot,
-            nextDifficulty(attempt),
-          ))
+      issuedOrder(
+        attempt.id,
+        attempt.kind === "practice" && attempt.practiceSkill
+          ? generatePracticeOrder(
+              attempt.practiceSkill,
+              attempt.seed,
+              attempt.slot,
+              nextDifficulty(attempt),
+            )
+          : generateLevelOrder(
+              attempt.levelId,
+              attempt.seed,
+              attempt.slot,
+              nextDifficulty(attempt),
+            ),
+      )
     );
+  }
+  function issuedOrder(attemptId: string, generated: Order): Order {
+    return { ...generated, id: `${attemptId}.${generated.id}` };
   }
   function highestHint(attempt: Attempt, orderId: string): HintStep | "none" {
     const steps: HintStep[] = ["H1", "H2", "H3"];
@@ -468,7 +501,7 @@ export function createApiServer(dataPath = defaultDataPath): Server {
     };
   }
 
-  return createServer(async (request, response) => {
+  const handle = async (request: IncomingMessage, response: ServerResponse) => {
     try {
       if (request.method === "OPTIONS") return send(response, 204);
       const url = new URL(request.url ?? "/", `http://${request.headers.host}`);
@@ -703,6 +736,27 @@ export function createApiServer(dataPath = defaultDataPath): Server {
         let attempt = state.attempts.find(
           (item) => item.studentId === actor.id && !item.completed,
         );
+        const payloadHash = hashPayload(body);
+        for (const owned of state.attempts.filter(
+          (item) => item.studentId === actor.id,
+        )) {
+          const prior = receiptFor(
+            owned,
+            actor,
+            command.commandId,
+            payloadHash,
+          );
+          if (prior === "conflict")
+            return send(
+              response,
+              409,
+              responseError(
+                "IDEMPOTENCY_CONFLICT",
+                "This command was already used for different work.",
+              ),
+            );
+          if (prior) return send(response, prior.status, prior.body);
+        }
         const isPractice = body.kind === "practice";
         const requestedLevel = levelById(
           typeof body.levelId === "string" ? body.levelId : "level-1",
@@ -761,17 +815,20 @@ export function createApiServer(dataPath = defaultDataPath): Server {
         const practiceSkill = isPractice
           ? (nextPracticeSkill(gateSkills, evidence) ?? gateSkills[0])
           : undefined;
+        const attemptId = randomUUID();
         attempt = {
-          id: randomUUID(),
+          id: attemptId,
           studentId: actor.id,
           levelId: requestedLevel.id,
           seed,
           slot: 0,
           replacementIndex: 0,
-          activeOrder:
+          activeOrder: issuedOrder(
+            attemptId,
             isPractice && practiceSkill
               ? generatePracticeOrder(practiceSkill, seed, 0, "easy")
               : generateLevelOrder(requestedLevel.id, seed, 0, "easy"),
+          ),
           responses: [],
           completed: false,
           status: "active",
@@ -789,8 +846,16 @@ export function createApiServer(dataPath = defaultDataPath): Server {
           practiceSkill,
         };
         state.attempts.push(attempt);
+        const startedSnapshot = snapshot(attempt);
+        attempt.receipts.push({
+          actorId: actor.id,
+          commandId: command.commandId,
+          payloadHash,
+          status: 201,
+          body: startedSnapshot,
+        });
         await save(state);
-        return send(response, 201, snapshot(attempt));
+        return send(response, 201, startedSnapshot);
       }
       const stateChange = url.pathname.match(
         /^\/api\/v1\/games\/place-value-factory\/attempts\/([^/]+)\/(pause|resume)$/,
@@ -1205,6 +1270,7 @@ export function createApiServer(dataPath = defaultDataPath): Server {
             ),
           );
         attempt.evidence.push({
+          orderId: order.id,
           skillId: order.primarySkill ?? "unknown",
           score: 0,
           independentFirst: false,
@@ -1228,6 +1294,7 @@ export function createApiServer(dataPath = defaultDataPath): Server {
                 attempt.slot,
                 "easy",
               );
+        attempt.activeOrder = issuedOrder(attempt.id, attempt.activeOrder);
         attempt.revision += 1;
         const bodyOut = {
           commandId: command.commandId,
@@ -1311,7 +1378,7 @@ export function createApiServer(dataPath = defaultDataPath): Server {
         );
         attempt.transferOrder = {
           ...base,
-          id: `${base.id}-transfer`,
+          id: `${attempt.id}.${base.id}-transfer`,
           sourceRepresentation: undefined,
         };
         attempt.writerTabId = command.tabId;
@@ -1435,6 +1502,10 @@ export function createApiServer(dataPath = defaultDataPath): Server {
             body.representationB ?? null,
           );
           attempt.responses.push({
+            commandId: command.commandId,
+            activeMs: isNonNegativeInteger(body.activeMs)
+              ? Math.min(body.activeMs, 86400000)
+              : 0,
             order,
             representationA: body.representationA,
             representationB: body.representationB ?? null,
@@ -1455,6 +1526,7 @@ export function createApiServer(dataPath = defaultDataPath): Server {
               skipped: false,
             };
             attempt.evidence.push({
+              orderId: order.id,
               skillId: order.primarySkill ?? "unknown",
               score: evidenceScore(facts),
               independentFirst: isIndependentFirst(facts),
@@ -1468,7 +1540,7 @@ export function createApiServer(dataPath = defaultDataPath): Server {
             } else {
               attempt.slot += 1;
               if (attempt.slot === 5) attempt.completed = true;
-              else
+              else {
                 attempt.activeOrder =
                   attempt.kind === "practice" && attempt.practiceSkill
                     ? generatePracticeOrder(
@@ -1483,6 +1555,11 @@ export function createApiServer(dataPath = defaultDataPath): Server {
                         attempt.slot,
                         nextDifficulty(attempt),
                       );
+                attempt.activeOrder = issuedOrder(
+                  attempt.id,
+                  attempt.activeOrder,
+                );
+              }
             }
           }
           attempt.revision += 1;
@@ -1617,10 +1694,11 @@ export function createApiServer(dataPath = defaultDataPath): Server {
             (event) => event.orderId === order.id,
           ),
           evidence:
-            attempt.evidence.find(
-              (item) =>
-                item.signature ===
-                `${order.target}:${order.allowed.join(",")}:${order.mode ?? ""}`,
+            attempt.evidence.find((item) =>
+              item.orderId
+                ? item.orderId === order.id
+                : item.signature ===
+                  `${order.target}:${order.allowed.join(",")}:${order.mode ?? ""}`,
             ) ?? null,
         });
       }
@@ -1745,11 +1823,38 @@ export function createApiServer(dataPath = defaultDataPath): Server {
         404,
         responseError("NOT_FOUND", "Route not found."),
       );
-    } catch {
+    } catch (error) {
+      if (
+        sqlStore &&
+        !(error instanceof SyntaxError) &&
+        !["INVALID_INPUT", "BODY_TOO_LARGE"].includes((error as Error).message)
+      )
+        throw error;
       return send(
         response,
         422,
         responseError("INVALID_INPUT", "Request could not be processed."),
+      );
+    }
+  };
+  return createServer(async (request, response) => {
+    if (!sqlStore) return handle(request, response);
+    pendingReplies.set(response, null);
+    try {
+      await sqlStore.transaction(() => handle(request, response));
+      const reply = pendingReplies.get(response);
+      pendingReplies.delete(response);
+      if (!reply) throw new Error("Missing response");
+      send(response, reply.status, reply.body, reply.extraHeaders);
+    } catch {
+      pendingReplies.delete(response);
+      send(
+        response,
+        503,
+        responseError(
+          "STORAGE_UNAVAILABLE",
+          "Your work could not be saved. Please try again.",
+        ),
       );
     }
   });
@@ -1772,7 +1877,12 @@ if (
   process.argv[1] &&
   fileURLToPath(import.meta.url) === resolve(process.argv[1])
 )
-  createApiServer().listen(port, () =>
+  createApiServer(
+    defaultDataPath,
+    process.env.DATABASE_URL
+      ? { database: new Pool({ connectionString: process.env.DATABASE_URL }) }
+      : {},
+  ).listen(port, () =>
     console.log(
       `Place Value Factory API listening on http://localhost:${port}`,
     ),

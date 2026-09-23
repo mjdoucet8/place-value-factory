@@ -1,5 +1,11 @@
 # Task log
 
+## 2026-09-23 | RC-03 | UPDATE | Actual PostgreSQL HTTP journey
+
+Added normalized runtime SQL storage for profiles/settings/access flags, attempts, orders, responses, support events, evidence and command receipts; configured PostgreSQL failures never fall back to JSON. API replies wait for commit. A correctness-first cross-process transaction lock prevents lost updates pending scoped concurrency optimization. New issued IDs are attempt-scoped; persisted legacy IDs remain unchanged. First-response command IDs and active duration are retained, and start receipts replay even after completion. Pilot/production mode refuses the current development identity shortcuts.
+
+Observed: real PostgreSQL tests pass four cases, including the actual HTTP five-order journey, six concurrent identical requests, injected write failure returning 503 with zero partial writes, populated upgrade, ownership and lease races. After a real database restart, both repository and live HTTP results/report checks pass. `npm test`: 47 passed, four dedicated PostgreSQL cases skipped outside harness; type checking passed. Full security/roster and browser verification still pending; no release completion claimed. Next: secure adapter and lifecycle, then scoped runtime load/operations and remaining V1 queue.
+
 ## 2026-09-23 | RC-02 | HANDOFF / REVIEW | Repository integrity verified
 
 Composite attempt/order/evidence ownership now rejects mismatched students at the database boundary. A populated migration-001 schema upgrades with order ownership backfilled and evidence unchanged. Expired or foreign response writers are rejected. Explicit transactional heartbeat, same-tab resume after expiry, and takeover use actor-scoped receipts; six concurrent identical takeovers cause one transition and five replays. Heartbeat preserves game revision; reacquisition/takeover advance epochs. Real PostgreSQL tests passed (three cases before restart, durable-response case after restart); existing 46 unit/integration tests and type checking passed. This is repository-level evidence only, not runtime/security completion. Next: RC-03 actual runtime persistence, starting with collision-free issued order identity and explicit evidence ownership.

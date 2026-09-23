@@ -1,6 +1,8 @@
 import { migrateDatabase } from "../../apps/server/src/migrations.js";
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
+import type { AddressInfo } from "node:net";
+import { createApiServer } from "../../apps/server/src/index.js";
 import { Pool } from "pg";
 import { describe, expect, it } from "vitest";
 import {
@@ -10,6 +12,164 @@ import {
 
 const socket = process.env.PVF_TEST_PG_SOCKET;
 describe.skipIf(!socket)("real PostgreSQL isolated cluster", () => {
+  it("serves the real HTTP journey transactionally and restores results after database restart", async () => {
+    if (!socket?.startsWith("/tmp/pvf-postgres-test-"))
+      throw new Error("Requires owned disposable test socket");
+    const admin = new Pool({ host: socket, database: "postgres" });
+    let schema: string;
+    if (process.env.PVF_TEST_PG_RESTART === "1") {
+      const found = (
+        await admin.query(
+          "SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'runtime_%'",
+        )
+      ).rows;
+      expect(found).toHaveLength(1);
+      schema = found[0].schema_name;
+      if (!/^runtime_[a-f0-9]{32}$/.test(schema))
+        throw new Error("Unexpected runtime test schema");
+    } else {
+      schema = `runtime_${randomUUID().replaceAll("-", "")}`;
+      await admin.query(`CREATE SCHEMA ${schema}`);
+    }
+    await admin.end();
+    const pool = new Pool({
+      host: socket,
+      database: "postgres",
+      options: `-c search_path=${schema}`,
+    });
+    await migrateDatabase(pool);
+    const server = createApiServer(
+      "/nonexistent/pvf-test-must-not-use-json.json",
+      { database: pool },
+    );
+    await new Promise<void>((resolve) =>
+      server.listen(0, "127.0.0.1", resolve),
+    );
+    const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api/v1`;
+    const request = async (path: string, body?: any, actor = "student-ava") => {
+      const response = await fetch(base + path, {
+        method: body === undefined ? "GET" : "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-session": actor,
+          ...(body?.commandId ? { "idempotency-key": body.commandId } : {}),
+        },
+        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+      });
+      return { status: response.status, body: await response.json() };
+    };
+    try {
+      if (process.env.PVF_TEST_PG_RESTART !== "1") {
+        const start = await request("/games/place-value-factory/attempts", {
+          commandId: "runtime-start",
+          profileRevision: 0,
+          tabId: "runtime-tab",
+          levelId: "level-1",
+        });
+        expect(start.status).toBe(201);
+        let snapshot = start.body;
+        for (let slot = 0; slot < 5; slot++) {
+          const order = snapshot.activeOrder;
+          let remaining = order.target;
+          const representationA = [100000, 10000, 1000, 100, 10, 1].map(
+            (value) => {
+              const count = Math.floor(remaining / value);
+              remaining %= value;
+              return count;
+            },
+          );
+          const command = {
+            commandId: `runtime-answer-${slot}`,
+            expectedRevision: snapshot.revision,
+            leaseEpoch: snapshot.leaseEpoch,
+            tabId: "runtime-tab",
+            representationA,
+            representationB: null,
+          };
+          const path = `/games/place-value-factory/attempts/${snapshot.attemptId}/orders/${order.id}/responses`;
+          if (slot === 0) {
+            await pool.query(
+              "CREATE FUNCTION fail_response() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'fictional fault injection'; END $$",
+            );
+            await pool.query(
+              "CREATE TRIGGER injected_failure BEFORE INSERT ON pvf_response FOR EACH ROW EXECUTE FUNCTION fail_response()",
+            );
+            expect((await request(path, command)).status).toBe(503);
+            expect(
+              (await pool.query("SELECT count(*)::int AS n FROM pvf_response"))
+                .rows[0].n,
+            ).toBe(0);
+            expect(
+              (await pool.query("SELECT revision FROM pvf_attempt")).rows[0]
+                .revision,
+            ).toBe(0);
+            await pool.query("DROP TRIGGER injected_failure ON pvf_response");
+            const concurrent = await Promise.all(
+              Array.from({ length: 6 }, () => request(path, command)),
+            );
+            expect(concurrent.every((result) => result.status === 200)).toBe(
+              true,
+            );
+            for (const result of concurrent)
+              expect(result).toEqual(concurrent[0]);
+            snapshot = concurrent[0].body.snapshot;
+          } else {
+            const response = await request(path, command);
+            expect(response.status).toBe(200);
+            snapshot = response.body.snapshot;
+          }
+        }
+      }
+      const attempts = (
+        await pool.query("SELECT id,status,slot FROM pvf_attempt")
+      ).rows;
+      expect(attempts).toHaveLength(1);
+      expect(attempts[0]).toMatchObject({ status: "completed", slot: 5 });
+      const result = await request(
+        `/games/place-value-factory/attempts/${attempts[0].id}/results`,
+      );
+      expect(result.status).toBe(200);
+      expect(result.body).toMatchObject({ mainStars: 2 });
+      const report = await request(
+        "/teacher/classes/class-demo/games/place-value-factory/report",
+        undefined,
+        "teacher-dev",
+      );
+      expect(report.status).toBe(200);
+      expect(report.body.students[0]).toMatchObject({
+        submittedN: 5,
+        eventuallyCorrectN: 5,
+      });
+      for (const table of ["pvf_order", "pvf_response", "pvf_skill_evidence"]) {
+        expect(
+          (await pool.query(`SELECT count(*)::int AS n FROM ${table}`)).rows[0]
+            .n,
+        ).toBe(5);
+      }
+      expect(
+        (await pool.query("SELECT count(*)::int AS n FROM pvf_command_receipt"))
+          .rows[0].n,
+      ).toBe(6);
+      const replayStart = await request("/games/place-value-factory/attempts", {
+        commandId: "runtime-start",
+        profileRevision: 0,
+        tabId: "runtime-tab",
+        levelId: "level-1",
+      });
+      expect(replayStart.status).toBe(201);
+      expect(replayStart.body).toMatchObject({
+        attemptId: attempts[0].id,
+        shippedSlots: 0,
+        revision: 0,
+      });
+    } finally {
+      await new Promise<void>((resolve, reject) =>
+        server.close((error) => (error ? reject(error) : resolve())),
+      );
+      await pool.end();
+    }
+  });
+
   it.skipIf(process.env.PVF_TEST_PG_RESTART === "1")(
     "renews, reacquires and takes over leases atomically without replaying transitions",
     async () => {
@@ -202,6 +362,7 @@ describe.skipIf(!socket)("real PostgreSQL isolated cluster", () => {
           .rows;
         expect(await migrateDatabase(pool)).toEqual([
           "002_ownership_integrity.sql",
+          "003_runtime_state.sql",
         ]);
         expect(
           (await pool.query("SELECT student_id,spec FROM pvf_order")).rows,
@@ -268,7 +429,11 @@ describe.skipIf(!socket)("real PostgreSQL isolated cluster", () => {
             migrateDatabase(isolated),
           ])
         ).flat(),
-      ).toEqual(["001_place_value_factory.sql", "002_ownership_integrity.sql"]);
+      ).toEqual([
+        "001_place_value_factory.sql",
+        "002_ownership_integrity.sql",
+        "003_runtime_state.sql",
+      ]);
       expect(await migrateDatabase(isolated)).toEqual([]);
       const attemptId = randomUUID();
       await isolated.query(
