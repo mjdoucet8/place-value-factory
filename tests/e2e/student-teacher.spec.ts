@@ -1,5 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
 
+test.beforeEach(async () => {
+  const reset = await fetch("http://127.0.0.1:3102/__reset", {
+    method: "POST",
+  });
+  expect(reset.status).toBe(204);
+});
+
 async function fillCanonicalOrder(page: Page) {
   const target = Number(
     (await page.locator(".current-order strong").innerText()).replace(/,/g, ""),
@@ -142,6 +149,21 @@ test("keeps play usable when browser storage cannot save a draft", async ({
   await expect(page.getByText("Saved — shipment accepted.")).toBeVisible();
 });
 
+test("saves directly with an explicit warning when IndexedDB is unavailable", async ({
+  page,
+}) => {
+  await page.addInitScript(() =>
+    Object.defineProperty(window, "indexedDB", { value: undefined }),
+  );
+  await page.goto("/");
+  await page.getByRole("button", { name: "Student login" }).click();
+  await startFirstMission(page);
+  await fillCanonicalOrder(page);
+  await page.getByRole("button", { name: "Ship order" }).click();
+  await expect(page.getByText("Order 2 of 5")).toBeVisible();
+  await expect(page.getByText(/Device storage is unavailable/)).toBeVisible();
+});
+
 test("a second tab takes over and the stale writer cannot ship", async ({
   page,
 }) => {
@@ -168,10 +190,14 @@ test("a second tab takes over and the stale writer cannot ship", async ({
   await fillCanonicalOrder(page);
   await page.getByRole("button", { name: "Ship order" }).click();
   await expect(
-    page.getByText(/Not saved — Another tab is editing/),
+    page.getByText(/shipment is waiting to save — Another tab is editing/),
   ).toBeVisible();
 
   await fillCanonicalOrder(secondTab);
+  await secondTab.getByRole("button", { name: "Ship order" }).click();
+  await expect(
+    secondTab.getByText(/earlier tab's unsent crates were not added/),
+  ).toBeVisible();
   await secondTab.getByRole("button", { name: "Ship order" }).click();
   await expect(
     secondTab.getByText(`Order ${shipmentBefore + 1} of 5`),
@@ -220,13 +246,129 @@ test("recovers a shipment whose server reply was dropped after commit", async ({
   });
   await fillCanonicalOrder(page);
   await page.getByRole("button", { name: "Ship order" }).click();
-  await expect(page.getByText(/Not saved/)).toBeVisible();
+  await expect(
+    page.getByText(/Your shipment is waiting to save/),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Try saving again" }),
+  ).toBeVisible();
   await page.unroute("**/responses");
   await page.reload();
   await expect(page.getByText("Saved shipment restored.")).toBeVisible();
   await expect(
     page.getByText(`Order ${shipmentBefore + 1} of 5`),
   ).toBeVisible();
+});
+
+test("replays an IndexedDB shipment after disconnect before commit", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Student login" }).click();
+  await startFirstMission(page);
+  await page.route("**/responses", (route) => route.abort("connectionfailed"));
+  await fillCanonicalOrder(page);
+  await page.getByRole("button", { name: "Ship order" }).click();
+  await expect(
+    page.getByRole("button", { name: "Try saving again" }),
+  ).toBeVisible();
+  const queued = await page.evaluate(
+    () =>
+      new Promise<any[]>((resolve, reject) => {
+        const open = indexedDB.open("place-value-factory-outbox-v1");
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const tx = open.result.transaction("pending-commands", "readonly");
+          const read = tx.objectStore("pending-commands").getAll();
+          read.onsuccess = () => resolve(read.result);
+          read.onerror = () => reject(read.error);
+          tx.oncomplete = () => open.result.close();
+        };
+      }),
+  );
+  expect(queued).toHaveLength(1);
+  expect(queued[0].kind).toBe("response");
+  expect(queued[0].payload.commandId).toBeTruthy();
+  await page.unroute("**/responses");
+  await page.reload();
+  await expect(page.getByText("Saved shipment restored.")).toBeVisible();
+  await expect(page.getByText("Order 2 of 5")).toBeVisible();
+  await page.reload();
+  await expect(page.getByText("Order 2 of 5")).toBeVisible();
+});
+
+test("retries the same queued shipment when the connection returns", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Student login" }).click();
+  await startFirstMission(page);
+  await page.route("**/responses", (route) => route.abort("connectionfailed"));
+  await fillCanonicalOrder(page);
+  await page.getByRole("button", { name: "Ship order" }).click();
+  await expect(
+    page.getByRole("button", { name: "Try saving again" }),
+  ).toBeVisible();
+  await page.unroute("**/responses");
+  await page.evaluate(() => window.dispatchEvent(new Event("online")));
+  await expect(page.getByText("Order 2 of 5")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Try saving again" }),
+  ).toHaveCount(0);
+});
+
+test("restores a queued help step before the next shipment", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Student login" }).click();
+  await startFirstMission(page);
+  await page.route("**/hints", (route) => route.abort("connectionfailed"));
+  await page.getByRole("button", { name: "Help", exact: true }).click();
+  await page.getByRole("button", { name: "Get H1 help" }).click();
+  await expect(page.getByText(/help request is waiting to save/)).toBeVisible();
+  await page.unroute("**/hints");
+  await page.reload();
+  await expect(page.getByText("Saved help restored.")).toBeVisible();
+  await page.getByRole("button", { name: "Help", exact: true }).click();
+  await expect(
+    page.getByText(/One crate in a place is worth ten crates/),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Get H2 help" })).toBeVisible();
+});
+
+test("does not silently merge queued crates after another tab takes control", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Student login" }).click();
+  await startFirstMission(page);
+  await page.route("**/responses", (route) => route.abort("connectionfailed"));
+  await fillCanonicalOrder(page);
+  const firstQuantity = await page.locator("#quantity-4").inputValue();
+  await page.getByRole("button", { name: "Ship order" }).click();
+  await expect(
+    page.getByRole("button", { name: "Try saving again" }),
+  ).toBeVisible();
+  const other = await page.context().newPage();
+  await other.addInitScript(() =>
+    Object.defineProperty(window, "indexedDB", { value: undefined }),
+  );
+  await other.goto("/");
+  await other.getByRole("button", { name: "Take over this attempt" }).click();
+  await page.unroute("**/responses");
+  await page.getByRole("button", { name: "Try saving again" }).click();
+  await expect(
+    page.getByText(/lost control before those crates were saved/),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Take over this attempt" }).click();
+  await expect(page.locator("#quantity-4")).toHaveValue(firstQuantity);
+  await expect(
+    page.getByText(/Unsaved crates are ready for review/),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Ship order" }).click();
+  await expect(page.getByText("Order 2 of 5")).toBeVisible();
+  await other.close();
 });
 
 test("renders deterministic advanced-mode visual fixtures", async ({
@@ -318,8 +460,9 @@ test("loads original art and keeps gallery controls responsive", async ({
     768,
   );
   await page.screenshot({
-    path: "docs/visual-evidence/art-v1-map.png",
+    path: "test-results/art-v1-map.png",
     fullPage: true,
+    animations: "disabled",
   });
   await page.goto("/dev/place-value-factory/states?fixture=busy");
   await expect(page.locator(".busy-scenery")).toHaveClass(/is-busy/);
@@ -328,8 +471,9 @@ test("loads original art and keeps gallery controls responsive", async ({
     512,
   );
   await page.screenshot({
-    path: "docs/visual-evidence/art-v1-busy-game.png",
+    path: "test-results/art-v1-busy-game.png",
     fullPage: true,
+    animations: "disabled",
   });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.reload();
@@ -350,7 +494,8 @@ test("loads original art and keeps gallery controls responsive", async ({
   ).toBe(true);
   await page.goto("/dev/place-value-factory/states?fixture=results-three");
   await page.screenshot({
-    path: "docs/visual-evidence/art-v1-results.png",
+    path: "test-results/art-v1-results.png",
     fullPage: true,
+    animations: "disabled",
   });
 });

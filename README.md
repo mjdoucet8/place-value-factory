@@ -25,6 +25,8 @@ npm run dev
 
 `npm run dev` starts the API at http://127.0.0.1:3101 and the web app at http://127.0.0.1:5181. The test suite includes deterministic math/oracle tests, fictional API journey/restart tests, idempotency/lease/help/skip/transfer coverage, and a pg-mem repository transaction test.
 
+The browser stores one pending answer or help request per student attempt in IndexedDB before sending it. A refresh or restored connection retries the same command ID. The screen distinguishes work waiting on the device from server-confirmed progress and offers a retry button. If IndexedDB is unavailable, direct play still works with an explicit warning that a refresh may lose an unconfirmed request. `npm run test:e2e` creates a new disposable fictional store in `/tmp`; its test-only control resets only that newly created store between browser cases. The suite does not clear `apps/server/db/local-development.json`.
+
 ### Pre-art visual development
 
 The development-only state gallery is available at http://127.0.0.1:5181/dev/place-value-factory/states. It renders deterministic fictional map, introduction, progress, gameplay, recovery, error and results states using the same components as the application. See `docs/VISUAL_STATE_GALLERY.md` for stable fixture names and `docs/ASSET_MANIFEST.md` for required provenance. Use this surface when integrating original artwork; never paint live text, quantities, controls, stars or level status into background images.

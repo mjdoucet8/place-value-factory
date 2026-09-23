@@ -2,6 +2,8 @@
 
 Current audit: 23 September 2026. Each original acceptance ID is tracked below. “Implementable” includes incomplete or unverified local work; named existing tests are evidence locations, not assertions that full scope is verified. No historical completion statement closes a row. Full wording is authoritative in the original specification under `Place_Value_Factory_Codex_Handoff/Math_Factory/docs/`.
 
+RC-05 visual and RC-06 recovery evidence now extends the targets below: reviewed multi-width screenshots and all-fixture browser checks; IndexedDB answer/help queue, before/after-commit and final-result drop recovery in the real PostgreSQL pilot; explicit cross-tab review and unavailable-storage fallback. Rows remain implementable until each original acceptance definition is audited at its full scope, including remaining math/progression/report/operations cases.
+
 | ID          | State         | Code                                                              | Evidence target                         | Remaining dependency/work                                            |
 | ----------- | ------------- | ----------------------------------------------------------------- | --------------------------------------- | -------------------------------------------------------------------- |
 | DESIGN-01   | implementable | apps/web/src/screens/, styles.css                                 | tests/e2e/student-teacher.spec.ts       | Correct composition/route/results; inspect four references           |

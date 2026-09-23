@@ -87,6 +87,52 @@ test("teacher issues access, student ships, and teacher reviews and revokes it",
       remaining %= value;
       await student.locator(`#quantity-${index}`).fill(String(amount));
     }
+    if (slot === 0) {
+      await student.route("**/responses", (route) =>
+        route.abort("connectionfailed"),
+      );
+      await student.getByRole("button", { name: "Ship order" }).click();
+      await expect(
+        student.getByRole("button", { name: "Try saving again" }),
+      ).toBeVisible();
+      await student.unroute("**/responses");
+      await student.reload();
+      await expect(student.getByText("Order 2 of 5")).toBeVisible();
+      await student
+        .getByRole("button", { name: "Take over this attempt" })
+        .click();
+      continue;
+    }
+    if (slot === 1) {
+      await student.route("**/responses", async (route) => {
+        await route.fetch();
+        await route.abort("connectionfailed");
+      });
+      await student.getByRole("button", { name: "Ship order" }).click();
+      await expect(
+        student.getByRole("button", { name: "Try saving again" }),
+      ).toBeVisible();
+      await student.unroute("**/responses");
+      await student.getByRole("button", { name: "Try saving again" }).click();
+      await expect(student.getByText("Order 3 of 5")).toBeVisible();
+      continue;
+    }
+    if (slot === 4) {
+      await student.route("**/responses", async (route) => {
+        await route.fetch();
+        await route.abort("connectionfailed");
+      });
+      await student.getByRole("button", { name: "Ship order" }).click();
+      await expect(
+        student.getByRole("button", { name: "Try saving again" }),
+      ).toBeVisible();
+      await student.unroute("**/responses");
+      await student.reload();
+      await expect(
+        student.getByRole("heading", { name: "Level complete!" }),
+      ).toBeVisible();
+      continue;
+    }
     await student
       .getByRole("button", { name: "Ship order", exact: true })
       .click();

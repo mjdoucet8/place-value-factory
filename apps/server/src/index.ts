@@ -1063,13 +1063,14 @@ export function createApiServer(
         if (
           command.expectedRevision !== attempt.revision ||
           command.leaseEpoch !== attempt.leaseEpoch ||
-          (activeLease(attempt) && attempt.writerTabId !== command.tabId)
+          attempt.writerTabId !== command.tabId
         )
           return send(
             response,
             409,
             responseError("LEASE_LOST", "Another tab is editing this attempt."),
           );
+        if (!activeLease(attempt)) attempt.leaseEpoch += 1;
         attempt.status = stateChange[2] === "pause" ? "paused" : "active";
         attempt.writerTabId = command.tabId;
         attempt.leaseExpiresAt = new Date(
@@ -1144,7 +1145,8 @@ export function createApiServer(
           );
         if (
           command.leaseEpoch !== attempt.leaseEpoch ||
-          attempt.writerTabId !== command.tabId
+          attempt.writerTabId !== command.tabId ||
+          !activeLease(attempt)
         )
           return send(
             response,
@@ -1613,7 +1615,7 @@ export function createApiServer(
           if (existing) return send(response, existing.status, existing.body);
           if (
             command.leaseEpoch !== attempt.leaseEpoch ||
-            (activeLease(attempt) && command.tabId !== attempt.writerTabId)
+            command.tabId !== attempt.writerTabId
           )
             return send(
               response,

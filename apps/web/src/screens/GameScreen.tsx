@@ -14,6 +14,8 @@ type Props = {
   help: string;
   helpOpen: boolean;
   saving: boolean;
+  pending: boolean;
+  pendingConflict: boolean;
   busy: boolean;
   storageUnavailable: boolean;
   tabId: string;
@@ -27,6 +29,7 @@ type Props = {
   onHelp: () => void;
   onTakeOver: () => void;
   onShip: () => void;
+  onRetryPending: () => void;
   onSkip: () => void;
   onPause: () => void;
   onResume: () => void;
@@ -50,6 +53,7 @@ export function GameScreen(props: Props) {
       </main>
     );
   const order = props.attempt.activeOrder;
+  const locked = props.saving || props.pending;
   const busyEnabled =
     props.busy &&
     Number(props.attempt.levelId?.replace("level-", "")) >= 13 &&
@@ -82,7 +86,7 @@ export function GameScreen(props: Props) {
         <button
           className="header-help secondary"
           ref={props.helpTrigger}
-          disabled={props.saving}
+          disabled={locked}
           onClick={props.onHelpOpen}
         >
           Help
@@ -104,9 +108,13 @@ export function GameScreen(props: Props) {
           twoWays={order.distinctRepresentations === 2}
         />
       </div>
-      {props.attempt.writerTabId !== props.tabId && (
+      {(props.attempt.writerTabId !== props.tabId || props.pendingConflict) && (
         <aside className="takeover" role="status">
-          <p>This attempt is open in another tab.</p>
+          <p>
+            {props.pendingConflict
+              ? "Your unsent crates are saved here. Take over to review them."
+              : "This attempt is open in another tab."}
+          </p>
           <button onClick={props.onTakeOver}>Take over this attempt</button>
         </aside>
       )}
@@ -137,7 +145,7 @@ export function GameScreen(props: Props) {
               Take it one step at a time. Asking for help never takes away your
               stars.
             </p>
-            <button disabled={props.saving} onClick={props.onHelp}>
+            <button disabled={locked} onClick={props.onHelp}>
               {props.attempt.currentHintStep === "H3"
                 ? "Show H3 help again"
                 : `Get ${["H1", "H2", "H3"][["H1", "H2", "H3"].indexOf(props.attempt.currentHintStep) + 1] ?? "H1"} help`}
@@ -159,14 +167,14 @@ export function GameScreen(props: Props) {
         order={order}
         quantities={props.quantities}
         quantitiesB={props.quantitiesB}
-        saving={props.saving}
+        saving={locked}
         setQuantities={props.setQuantities}
         setQuantitiesB={props.setQuantitiesB}
       />
       <section className="controls">
         <button
           className="secondary"
-          disabled={props.saving}
+          disabled={locked}
           onClick={() => {
             props.setUndo(props.quantities);
             props.setQuantities([0, 0, 0, 0, 0, 0]);
@@ -176,31 +184,35 @@ export function GameScreen(props: Props) {
         </button>
         <button
           className="secondary"
-          disabled={!props.undo || props.saving}
+          disabled={!props.undo || locked}
           onClick={() => {
             if (props.undo) props.setQuantities(props.undo);
           }}
         >
           Undo
         </button>
-        <button className="ship" disabled={props.saving} onClick={props.onShip}>
-          {props.saving ? "Saving…" : "Ship order"}
+        <button className="ship" disabled={locked} onClick={props.onShip}>
+          {props.saving
+            ? "Saving…"
+            : props.pending
+              ? "Waiting to save"
+              : "Ship order"}
         </button>
-        <button
-          className="secondary"
-          disabled={props.saving}
-          onClick={props.onSkip}
-        >
+        <button className="secondary" disabled={locked} onClick={props.onSkip}>
           Skip after two saved tries
         </button>
-        <button
-          className="secondary"
-          disabled={props.saving}
-          onClick={props.onPause}
-        >
+        <button className="secondary" disabled={locked} onClick={props.onPause}>
           Pause mission
         </button>
       </section>
+      {props.pending && !props.saving && (
+        <section className="pending-recovery" role="status">
+          <p>
+            Your work is saved on this device and is waiting for the factory.
+          </p>
+          <button onClick={props.onRetryPending}>Try saving again</button>
+        </section>
+      )}
       {props.notice && (
         <aside className="notice" role="status">
           <Mascot

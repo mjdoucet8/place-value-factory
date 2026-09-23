@@ -1,4 +1,4 @@
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { AddressInfo } from "node:net";
@@ -255,6 +255,81 @@ describe("fictional-data command safety", () => {
       { ...studentHeaders, "idempotency-key": "old-writer" },
     );
     expect(oldWriter.body.error.code).toBe("LEASE_LOST");
+  });
+
+  it("requires the original tab to reacquire an expired lease before writes", async () => {
+    const started = await request(
+      "/games/place-value-factory/attempts",
+      {
+        commandId: "expired-start",
+        profileRevision: 0,
+        tabId: "tab-a",
+        levelId: "level-1",
+      },
+      { ...studentHeaders, "idempotency-key": "expired-start" },
+    );
+    expect(started.status).toBe(201);
+    const dataPath = join(dataDirectory, "development.json");
+    const stored = JSON.parse(await readFile(dataPath, "utf8"));
+    stored.attempts[0].leaseExpiresAt = new Date(0).toISOString();
+    await writeFile(dataPath, JSON.stringify(stored));
+    const attemptPath = `/games/place-value-factory/attempts/${started.body.attemptId}`;
+    const responsePath = `${attemptPath}/orders/${started.body.activeOrder.id}/responses`;
+    const representationA = canonical(started.body.activeOrder.target);
+    const foreign = await request(
+      responsePath,
+      {
+        commandId: "expired-foreign",
+        expectedRevision: 0,
+        leaseEpoch: 1,
+        tabId: "tab-b",
+        representationA,
+        representationB: null,
+      },
+      { ...studentHeaders, "idempotency-key": "expired-foreign" },
+    );
+    expect(foreign.body.error.code).toBe("LEASE_LOST");
+    const resumed = await request(
+      `${attemptPath}/resume`,
+      {
+        commandId: "expired-resume",
+        expectedRevision: 0,
+        leaseEpoch: 1,
+        tabId: "tab-a",
+      },
+      { ...studentHeaders, "idempotency-key": "expired-resume" },
+    );
+    expect(resumed.body.snapshot).toMatchObject({
+      leaseEpoch: 2,
+      revision: 1,
+    });
+    const stale = await request(
+      responsePath,
+      {
+        commandId: "expired-stale",
+        expectedRevision: 1,
+        leaseEpoch: 1,
+        tabId: "tab-a",
+        representationA,
+        representationB: null,
+      },
+      { ...studentHeaders, "idempotency-key": "expired-stale" },
+    );
+    expect(stale.body.error.code).toBe("LEASE_LOST");
+    const answer = await request(
+      responsePath,
+      {
+        commandId: "expired-answer",
+        expectedRevision: 1,
+        leaseEpoch: 2,
+        tabId: "tab-a",
+        representationA,
+        representationB: null,
+      },
+      { ...studentHeaders, "idempotency-key": "expired-answer" },
+    );
+    expect(answer.status).toBe(200);
+    expect(answer.body.snapshot.shippedSlots).toBe(1);
   });
 
   it("requires two saved misses before replacing a skipped slot", async () => {

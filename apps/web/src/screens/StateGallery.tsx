@@ -142,6 +142,8 @@ export function StateGallery() {
           help="H1: Think about groups of ten."
           helpOpen={fixture.helpOpen ?? false}
           saving={fixture.saving ?? false}
+          pending={false}
+          pendingConflict={false}
           busy={fixture.pressure === "busy"}
           storageUnavailable={fixture.storageUnavailable ?? false}
           tabId="fixture-tab"
@@ -155,6 +157,7 @@ export function StateGallery() {
           onHelp={noop}
           onTakeOver={noop}
           onShip={noop}
+          onRetryPending={noop}
           onSkip={noop}
           onPause={noop}
           onResume={noop}
