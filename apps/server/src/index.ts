@@ -9,6 +9,13 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Pool } from "pg";
+import { AsyncLocalStorage } from "node:async_hooks";
+import {
+  AccessError,
+  LocalIdentity,
+  sessionCookie,
+  sessionToken,
+} from "./identity.js";
 import { PostgresRuntimeStore } from "./runtime-store.js";
 import {
   difficultyFor,
@@ -96,7 +103,7 @@ type Command = {
   leaseEpoch: number;
   tabId: string;
 };
-const students = [
+const developmentStudents = [
   {
     id: "student-ava",
     username: "ava",
@@ -106,7 +113,7 @@ const students = [
     classId: "class-demo",
   },
 ];
-const teachers = [
+const developmentTeachers = [
   {
     id: "teacher-dev",
     username: "teacher",
@@ -120,7 +127,7 @@ const teachers = [
     classIds: ["class-other"],
   },
 ];
-const classes = [
+const developmentClasses = [
   { id: "class-demo", name: "Factory 5", timezone: "America/Toronto" },
   { id: "class-other", name: "Other Factory", timezone: "America/Toronto" },
 ];
@@ -174,14 +181,53 @@ function startCommandFrom(
 
 export function createApiServer(
   dataPath = defaultDataPath,
-  options: { database?: Pool } = {},
+  options: {
+    database?: Pool;
+    identity?: { origin: string; receiptKey: string };
+  } = {},
 ): Server {
-  if (process.env.NODE_ENV === "production" || process.env.PVF_MODE === "pilot")
+  if (
+    (process.env.NODE_ENV === "production" ||
+      process.env.PVF_MODE === "pilot") &&
+    !options.identity
+  )
     throw new Error(
       "Secure identity configuration is required; the development identity adapter cannot run in pilot or production mode.",
     );
   const database = options.database;
   const sqlStore = database ? new PostgresRuntimeStore(database) : null;
+  if (options.identity && !sqlStore)
+    throw new Error("Secure identity requires PostgreSQL.");
+  if (options.identity && !/^[a-f0-9]{64}$/i.test(options.identity.receiptKey))
+    throw new Error(
+      "Secure identity requires a 32-byte PIN receipt encryption key.",
+    );
+  const identity =
+    options.identity && sqlStore
+      ? new LocalIdentity(
+          () => sqlStore.connection(),
+          Buffer.from(options.identity.receiptKey, "hex"),
+        )
+      : null;
+  const origin = options.identity ? new URL(options.identity.origin) : null;
+  if (
+    origin &&
+    origin.protocol !== "https:" &&
+    !(
+      ["localhost", "127.0.0.1", "[::1]"].includes(origin.hostname) &&
+      origin.protocol === "http:"
+    )
+  )
+    throw new Error("Secure identity requires HTTPS except on local loopback.");
+  const directories = new AsyncLocalStorage<
+    Awaited<ReturnType<LocalIdentity["directory"]>>
+  >();
+  const directory = () =>
+    directories.getStore() ?? {
+      students: developmentStudents,
+      teachers: developmentTeachers,
+      classes: developmentClasses,
+    };
   type Reply = {
     status: number;
     body?: unknown;
@@ -220,8 +266,13 @@ export function createApiServer(
     }
     response.writeHead(status, {
       "content-type": "application/json",
-      "access-control-allow-origin": "*",
-      "access-control-allow-headers": "content-type,x-session,idempotency-key",
+      ...(identity
+        ? { "cache-control": "no-store", "x-content-type-options": "nosniff" }
+        : {
+            "access-control-allow-origin": "*",
+            "access-control-allow-headers":
+              "content-type,x-session,idempotency-key",
+          }),
       ...extraHeaders,
     });
     response.end(body === undefined ? undefined : JSON.stringify(body));
@@ -239,7 +290,10 @@ export function createApiServer(
       throw new Error("INVALID_INPUT");
     return parsed as Record<string, unknown>;
   }
-  function principal(request: IncomingMessage): Actor | null {
+  async function principal(
+    request: IncomingMessage,
+  ): Promise<(Actor & { csrfToken?: string }) | null> {
+    if (identity) return identity.authenticate(request);
     const cookieSession = request.headers.cookie
       ?.split(";")
       .map((part) => part.trim().split("="))
@@ -254,13 +308,14 @@ export function createApiServer(
   function ownsClass(actor: Actor, classId: string) {
     return (
       actor.role === "teacher" &&
-      teachers
-        .find((teacher) => teacher.id === actor.id)
+      directory()
+        .teachers.find((teacher) => teacher.id === actor.id)
         ?.classIds.includes(classId)
     );
   }
   function classForStudent(studentId: string) {
-    return students.find((student) => student.id === studentId)?.classId;
+    return directory().students.find((student) => student.id === studentId)
+      ?.classId;
   }
   function receiptFor(
     attempt: Attempt,
@@ -506,11 +561,46 @@ export function createApiServer(
       if (request.method === "OPTIONS") return send(response, 204);
       const url = new URL(request.url ?? "/", `http://${request.headers.host}`);
       if (
+        identity &&
+        !["GET", "HEAD", "OPTIONS"].includes(request.method ?? "") &&
+        request.headers.origin !== origin!.origin
+      )
+        throw new AccessError(
+          403,
+          "ORIGIN_REJECTED",
+          "Please use the classroom app to make changes.",
+        );
+      if (
+        identity &&
+        request.method === "POST" &&
+        [
+          "/api/v1/auth/student/session",
+          "/api/v1/auth/teacher/session",
+        ].includes(url.pathname)
+      ) {
+        const login = await identity.login(
+          url.pathname.includes("/teacher/") ? "teacher" : "student",
+          await json(request),
+          sessionToken(request),
+        );
+        return send(
+          response,
+          200,
+          { principal: login.principal, csrfToken: login.csrfToken },
+          {
+            "set-cookie": sessionCookie(
+              login.token,
+              origin!.protocol === "https:",
+            ),
+          },
+        );
+      }
+      if (
         request.method === "POST" &&
         url.pathname === "/api/v1/auth/student/session"
       ) {
         const body = await json(request);
-        const student = students.find(
+        const student = developmentStudents.find(
           (item) =>
             item.classCode === String(body.classCode).trim().toUpperCase() &&
             item.username === String(body.username).trim().toLowerCase() &&
@@ -547,7 +637,7 @@ export function createApiServer(
         url.pathname === "/api/v1/auth/teacher/session"
       ) {
         const body = await json(request);
-        const teacher = teachers.find(
+        const teacher = developmentTeachers.find(
           (item) =>
             item.username === body.username && item.password === body.password,
         );
@@ -572,10 +662,36 @@ export function createApiServer(
               ),
             );
       }
-      const actor = principal(request);
+      const actor = await principal(request);
+      if (
+        identity &&
+        actor &&
+        !["GET", "HEAD", "OPTIONS"].includes(request.method ?? "") &&
+        request.headers["x-csrf-token"] !== actor.csrfToken
+      )
+        throw new AccessError(
+          403,
+          "CSRF_REJECTED",
+          "Please refresh your session before making changes.",
+        );
+      if (
+        identity &&
+        actor &&
+        request.method === "DELETE" &&
+        url.pathname === "/api/v1/auth/session"
+      ) {
+        await identity.logout(request);
+        return send(response, 204, undefined, {
+          "set-cookie": sessionCookie(
+            "",
+            origin!.protocol === "https:",
+          ).replace("Max-Age=28800", "Max-Age=0"),
+        });
+      }
       if (request.method === "GET" && url.pathname === "/api/v1/auth/session")
         return actor
           ? send(response, 200, {
+              ...(identity ? { csrfToken: actor.csrfToken } : {}),
               principal: {
                 id: actor.id,
                 role: actor.role,
@@ -595,6 +711,30 @@ export function createApiServer(
           401,
           responseError("SESSION_EXPIRED", "Please sign in."),
         );
+      if (
+        url.pathname.startsWith("/api/v1/teacher/") &&
+        actor.role !== "teacher"
+      )
+        throw new AccessError(
+          403,
+          "NOT_AUTHORIZED",
+          "Teacher access is required.",
+        );
+      if (
+        identity &&
+        url.pathname.startsWith("/api/v1/teacher/") &&
+        !["GET", "HEAD", "OPTIONS"].includes(request.method ?? "")
+      ) {
+        const roster = await identity.roster(
+          request.method ?? "",
+          url.pathname,
+          actor,
+          await json(request),
+          request.headers["idempotency-key"],
+        );
+        if (roster) return send(response, roster.status, roster.body);
+        throw new AccessError(404, "NOT_FOUND", "Route not found.");
+      }
       if (actor.role === "student") {
         const state = await store();
         if (state.studentAccess?.[actor.id] === false)
@@ -630,8 +770,8 @@ export function createApiServer(
         const map = mapFor(attempts);
         return send(response, 200, {
           studentAlias:
-            students.find((student) => student.id === actor.id)?.alias ??
-            "Student",
+            directory().students.find((student) => student.id === actor.id)
+              ?.alias ?? "Student",
           gameKey: "place-value-factory",
           highestUnlockedLevelId: map.highestUnlockedLevelId,
           achievedTier: "Trainee",
@@ -642,11 +782,12 @@ export function createApiServer(
               0,
             ),
           maxStars: 90,
-          settings: state.settings?.[actor.id] ?? {
+          settings: {
             sound: false,
             reducedMotion: false,
             pressure: "calm",
             textScale: "normal",
+            ...state.settings?.[actor.id],
           },
           revision: map.profileRevision,
           activeAttemptId:
@@ -1589,11 +1730,11 @@ export function createApiServer(
         actor.role === "teacher"
       )
         return send(response, 200, {
-          classes: classes
-            .filter((item) => ownsClass(actor, item.id))
+          classes: directory()
+            .classes.filter((item) => ownsClass(actor, item.id))
             .map((item) => ({
               ...item,
-              studentCount: students.filter(
+              studentCount: directory().students.filter(
                 (student) => student.classId === item.id,
               ).length,
             })),
@@ -1614,8 +1755,10 @@ export function createApiServer(
           );
         const state = await store();
         return send(response, 200, {
-          students: students
-            .filter((student) => student.classId === teacherStudents[1])
+          students: directory()
+            .students.filter(
+              (student) => student.classId === teacherStudents[1],
+            )
             .map(({ id, alias, username }) => ({
               id,
               alias,
@@ -1634,7 +1777,9 @@ export function createApiServer(
         actor.role === "teacher"
       ) {
         const body = await json(request);
-        const student = students.find((item) => item.id === studentAccess[1]);
+        const student = directory().students.find(
+          (item) => item.id === studentAccess[1],
+        );
         if (
           !student ||
           !ownsClass(actor, student.classId) ||
@@ -1734,12 +1879,13 @@ export function createApiServer(
             422,
             responseError("INVALID_INPUT", "Use an increasing ISO date range."),
           );
-        const classStudents = students.filter(
+        const classStudents = directory().students.filter(
           (student) => student.classId === classId,
         );
         return send(response, 200, {
           classId,
-          timezone: classes.find((item) => item.id === classId)?.timezone,
+          timezone: directory().classes.find((item) => item.id === classId)
+            ?.timezone,
           from: from.toISOString(),
           to: to.toISOString(),
           asOf: now.toISOString(),
@@ -1824,6 +1970,12 @@ export function createApiServer(
         responseError("NOT_FOUND", "Route not found."),
       );
     } catch (error) {
+      if (error instanceof AccessError)
+        return send(
+          response,
+          error.status,
+          responseError(error.code, error.message),
+        );
       if (
         sqlStore &&
         !(error instanceof SyntaxError) &&
@@ -1841,7 +1993,13 @@ export function createApiServer(
     if (!sqlStore) return handle(request, response);
     pendingReplies.set(response, null);
     try {
-      await sqlStore.transaction(() => handle(request, response));
+      await sqlStore.transaction(async () =>
+        identity
+          ? directories.run(await identity.directory(), () =>
+              handle(request, response),
+            )
+          : handle(request, response),
+      );
       const reply = pendingReplies.get(response);
       pendingReplies.delete(response);
       if (!reply) throw new Error("Missing response");
@@ -1880,9 +2038,19 @@ if (
   createApiServer(
     defaultDataPath,
     process.env.DATABASE_URL
-      ? { database: new Pool({ connectionString: process.env.DATABASE_URL }) }
+      ? {
+          database: new Pool({ connectionString: process.env.DATABASE_URL }),
+          ...(process.env.PVF_AUTH === "local"
+            ? {
+                identity: {
+                  origin: process.env.PVF_ORIGIN ?? "",
+                  receiptKey: process.env.PVF_RECEIPT_KEY ?? "",
+                },
+              }
+            : {}),
+        }
       : {},
-  ).listen(port, () =>
+  ).listen(port, "127.0.0.1", () =>
     console.log(
       `Place Value Factory API listening on http://localhost:${port}`,
     ),

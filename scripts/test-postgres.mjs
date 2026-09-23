@@ -36,14 +36,23 @@ try {
     "start",
   ]);
   started = true;
-  run("npx", ["vitest", "run", "tests/integration/postgres-real.test.ts"], {
-    env: {
-      ...process.env,
-      PVF_TEST_PG_SOCKET: socket,
-      PGUSER: userInfo().username,
-      PGDATABASE: "postgres",
+  run(
+    "npx",
+    [
+      "vitest",
+      "run",
+      "tests/integration/postgres-real.test.ts",
+      "tests/integration/security-real.test.ts",
+    ],
+    {
+      env: {
+        ...process.env,
+        PVF_TEST_PG_SOCKET: socket,
+        PGUSER: userInfo().username,
+        PGDATABASE: "postgres",
+      },
     },
-  });
+  );
   run(join(binary, "pg_ctl"), ["-D", data, "-m", "fast", "-w", "restart"]);
   run("npx", ["vitest", "run", "tests/integration/postgres-real.test.ts"], {
     env: {

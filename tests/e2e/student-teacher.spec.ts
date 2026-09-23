@@ -87,7 +87,7 @@ test("student completes five saved orders, settings, and optional transfer; teac
 
   const teacher = await browser.newPage();
   await teacher.goto("/");
-  await teacher.getByText("Teacher development login").click();
+  await teacher.locator('summary').filter({hasText:'Teacher login'}).click();
   await teacher.getByRole("button", { name: "Teacher login" }).click();
   await expect(
     teacher.getByRole("heading", { name: "Teacher evidence" }),

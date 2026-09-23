@@ -13,24 +13,14 @@ import { LevelIntroScreen } from "./screens/LevelIntroScreen.js";
 import { ProgressScreen } from "./screens/ProgressScreen.js";
 import { SettingsScreen } from "./screens/SettingsScreen.js";
 import { ResultsScreen } from "./screens/ResultsScreen.js";
-import { TeacherScreen } from "./screens/TeacherScreen.js";
+import { TeacherWorkspace } from "./screens/TeacherWorkspace.js";
+import { api } from "./api.js";
 import { GameScreen } from "./screens/GameScreen.js";
 import { StateGallery } from "./screens/StateGallery.js";
 
 const places = PLACES;
+declare const __PVF_DEVELOPMENT__: boolean;
 
-const api = async (path: string, options: RequestInit = {}) => {
-  const response = await fetch(`/api/v1${path}`, {
-    ...options,
-    headers: { "content-type": "application/json", ...(options.headers ?? {}) },
-  });
-  const body = await response.json();
-  if (!response.ok)
-    throw new Error(
-      body.error?.message ?? body.error?.code ?? "Request failed",
-    );
-  return body;
-};
 const deviceStorage = {
   read(key: string) {
     try {
@@ -66,8 +56,7 @@ const pathFor = (screen: Screen, attempt?: any, level?: SelectedLevel) => {
     return `/games/place-value-factory/attempts/${attempt?.attemptId ?? "current"}/results`;
   if (screen === "game")
     return `/games/place-value-factory/attempts/${attempt?.attemptId ?? "current"}`;
-  if (screen === "teacher")
-    return "/teacher/classes/class-demo/games/place-value-factory";
+  if (screen === "teacher") return "/teacher/classes";
   return "/dev/place-value-factory/states";
 };
 
@@ -83,7 +72,6 @@ function App() {
   const [notice, setNotice] = useState("");
   const [help, setHelp] = useState("");
   const [helpOpen, setHelpOpen] = useState(false);
-  const [report, setReport] = useState<any>();
   const [resultData, setResultData] = useState<any>();
   const [settings, setSettings] = useState<Settings>({
     sound: false,
@@ -97,10 +85,17 @@ function App() {
   const [starting, setStarting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [storageUnavailable, setStorageUnavailable] = useState(false);
-  const [classCode, setClassCode] = useState("FACTORY5");
-  const [username, setUsername] = useState("ava");
-  const [pin, setPin] = useState("123456");
-  const [teacherPassword, setTeacherPassword] = useState("factory-demo");
+  const [classCode, setClassCode] = useState(
+    __PVF_DEVELOPMENT__ ? "FACTORY5" : "",
+  );
+  const [username, setUsername] = useState(__PVF_DEVELOPMENT__ ? "ava" : "");
+  const [pin, setPin] = useState(__PVF_DEVELOPMENT__ ? "123456" : "");
+  const [teacherPassword, setTeacherPassword] = useState(
+    __PVF_DEVELOPMENT__ ? "factory-demo" : "",
+  );
+  const [teacherUsername, setTeacherUsername] = useState(
+    __PVF_DEVELOPMENT__ ? "teacher" : "",
+  );
   const [showPin, setShowPin] = useState(false);
   const shiftTabUsed = useRef(false);
   const reconciled = useRef(new Set<string>());
@@ -144,18 +139,12 @@ function App() {
     void api("/auth/session")
       .then(async (data) => {
         if (data.principal.role === "teacher") {
-          setSession("teacher-dev");
-          setReport(
-            await api(
-              "/teacher/classes/class-demo/games/place-value-factory/report",
-              { headers: { "x-session": "teacher-dev" } },
-            ),
-          );
+          setSession(data.principal.id);
           navigate("teacher", { replace: true });
           return;
         }
         if (data.principal.role !== "student") return;
-        setSession("student-ava");
+        setSession(data.principal.id);
         const profile = await api("/profile");
         setSettings(profile.settings);
         const requestedPath = window.location.pathname;
@@ -414,22 +403,19 @@ function App() {
   };
   const login = async (teacher = false) => {
     try {
-      await api(teacher ? "/auth/teacher/session" : "/auth/student/session", {
-        method: "POST",
-        body: JSON.stringify(
-          teacher
-            ? { username: "teacher", password: teacherPassword }
-            : { classCode, username, pin },
-        ),
-      });
-      setSession(teacher ? "teacher-dev" : "student-ava");
-      if (teacher) {
-        setReport(
-          await api(
-            "/teacher/classes/class-demo/games/place-value-factory/report",
-            { headers: { "x-session": "teacher-dev" } },
+      const signedIn = await api(
+        teacher ? "/auth/teacher/session" : "/auth/student/session",
+        {
+          method: "POST",
+          body: JSON.stringify(
+            teacher
+              ? { username: teacherUsername, password: teacherPassword }
+              : { classCode, username, pin },
           ),
-        );
+        },
+      );
+      setSession(signedIn.principal.id);
+      if (teacher) {
         navigate("teacher");
       } else {
         const profile = await api("/profile", {
@@ -703,6 +689,8 @@ function App() {
         username={username}
         pin={pin}
         teacherPassword={teacherPassword}
+        teacherUsername={teacherUsername}
+        onTeacherUsername={setTeacherUsername}
         showPin={showPin}
         notice={notice}
         onClassCode={setClassCode}
@@ -778,7 +766,7 @@ function App() {
         onMap={() => void returnToMap()}
       />
     );
-  if (screen === "teacher") return <TeacherScreen report={report} />;
+  if (screen === "teacher") return <TeacherWorkspace />;
   if (screen === "game" && attempt)
     return (
       <GameScreen

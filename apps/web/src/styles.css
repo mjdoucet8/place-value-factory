@@ -93,7 +93,8 @@ h1 {
   font-size: clamp(2rem, 5vw, 3.5rem);
 }
 button,
-input {
+input,
+select {
   min-height: 48px;
   font: inherit;
   border-radius: 12px;
@@ -108,6 +109,7 @@ button {
 }
 button:focus-visible,
 input:focus-visible,
+select:focus-visible,
 summary:focus-visible {
   outline: var(--focus-ring);
   outline-offset: 3px;
@@ -411,6 +413,54 @@ header nav {
 .table-region {
   max-width: 100%;
   overflow: auto;
+}
+.teacher-management {
+  background: var(--surface);
+  border: 2px solid var(--cobalt);
+  border-radius: var(--radius-md);
+  display: grid;
+  gap: 16px;
+  margin: 24px 0;
+  padding: 24px;
+}
+.teacher-management form,
+.teacher-management .actions {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.teacher-management label {
+  display: grid;
+  gap: 6px;
+  font-weight: 700;
+}
+.teacher-management input,
+.teacher-management select {
+  max-width: 100%;
+  min-width: 0;
+  padding: 8px;
+}
+.teacher-management p {
+  margin: 0;
+}
+.roster-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+.roster-list li {
+  border: 2px solid #cbdbe9;
+  display: grid;
+  gap: 8px;
+}
+.access-issued {
+  background: var(--cream);
+  border: 2px solid var(--warning);
+  border-radius: 12px;
+  padding: 16px;
 }
 .fixture-toolbar {
   align-items: center;

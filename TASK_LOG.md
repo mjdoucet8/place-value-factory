@@ -1,5 +1,17 @@
 # Task log
 
+## 2026-09-23 | RC-04 | UPDATE | Secure local HTTP and browser journey verified
+
+Added database-backed local identities, salted scrypt credentials, random hashed session tokens, idle/absolute expiry, origin/CSRF enforcement, login backoff, class ownership, issuance/reset/revocation and class access control. PIN receipts are encrypted with a separate runtime key and redisplayable for five minutes. Browser transport uses cookies/CSRF and actual principal IDs. Teacher forms manage classes/student access. Real database suite passed five cases plus two post-restart checks. Chromium pilot journey passed actual PostgreSQL class creation, five answers, refreshed results, matching teacher count and revocation with no page errors. Launcher issues found and fixed: space-containing paths, hard-coded Vite CLI port and child-process shutdown ownership. Private temporary credentials are not committed. Inspected screenshots still show visual defects; they are not accepted baselines. Full release remains incomplete.
+
+## 2026-09-23 | RC-05 | CLAIM | Inspected visual acceptance closure
+
+FE/QA owns web screens/components/styles, gallery fixtures/browser tests and visual evidence documents. Four original PNGs reread at full size and secure-pilot screenshots inspected. Fix oversized sticky header, crate/exchange overlap, connected 30-node illustrated route/list and celebration background/layers. Reuse artwork; preserve semantics, mathematics, earned cosmetics and calm/reduced motion. Acceptance GAME/DESIGN/MAP/RESULT/ACCESS; owner aesthetic approval remains pending.
+
+## 2026-09-23 | RC-04 | CLAIM | Secure local identity and classroom lifecycle
+
+BE/PA owns server identity module, forward migration, server authentication/authorization integration, security integration tests, shared API notes and setup records. Baseline: specification section 21 local hashed-credential adapter and existing API v1 routes, not invented school SSO. No external accounts or real users. Complete server-owned expiring sessions, origin/CSRF checks, account throttling, teacher-owned classes, student issuance/reset/revocation and two-teacher isolation. External school provider remains a deployment gate after local adapter verification. Authentication skill's hosted provisioning is not applicable within authorized local-only scope; use maintained Node crypto and database sessions, no new paid service.
+
 ## 2026-09-23 | RC-03 | UPDATE | Actual PostgreSQL HTTP journey
 
 Added normalized runtime SQL storage for profiles/settings/access flags, attempts, orders, responses, support events, evidence and command receipts; configured PostgreSQL failures never fall back to JSON. API replies wait for commit. A correctness-first cross-process transaction lock prevents lost updates pending scoped concurrency optimization. New issued IDs are attempt-scoped; persisted legacy IDs remain unchanged. First-response command IDs and active duration are retained, and start receipts replay even after completion. Pilot/production mode refuses the current development identity shortcuts.

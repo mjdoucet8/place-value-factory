@@ -155,6 +155,10 @@ export class PostgresRuntimeStore {
     return context;
   }
 
+  connection() {
+    return this.requiredContext().client;
+  }
+
   private async persist(client: PoolClient, state: Store) {
     const studentIds = new Set([
       ...state.attempts.map((a) => a.studentId),

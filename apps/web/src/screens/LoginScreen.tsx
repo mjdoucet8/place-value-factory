@@ -3,6 +3,8 @@ type Props = {
   username: string;
   pin: string;
   teacherPassword: string;
+  teacherUsername: string;
+  onTeacherUsername: (value: string) => void;
   showPin: boolean;
   notice: string;
   onClassCode: (value: string) => void;
@@ -19,7 +21,7 @@ export function LoginScreen(props: Props) {
     <main className="login">
       <Mascot pose="welcome" className="login-mascot" />
       <h1>Place Value Factory</h1>
-      <p>Development mode uses fictional accounts only.</p>
+      <p>Ready to build? Use the access details from your teacher.</p>
       <form
         onSubmit={(event) => {
           event.preventDefault();
@@ -60,17 +62,32 @@ export function LoginScreen(props: Props) {
         <button type="submit">Student login</button>
       </form>
       <details>
-        <summary>Teacher development login</summary>
-        <label>
-          Teacher password
-          <input
-            type="password"
-            autoComplete="current-password"
-            value={props.teacherPassword}
-            onChange={(event) => props.onTeacherPassword(event.target.value)}
-          />
-        </label>
-        <button onClick={props.onTeacherLogin}>Teacher login</button>
+        <summary>Teacher login</summary>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            props.onTeacherLogin();
+          }}
+        >
+          <label>
+            Teacher username
+            <input
+              autoComplete="username"
+              value={props.teacherUsername}
+              onChange={(event) => props.onTeacherUsername(event.target.value)}
+            />
+          </label>
+          <label>
+            Teacher password
+            <input
+              type="password"
+              autoComplete="current-password"
+              value={props.teacherPassword}
+              onChange={(event) => props.onTeacherPassword(event.target.value)}
+            />
+          </label>
+          <button type="submit">Teacher login</button>
+        </form>
       </details>
       {props.notice && <p role="alert">{props.notice}</p>}
     </main>

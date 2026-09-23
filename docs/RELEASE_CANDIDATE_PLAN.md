@@ -14,7 +14,7 @@ Objective: complete the original product/design handoff for owner review and a c
 
 ## Resumable state
 
-RC-01/02 repository checks passed on a user-owned PostgreSQL 16 cluster: migrations, populated upgrade, ownership constraints, rollback, duplicate races, leases and real process restart. RC-03 in progress: connect normalized runtime persistence. First eliminate collisions in runtime-issued order IDs (pure generator IDs are deterministic and currently reused), retain exact evidence ownership, and add request transaction boundaries before secure identity/rosters. Existing `apps/server/db/local-development.json` is user data and must remain unmodified/unstaged. No full runtime or release completion claimed.
+RC-01/02 repository checks and RC-03 normalized HTTP runtime persistence passed real PostgreSQL transactions/restart. RC-04 secure local adapter and browser class/student journey now pass: authenticated teacher creates class, provisions student, five shipments persist, teacher sees five submitted/accepted orders, reset/revocation invalidates sessions. Teacher UI and isolated resumable pilot launcher added. Remaining security work includes bounded network throttling, expired secret cleanup and operational/retention audit; remaining runtime work includes scoped performance/load, complete command/lease integration and all advanced modes. Next: fix inspected visual defects and verify responsive scenes, then durable browser outbox/math/report/operations queue. Existing `apps/server/db/local-development.json` remains unmodified/unstaged. Full V1 release candidate is NOT complete.
 
 ## External release gates
 

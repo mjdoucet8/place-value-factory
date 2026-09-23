@@ -9,6 +9,7 @@
   "scripts": {
     "test": "vitest run",
     "test:postgres": "node scripts/test-postgres.mjs",
+    "pilot:local": "node scripts/pilot.mjs",
     "test:e2e": "playwright test",
     "test:watch": "vitest",
     "dev": "concurrently \"npm run dev --workspace=@place-value-factory/server\" \"npm run dev --workspace=@place-value-factory/web\"",
