@@ -20,6 +20,12 @@ The game now uses a compact factory workspace: a central current order, small gu
 
 The acceptance suite adds deterministic, manually inspected gallery baselines for map, calm gameplay and three-star results, with motion disabled. The same suite retains real five-order, correction, refresh, storage, takeover, hint-focus and drop-after-commit recovery journeys. Manual screen-reader, physical touch-device and zoom review remain NOT RUN; owner visual approval remains pending.
 
+## 2026-09-22 secure classroom pilot readiness audit
+
+This milestone is blocked before real-database acceptance. The local PostgreSQL socket is present but the workspace has no authorized role: the workspace user role does not exist and the server `postgres` role requires peer authentication; `DATABASE_URL` is unset and Docker is unavailable. The PostgreSQL migration/repository code and pg-mem test are not evidence that the live application uses a real PostgreSQL transaction path. The active runtime remains the JSON fictional-development adapter.
+
+Needed to proceed: an authorized disposable PostgreSQL connection string or a workspace-owned role/database for fictional test data and migration verification. This does not request production access, external account changes or real student data. Visual owner approval and manual screen-reader/physical-device checks remain separately pending.
+
 As of 20 September 2026 | Baseline v1.0
 
 **Specification ready; application implementation not started in this handoff.**

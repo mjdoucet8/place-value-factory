@@ -525,3 +525,23 @@ Commands/manual checks and observed results: inspected all four supplied referen
 Evidence level: integrated fictional-data UI with reviewed deterministic browser captures. Manual screen-reader, 200% zoom and physical-device/touch checks are NOT RUN.
 
 Remaining risks or blockers: final owner visual approval; external production identity/data/hosting and classroom-device evidence. Local-development database remains excluded.
+
+## 2026-09-22 | PA/BE/FE-07 | CLAIM | Secure Classroom Pilot Readiness
+
+Timestamp (UTC): 2026-09-22T20:36:00Z
+
+Goal and scope: verify and close visual acceptance defects, real PostgreSQL runtime persistence, secure class/roster lifecycle and fictional teacher–student pilot journey without touching local user data.
+
+Owned paths: `apps/server/`, `apps/web/`, `db/`, `tests/`, `docs/`, `PROJECT_STATUS.md`, `TASK_LOG.md`.
+
+Dependencies and contract version: contract v1.0, current fictional-data adapter, supplied art pack; PostgreSQL credential/service access required for real runtime proof.
+
+Acceptance IDs: DATA-01..04, SEC-01..03, ROSTER-01..02, RECOVERY-01..07, DESIGN-01..05, ACCESS-01..07.
+
+## 2026-09-22 | PA/BE/FE-07 | BLOCKED | Secure Classroom Pilot Readiness
+
+Observed blocker: `DATABASE_URL` is unset. A PostgreSQL socket exists, but `psql` as the workspace user fails because role `owner` does not exist, and `psql -U postgres` fails peer authentication. Docker is unavailable. The active application is still the JSON fictional-development adapter; its PostgreSQL repository is not selected by runtime configuration. This prevents the required real PostgreSQL migration, persistence, rollback and concurrency verification without an authorized disposable database role/URL.
+
+Completed independent verification: re-read repository/design/runtime instructions; inspected the four original design references; verified current source uses real semantic game controls and screened current visual evidence; confirmed the PostgreSQL repository/migration and local roster/access endpoints exist but are not sufficient real-runtime evidence. The previously committed visual acceptance suite remains available; no local-development database change was made or staged.
+
+Smallest required action: provide an authorized disposable PostgreSQL connection string (or a workspace-owned database role/database) suitable for fictional test data, plus confirmation that it may be migrated. No production or school data is requested.
