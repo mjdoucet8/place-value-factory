@@ -17,7 +17,9 @@ export function ResultsScreen({
 }: Props) {
   const stars = result?.bestLevelStars ?? 2;
   return (
-    <main className="results">
+    <main className="results results-screen">
+      <FactoryArt asset="effect-celebration" className="celebration-effect" />
+      <Mascot pose="celebrate" className="results-mascot" />
       <p className="eyebrow">Saved factory record</p>
       <h1>Level complete!</h1>
       <p>{result?.shipped ?? 5} server-validated shipments saved.</p>
@@ -80,3 +82,4 @@ export function ResultsScreen({
     </main>
   );
 }
+import { FactoryArt, Mascot } from "../components/FactoryArt.js";

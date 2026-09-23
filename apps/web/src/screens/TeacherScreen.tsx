@@ -1,3 +1,5 @@
+import { Mascot } from "../components/FactoryArt.js";
+
 export function TeacherScreen({ report }: { report: any }) {
   const student = report?.students?.[0];
   return (
@@ -6,8 +8,10 @@ export function TeacherScreen({ report }: { report: any }) {
         <h1>Teacher evidence</h1>
         <span>Fictional development account</span>
       </header>
+      <Mascot pose="instruct" className="teacher-mascot" />
       {!student ? (
         <section className="empty-state">
+          <Mascot pose="welcome" className="state-mascot" />
           <h2>No evidence yet</h2>
           <p>Student evidence will appear after a committed response.</p>
         </section>

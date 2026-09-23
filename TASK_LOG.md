@@ -1,5 +1,17 @@
 # Task log
 
+## 2026-09-22 | ART-01 | HANDOFF / DONE (asset delivery)
+
+Created and inspected 23 original transparent PNG assets using built-in image generation. Kept the existing robot identity and factory palette; followed the actual Receiving/Packing/Warehouse/Shipping/Lab zones. Added alpha-preserving WebP copies (1.13 MB total, 95% smaller), a light/navy preview page, exact prompt provenance and per-asset integration notes. Original scenes and other work are preserved.
+
+Checks: all 23 PNGs contain real transparent pixels; all 23 WebPs preserve alpha; headless Chromium preview reports 23 images and zero broken images; light and navy screenshots inspected; npm run build passed; git diff --check passed. Screenshots: docs/artwork-preview-light.png and docs/artwork-preview-navy.png.
+
+Evidence: finished asset pack, ready for integration. Remaining: live screen composition and state wiring, motion, accessibility/device visual review and owner art approval. No game logic, database or gameplay source edits in this task. No commit created because pre-existing uncommitted art integration work remains in the workspace.
+
+## 2026-09-22 | ART-01 | CLAIM
+
+Goal: create the complete reusable original artwork pack requested by the owner: six isolated mascot poses, five actual configured zone buildings, factory overlays and zone cosmetics. Preserve existing scenes and source assets. Owns apps/web/public/assets/art-v1/, docs/ARTWORK_HANDOFF.md, docs/ASSET_MANIFEST.md and this log. No mathematical/API changes. Evidence target: inspected image assets with alpha validation and integration guidance; full visual milestone remains separate.
+
 Append-only after initial handoff. Corrections are new dated entries; never rewrite old outcomes. Claim template and workflow are in AGENTS.md.
 
 ## 2026-09-22 | FE-10 / QA-07 / PA-05 | CLAIM
@@ -465,3 +477,29 @@ Commands/manual checks and observed results: `npx tsc --noEmit`, `npm run build`
 Evidence level: integrated with the fictional API flags; browser E2E and assistive-technology checks NOT RUN.
 
 Remaining risks or blockers: repack source decompositions, undo for Representation B, hint/pause dialogs, keyboard/device verification, and all browser fault recovery remain incomplete.
+
+## 2026-09-22 | FE-05 | CLAIM | Original Art and Visual Experience Integration
+
+Timestamp (UTC): 2026-09-22T16:00:00Z
+
+Goal and scope: integrate the supplied original `art-v1` mascot, zone, prop and effect pack across the live student, teacher and deterministic gallery surfaces; preserve semantic controls and game behavior; add calm/busy/reduced-motion presentation and visual verification.
+
+Owned paths: `apps/web/src/components/`, `apps/web/src/screens/`, `apps/web/src/styles.css`, `apps/web/public/assets/`, `tests/e2e/`, `docs/ASSET_MANIFEST.md`, `docs/VISUAL_STATE_GALLERY.md`, `PROJECT_STATUS.md`, `TASK_LOG.md`.
+
+Dependencies and contract version: existing UI contract v1.0; `docs/ARTWORK_HANDOFF.md`; no API or game-rule change.
+
+Acceptance IDs: DESIGN-01..05, GAME-02 visual layer, A11Y-01 visual review, ART-V1 milestone exit criteria.
+
+Expected outputs: reusable pose/scenery presentation, five live map zone compositions, finished gallery states, responsive/reduced-motion checks, screenshot evidence and a scoped commit.
+
+## 2026-09-22 | FE-05 | HANDOFF | Original Art and Visual Experience Integration
+
+Changes and artifacts: integrated `art-v1` via reusable `FactoryArt`, `Mascot` and busy-scenery components; mapped all six mascot poses to live entry, instruction, help, feedback and result states; added five map-zone building compositions and zone cosmetics; added calm/busy presentation, contained animation and reduced-motion equivalents; expanded the deterministic map fixture to all zones; added asset/gallery/reflow browser checks; captured map, busy gameplay and results evidence in `docs/visual-evidence/`; documented provenance and presentation behavior in the visual records.
+
+Commands/manual checks and observed results: `npm test` passed (46 tests); `npx tsc --noEmit`, `npm run build`, `git diff --check`, and `npm run test:e2e` passed (7 Chromium journeys). Browser evidence includes all gallery fixtures, image dimensions, busy/reduced-state treatment, desktop, 768px tablet and 390px narrow overflow checks; keyboard help-dialog flow and existing recovery/results refresh journeys remained passing.
+
+Evidence level: integrated local fictional-data visual system. The full PNG design references and final browser captures were visually inspected.
+
+Remaining risks or blockers: final owner aesthetic approval plus manual screen-reader, zoom and representative-device review; production identity/data/hosting prerequisites are outside this local art scope. `apps/server/db/local-development.json` contains user/test-session data and is deliberately excluded from this milestone.
+
+Next owner / reviewer: owner visual review of `docs/visual-evidence/art-v1-map.png`, `art-v1-busy-game.png` and `art-v1-results.png`.

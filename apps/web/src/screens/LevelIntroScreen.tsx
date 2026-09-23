@@ -1,4 +1,5 @@
 import type { SelectedLevel, Settings } from "../models.js";
+import { Mascot } from "../components/FactoryArt.js";
 
 type Props = {
   level: SelectedLevel;
@@ -22,6 +23,7 @@ export function LevelIntroScreen({
         <span>{level.zoneName}</span>
       </header>
       <section className="intro-card">
+        <Mascot pose="welcome" className="intro-mascot" />
         <p className="eyebrow">Stage {level.stage} mission</p>
         <h2>{level.title}</h2>
         <p>

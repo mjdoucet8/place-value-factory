@@ -1,4 +1,5 @@
 import type { Dispatch, RefObject, SetStateAction } from "react";
+import { BusyFactoryScenery, Mascot } from "../components/FactoryArt.js";
 import { MachineEditor } from "../components/MachineEditor.js";
 
 type Props = {
@@ -10,6 +11,7 @@ type Props = {
   help: string;
   helpOpen: boolean;
   saving: boolean;
+  busy: boolean;
   storageUnavailable: boolean;
   tabId: string;
   helpTrigger: RefObject<HTMLButtonElement | null>;
@@ -32,6 +34,7 @@ export function GameScreen(props: Props) {
   if (props.attempt.status === "paused")
     return (
       <main className="results">
+        <Mascot pose="welcome" className="state-mascot" />
         <h1>Mission paused</h1>
         <p>
           Your draft is kept on this device and your saved order is ready to
@@ -58,12 +61,13 @@ export function GameScreen(props: Props) {
               : "Build this target with the open machines.";
   return (
     <main className="game-screen">
+      <BusyFactoryScenery enabled={props.busy} />
       <header>
         <h1>Place Value Factory</h1>
         <span>Shipment {props.attempt.shippedSlots + 1} of 5</span>
       </header>
       <aside className="robot-guide" aria-label="Factory guide">
-        <span aria-hidden="true">🤖</span>
+        <Mascot pose="instruct" />
         <p>
           Build the target with the open crate machines. Your total updates as
           you pack.
@@ -119,6 +123,7 @@ export function GameScreen(props: Props) {
             aria-modal="true"
             aria-labelledby="help-dialog-title"
           >
+            <Mascot pose="help" className="dialog-mascot" />
             <h2 id="help-dialog-title">Step-by-step help</h2>
             <p>
               Help is optional. It does not change your shipment, but the saved
@@ -189,9 +194,16 @@ export function GameScreen(props: Props) {
         </button>
       </section>
       {props.notice && (
-        <p className="notice" role="status">
-          {props.notice}
-        </p>
+        <aside className="notice" role="status">
+          <Mascot
+            pose={
+              /saved|accepted|correct/i.test(props.notice)
+                ? "correct"
+                : "encourage"
+            }
+          />
+          <p>{props.notice}</p>
+        </aside>
       )}
     </main>
   );

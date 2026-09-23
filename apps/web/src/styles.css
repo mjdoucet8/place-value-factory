@@ -27,6 +27,40 @@
 }
 body {
   margin: 0;
+  min-width: 320px;
+}
+.game-screen {
+  background:
+    linear-gradient(rgb(255 255 255 / 78%), rgb(255 250 240 / 92%)),
+    url("/assets/gameplay-calm-factory.png") center top / cover fixed;
+}
+.map-screen {
+  background:
+    linear-gradient(rgb(223 247 255 / 78%), rgb(255 250 240 / 92%)),
+    url("/assets/factory-map-environment.png") center / cover fixed;
+}
+.map-screen .map {
+  backdrop-filter: blur(3px);
+}
+.results-screen {
+  background:
+    linear-gradient(rgb(255 250 240 / 84%), rgb(255 250 240 / 94%)),
+    url("/assets/results-celebration-factory.png") center / cover fixed;
+}
+.mascot {
+  height: 104px;
+  object-fit: contain;
+  width: 104px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .mascot {
+    animation: mascot-float 3s ease-in-out infinite;
+  }
+}
+@keyframes mascot-float {
+  50% {
+    transform: translateY(-5px);
+  }
 }
 main {
   max-width: 1200px;
@@ -36,6 +70,7 @@ main {
 }
 main:not(.login) {
   position: relative;
+  isolation: isolate;
 }
 header {
   display: flex;
@@ -149,6 +184,25 @@ summary:focus-visible {
   max-width: 760px;
   padding: 10px 18px;
 }
+.factory-art {
+  display: block;
+  object-fit: contain;
+}
+.map-welcome {
+  align-items: center;
+  background: rgb(255 255 255 / 91%);
+  border: 3px solid var(--cobalt);
+  border-radius: var(--radius-md);
+  display: flex;
+  gap: var(--space-2);
+  margin: var(--space-3) auto;
+  max-width: 720px;
+  padding: 8px var(--space-3);
+}
+.map-welcome p {
+  font-weight: 700;
+  margin: 0;
+}
 .robot-guide span {
   background: #dff7ff;
   border-radius: 50%;
@@ -231,8 +285,21 @@ summary:focus-visible {
   background: #11863d;
 }
 .notice {
+  align-items: center;
+  background: var(--cream);
+  border: 3px solid var(--warning);
+  border-radius: var(--radius-md);
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  margin: var(--space-3) auto;
+  max-width: 760px;
+  padding: var(--space-2) var(--space-3);
   text-align: center;
   font-size: 1.2rem;
+}
+.notice p {
+  margin: 0;
 }
 .resume-banner,
 .intro-card,
@@ -256,6 +323,42 @@ header nav {
 .map li {
   display: grid;
   gap: var(--space-1);
+}
+.map {
+  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(160px, 300px) minmax(0, 1fr);
+  gap: var(--space-3);
+  overflow: hidden;
+  text-align: left;
+}
+.map[data-zone-state="locked"] .zone-building {
+  filter: grayscale(0.75) saturate(0.55);
+  opacity: 0.68;
+}
+.map[data-zone-state="completed"] .zone-building {
+  filter: saturate(1.12) drop-shadow(0 9px 10px rgb(17 134 61 / 0.24));
+}
+.zone-illustration {
+  min-height: 180px;
+  position: relative;
+}
+.zone-building {
+  height: min(30vw, 250px);
+  margin: auto;
+  max-height: 250px;
+  width: 100%;
+}
+.zone-cosmetic {
+  bottom: -12px;
+  height: 98px;
+  position: absolute;
+  right: -18px;
+  transform: rotate(-4deg);
+  width: 98px;
+}
+.zone-content {
+  min-width: 0;
 }
 .map li[data-status="locked"] {
   border: 2px dashed #78849b;
@@ -345,12 +448,98 @@ header nav {
 .error-state {
   border-color: var(--danger);
 }
-[data-pressure="busy"] .game-screen {
-  background-image: repeating-linear-gradient(
-    135deg,
-    transparent 0 42px,
-    rgb(245 181 27 / 8%) 42px 84px
-  );
+.busy-scenery {
+  display: none;
+}
+.busy-scenery.is-busy {
+  display: block;
+}
+:root[data-pressure="busy"] .game-screen {
+  background-image:
+    linear-gradient(rgb(255 255 255 / 74%), rgb(255 250 240 / 88%)),
+    url("/assets/gameplay-calm-factory.png");
+}
+.busy-scenery .factory-art {
+  pointer-events: none;
+  position: absolute;
+  z-index: -1;
+}
+.busy-pipes {
+  height: 190px;
+  right: -32px;
+  top: 116px;
+  width: 190px;
+}
+.busy-conveyor {
+  bottom: 0;
+  height: 174px;
+  left: -38px;
+  width: 260px;
+}
+.busy-pallet {
+  bottom: 44px;
+  height: 110px;
+  right: 14px;
+  width: 110px;
+}
+.busy-shipment {
+  bottom: 18px;
+  height: 126px;
+  right: 125px;
+  width: 126px;
+}
+.busy-light {
+  height: 78px;
+  right: 166px;
+  top: 88px;
+  width: 78px;
+}
+.busy-steam {
+  height: 130px;
+  left: 20px;
+  opacity: 0.55;
+  top: 130px;
+  width: 130px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .busy-conveyor {
+    animation: conveyor-bob 2.8s ease-in-out infinite;
+  }
+  .busy-light {
+    animation: factory-blink 1.7s steps(2, end) infinite;
+  }
+  .busy-steam {
+    animation: steam-rise 4s ease-in-out infinite;
+  }
+  .celebration-effect {
+    animation: celebrate-pop 1.6s ease-out both;
+  }
+}
+@keyframes conveyor-bob {
+  50% {
+    transform: translateX(8px);
+  }
+}
+@keyframes factory-blink {
+  50% {
+    opacity: 0.36;
+  }
+}
+@keyframes steam-rise {
+  50% {
+    opacity: 0.18;
+    transform: translateY(-14px);
+  }
+}
+@keyframes celebrate-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  to {
+    opacity: 0.72;
+    transform: scale(1);
+  }
 }
 @keyframes pulse {
   50% {
@@ -375,6 +564,11 @@ header nav {
   max-width: 560px;
   padding: 24px;
 }
+.dialog-mascot {
+  float: right;
+  height: 94px;
+  width: 94px;
+}
 .help-dialog button + button {
   margin-left: 12px;
 }
@@ -382,6 +576,51 @@ header nav {
   max-width: 560px;
   text-align: center;
   padding-top: 12vh;
+}
+.login-mascot {
+  height: 150px;
+  margin: 0 auto -16px;
+  width: 150px;
+}
+.intro-card,
+.progress-summary,
+.results {
+  position: relative;
+}
+.intro-mascot,
+.summary-mascot {
+  float: right;
+  height: 128px;
+  margin: -24px -16px 0 10px;
+  width: 128px;
+}
+.results-mascot {
+  height: 154px;
+  margin: -24px auto -18px;
+  width: 154px;
+}
+.state-mascot {
+  float: right;
+  height: 112px;
+  margin: -16px -8px 0 10px;
+  width: 112px;
+}
+.teacher-mascot {
+  float: right;
+  height: 100px;
+  margin: 8px 2% 0 0;
+  width: 100px;
+}
+.celebration-effect {
+  height: 290px;
+  left: 50%;
+  opacity: 0.72;
+  pointer-events: none;
+  position: absolute;
+  top: 10px;
+  transform: translateX(-50%);
+  width: min(520px, 90vw);
+  z-index: -1;
 }
 .login button {
   display: block;
@@ -467,6 +706,29 @@ td {
   .second-representation > div {
     grid-template-columns: repeat(2, 1fr);
   }
+  .map {
+    grid-template-columns: 1fr;
+  }
+  .zone-illustration {
+    min-height: 130px;
+  }
+  .zone-building {
+    height: 180px;
+  }
+  .zone-content h2 {
+    text-align: center;
+  }
+  .map-welcome {
+    align-items: flex-start;
+  }
+  .busy-scenery {
+    display: none !important;
+  }
+  .intro-mascot,
+  .summary-mascot {
+    height: 96px;
+    width: 96px;
+  }
 }
 @media (max-width: 390px) {
   .controls button,
@@ -484,6 +746,20 @@ td {
     animation: none !important;
     transition: none !important;
   }
+  .busy-scenery,
+  .celebration-effect {
+    display: none !important;
+  }
+}
+:root[data-motion="reduced"] *,
+:root[data-motion="reduced"] *::before,
+:root[data-motion="reduced"] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+:root[data-motion="reduced"] .busy-scenery,
+:root[data-motion="reduced"] .celebration-effect {
+  display: none !important;
 }
 :root[data-motion="reduced"] * {
   scroll-behavior: auto !important;

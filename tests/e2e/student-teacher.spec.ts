@@ -248,3 +248,81 @@ test("renders deterministic advanced-mode visual fixtures", async ({
     "none",
   );
 });
+
+test("loads original art and keeps gallery controls responsive", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: null });
+  const fixtures = [
+    "map",
+    "map-resume",
+    "level-intro",
+    "progress",
+    "calm",
+    "busy",
+    "restricted",
+    "minimum",
+    "exactTypes",
+    "twoWays",
+    "repack",
+    "incorrect",
+    "correct",
+    "pending",
+    "offline",
+    "storage",
+    "takeover",
+    "paused",
+    "help",
+    "results-two",
+    "results-three",
+    "loading",
+    "error",
+    "empty",
+  ];
+  for (const fixture of fixtures) {
+    await page.goto(`/dev/place-value-factory/states?fixture=${fixture}`);
+    await expect(page.locator("main").first()).toBeVisible();
+  }
+  await page.goto("/dev/place-value-factory/states?fixture=map");
+  await expect(page.locator(".zone-building")).toHaveCount(5);
+  await expect(page.locator(".zone-building").first()).toHaveJSProperty(
+    "naturalWidth",
+    768,
+  );
+  await page.screenshot({
+    path: "docs/visual-evidence/art-v1-map.png",
+    fullPage: true,
+  });
+  await page.goto("/dev/place-value-factory/states?fixture=busy");
+  await expect(page.locator(".busy-scenery")).toHaveClass(/is-busy/);
+  await expect(page.locator(".busy-scenery img").first()).toHaveJSProperty(
+    "naturalWidth",
+    512,
+  );
+  await page.screenshot({
+    path: "docs/visual-evidence/art-v1-busy-game.png",
+    fullPage: true,
+  });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.reload();
+  await expect(page.locator(".busy-scenery")).toBeHidden();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/dev/place-value-factory/states?fixture=map");
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+  await page.setViewportSize({ width: 768, height: 1024 });
+  await page.goto("/dev/place-value-factory/states?fixture=results-three");
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+  await page.goto("/dev/place-value-factory/states?fixture=results-three");
+  await page.screenshot({
+    path: "docs/visual-evidence/art-v1-results.png",
+    fullPage: true,
+  });
+});

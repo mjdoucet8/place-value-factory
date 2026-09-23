@@ -1,0 +1,117 @@
+[
+  {
+    "name": "mascot-welcome",
+    "source": "/home/owner/.codex/generated_images/01a0cb23-f3e9-7ec2-8e37-13aea59c44d7/exec-48848f37-d936-4bd3-b7a4-1112ae602e2d.png",
+    "prompt": "Use case: stylized-concept. Create ONE isolated full-body robot mascot asset for an elementary mathematics factory game. Reference image is character identity only, NOT a sheet to reproduce. Match precisely the white rounded shell, navy face screen, cyan facial features, orange ear caps and antenna ball, three small colored ascending bars on chest, hovering cyan base. Pose: welcoming wave, cheerful open smile. Exactly one robot centered on a square canvas, entire silhouette visible with 10% padding. Consistent polished soft 3D children's game illustration, warm upper-left lighting. Genuinely transparent background with alpha, no scene, no floor, no cast background, no checkerboard, no text, numbers, symbols outside the chest emblem, watermark, panels, borders or duplicate robots. Deliver one production-ready transparent PNG."
+  },
+  {
+    "name": "mascot-instruct",
+    "source": "/home/owner/.codex/generated_images/01a0cb23-f3e9-7ec2-8e37-13aea59c44d7/exec-f2b5ea54-cefc-4b9d-a90a-96ad3e013509.png",
+    "prompt": "Use case: stylized-concept. Create ONE isolated full-body robot mascot asset for an elementary mathematics factory game. Reference image is character identity only, NOT a sheet to reproduce. Match precisely the white rounded shell, navy face screen, cyan facial features, orange ear caps and antenna ball, three small colored ascending bars on chest, hovering cyan base. Pose: pointing to the right with one hand, attentive friendly expression. Exactly one robot centered on a square canvas, entire silhouette visible with 10% padding. Consistent polished soft 3D children's game illustration, warm upper-left lighting. Genuinely transparent background with alpha, no scene, no floor, no cast background, no checkerboard, no text, numbers, symbols outside the chest emblem, watermark, panels, borders or duplicate robots. Deliver one production-ready transparent PNG."
+  },
+  {
+    "name": "mascot-help",
+    "source": "/home/owner/.codex/generated_images/01a0cb23-f3e9-7ec2-8e37-13aea59c44d7/exec-f9cdcb85-6bd3-4544-8be0-1e937c838eda.png",
+    "prompt": "Use case: stylized-concept. Create ONE isolated full-body robot mascot asset for an elementary mathematics factory game. Reference image is character identity only, NOT a sheet to reproduce. Match precisely the white rounded shell, navy face screen, cyan facial features, orange ear caps and antenna ball, three small colored ascending bars on chest, hovering cyan base. Pose: holding one small glowing warm light bulb, reassuring smile. Exactly one robot centered on a square canvas, entire silhouette visible with 10% padding. Consistent polished soft 3D children's game illustration, warm upper-left lighting. Genuinely transparent background with alpha, no scene, no floor, no cast background, no checkerboard, no text, numbers, symbols outside the chest emblem, watermark, panels, borders or duplicate robots. Deliver one production-ready transparent PNG."
+  },
+  {
+    "name": "mascot-correct",
+    "source": "/home/owner/.codex/generated_images/01a0cb23-f3e9-7ec2-8e37-13aea59c44d7/exec-cefcf2cb-c88b-4489-9956-2880b210ad2a.png",
+    "prompt": "Use case: stylized-concept. Create ONE isolated full-body robot mascot asset for an elementary mathematics factory game. Reference image is character identity only, NOT a sheet to reproduce. Match precisely the white rounded shell, navy face screen, cyan facial features, orange ear caps and antenna ball, three small colored ascending bars on chest, hovering cyan base. Pose: giving a clear thumbs-up, delighted smile. Exactly one robot centered on a square canvas, entire silhouette visible with 10% padding. Consistent polished soft 3D children's game illustration, warm upper-left lighting. Genuinely transparent background with alpha, no scene, no floor, no cast background, no checkerboard, no text, numbers, symbols outside the chest emblem, watermark, panels, borders or duplicate robots. Deliver one production-ready transparent PNG."
+  },
+  {
+    "name": "mascot-encourage",
+    "source": "/home/owner/.codex/generated_images/01a0cb23-f3e9-7ec2-8e37-13aea59c44d7/exec-df8500c3-fcff-44a3-aa4d-29e231ed283d.png",
+    "prompt": "Use case: stylized-concept. Create ONE isolated full-body robot mascot asset for an elementary mathematics factory game. Reference image is character identity only, NOT a sheet to reproduce. Match precisely the white rounded shell, navy face screen, cyan facial features, orange ear caps and antenna ball, three small colored ascending bars on chest, hovering cyan base. Pose: both palms gently open, thoughtful reassuring smile, never sad or angry. Exactly one robot centered on a square canvas, entire silhouette visible with 10% padding. Consistent polished soft 3D children's game illustration, warm upper-left lighting. Genuinely transparent background with alpha, no scene, no floor, no cast background, no checkerboard, no text, numbers, symbols outside the chest emblem, watermark, panels, borders or duplicate robots. Deliver one production-ready transparent PNG."
+  },
+  {
+    "name": "mascot-celebrate",
+    "source": "/home/owner/.codex/generated_images/01a0cb23-f3e9-7ec2-8e37-13aea59c44d7/exec-593c4b3f-3421-4aff-8b5b-e296c0638ec1.png",
+    "prompt": "Use case: stylized-concept. Create ONE isolated full-body robot mascot asset for an elementary mathematics factory game. Reference image is character identity only, NOT a sheet to reproduce. Match precisely the white rounded shell, navy face screen, cyan facial features, orange ear caps and antenna ball, three small colored ascending bars on chest, hovering cyan base. Pose: both hands raised in a joyful cheer, smiling crescent eyes. Exactly one robot centered on a square canvas, entire silhouette visible with 10% padding. Consistent polished soft 3D children's game illustration, warm upper-left lighting. Genuinely transparent background with alpha, no scene, no floor, no cast background, no checkerboard, no text, numbers, symbols outside the chest emblem, watermark, panels, borders or duplicate robots. Deliver one production-ready transparent PNG."
+  },
+  {
+    "name": "zone-receiving",
+    "source": "/home/owner/.codex/generated_images/01a0cb23-f3e9-7ec2-8e37-13aea59c44d7/exec-21dfaa99-20d7-4bad-abb5-f4d62b4460f6.png",
+    "prompt": "Use case: stylized-concept. Generate ONE isolated receiving map building for an elementary math factory game. Reference image is style reference only. Subject: blue receiving factory with rounded pitched roof, one open receiving bay and short conveyor. Match reference world's polished soft 3D illustration, rounded toy-like forms, warm upper-left daylight and elevated 3/4 isometric angle. Entire compact building and small foundation visible with 10% padding on square canvas. Genuinely transparent alpha background, no landscape, sky, ground island, text, letters, numbers, labels, UI, stars, locks, logos, watermark or other buildings. Do not reproduce entire map. Production-ready standalone transparent PNG."
+  },
+  {
+    "name": "zone-packing",
+    "source": "/home/owner/.codex/generated_images/01a0cb23-f3e9-7ec2-8e37-13aea59c44d7/exec-fe4cf8f8-c13f-4230-8a33-f084bfebfe36.png",
+    "prompt": "Use case: stylized-concept. Generate ONE isolated packing map building for an elementary math factory game. Reference image is style reference only. Subject: purple packing plant with two cylindrical roof stacks and a small packaging conveyor. Match reference world's polished soft 3D illustration, rounded toy-like forms, warm upper-left daylight and elevated 3/4 isometric angle. Entire compact building and small foundation visible with 10% padding on square canvas. Genuinely transparent alpha background, no landscape, sky, ground island, text, letters, numbers, labels, UI, stars, locks, logos, watermark or other buildings. Do not reproduce entire map. Production-ready standalone transparent PNG."
+  },
+  {
+    "name": "zone-warehouse",
+    "source": "/home/owner/.codex/generated_images/01a0cb23-f3e9-7ec2-8e37-13aea59c44d7/exec-89ebdc7e-5c34-4ddc-a766-fd45fd5b9d30.png",
+    "prompt": "Use case: stylized-concept. Generate ONE isolated warehouse map building for an elementary math factory game. Reference image is style reference only. Subject: orange warehouse with open doors, neat shelving and a few neutral wooden crates. Match reference world's polished soft 3D illustration, rounded toy-like forms, warm upper-left daylight and elevated 3/4 isometric angle. Entire compact building and small foundation visible with 10% padding on square canvas. Genuinely transparent alpha background, no landscape, sky, ground island, text, letters, numbers, labels, UI, stars, locks, logos, watermark or other buildings. Do not reproduce entire map. Production-ready standalone transparent PNG."
+  },
+  {
+    "name": "zone-shipping",
+    "source": "/home/owner/.codex/generated_images/01a0cb23-f3e9-7ec2-8e37-13aea59c44d7/exec-27fef4a7-c94c-4b53-9723-beb61bebe6c2.png",
+    "prompt": "Use case: stylized-concept. Generate ONE isolated shipping map building for an elementary math factory game. Reference image is style reference only. Subject: green shipping depot with two loading bays and one small unbranded green delivery truck. Match reference world's polished soft 3D illustration, rounded toy-like forms, warm upper-left daylight and elevated 3/4 isometric angle. Entire compact building and small foundation visible with 10% padding on square canvas. Genuinely transparent alpha background, no landscape, sky, ground island, text, letters, numbers, labels, UI, stars, locks, logos, watermark or other buildings. Do not reproduce entire map. Production-ready standalone transparent PNG."
+  },
+  {
+    "name": "zone-lab",
+    "source": "/home/owner/.codex/generated_images/01a0cb23-f3e9-7ec2-8e37-13aea59c44d7/exec-54084b4a-a454-480a-96e4-e32ab8c17b5d.png",
+    "prompt": "Use case: stylized-concept. Generate ONE isolated lab map building for an elementary math factory game. Reference image is style reference only. Subject: cyan innovation laboratory with rounded glass dome, clean silver pipes and turquoise roof. Match reference world's polished soft 3D illustration, rounded toy-like forms, warm upper-left daylight and elevated 3/4 isometric angle. Entire compact building and small foundation visible with 10% padding on square canvas. Genuinely transparent alpha background, no landscape, sky, ground island, text, letters, numbers, labels, UI, stars, locks, logos, watermark or other buildings. Do not reproduce entire map. Production-ready standalone transparent PNG."
+  },
+  {
+    "name": "prop-waiting-pallet",
+    "source": "/home/owner/.codex/generated_images/01a0cb23-f3e9-7ec2-8e37-13aea59c44d7/exec-e6e802c6-1411-4e3c-96e0-19aa723e8626.png",
+    "prompt": "Use case: stylized-concept. Production game decoration for Place Value Factory. Reference supplies style only. Create one wooden pallet carrying three neatly stacked neutral brown shipping boxes; compact silhouette. ONE isolated cohesive object, entire silhouette with generous padding, square canvas, polished soft 3D children's educational game art, clean readable forms, warm upper-left lighting, consistent with reference factory world. Genuine transparent alpha background. No floor or surrounding scene, no text, numbers, labels, logos, watermark, UI, star ratings, robot, border, sheet or collection. Not a functional mathematical counter; purely decorative."
+  },
+  {
+    "name": "prop-conveyor",
+    "source": "/home/owner/.codex/generated_images/01a0cb23-f3e9-7ec2-8e37-13aea59c44d7/exec-0cce0cb5-b565-4b2a-a8f4-af3a6fc39952.png",
+    "prompt": "Use case: stylized-concept. Production game decoration for Place Value Factory. Reference supplies style only. Create one short empty horizontal conveyor module, navy frame, silver cylindrical rollers, orange end caps; side-on slightly elevated three-quarter view. ONE isolated cohesive object, entire silhouette with generous padding, square canvas, polished soft 3D children's educational game art, clean readable forms, warm upper-left lighting, consistent with reference factory world. Genuine transparent alpha background. No floor or surrounding scene, no text, numbers, labels, logos, watermark, UI, star ratings, robot, border, sheet or collection. Not a functional mathematical counter; purely decorative."
+  },
+  {
+    "name": "prop-pipes-gauge",
+    "source": "/home/owner/.codex/generated_images/01a0cb23-f3e9-7ec2-8e37-13aea59c44d7/exec-4084b1c3-35d7-48bf-acca-3879dae12108.png",
+    "prompt": "Use case: stylized-concept. Production game decoration for Place Value Factory. Reference supplies style only. Create one compact L-shaped navy factory pipe assembly with brass joints and one round ivory gauge with an unnumbered face and single needle. ONE isolated cohesive object, entire silhouette with generous padding, square canvas, polished soft 3D children's educational game art, clean readable forms, warm upper-left lighting, consistent with reference factory world. Genuine transparent alpha background. No floor or surrounding scene, no text, numbers, labels, logos, watermark, UI, star ratings, robot, border, sheet or collection. Not a functional mathematical counter; purely decorative."
+  },
+  {
+    "name": "prop-activity-light",
+    "source": "/home/owner/.codex/generated_images/01a0cb23-f3e9-7ec2-8e37-13aea59c44d7/exec-91c16f4e-e1b3-4a75-8a9a-7bac98448749.png",
+    "prompt": "Use case: stylized-concept. Production game decoration for Place Value Factory. Reference supplies style only. Create one amber glass industrial beacon mounted on a small navy base, warmly lit with a very restrained glow. ONE isolated cohesive object, entire silhouette with generous padding, square canvas, polished soft 3D children's educational game art, clean readable forms, warm upper-left lighting, consistent with reference factory world. Genuine transparent alpha background. No floor or surrounding scene, no text, numbers, labels, logos, watermark, UI, star ratings, robot, border, sheet or collection. Not a functional mathematical counter; purely decorative."
+  },
+  {
+    "name": "prop-shipment",
+    "source": "/home/owner/.codex/generated_images/01a0cb23-f3e9-7ec2-8e37-13aea59c44d7/exec-70a3cc52-1568-46db-94ee-8b1b5d40eb8f.png",
+    "prompt": "Use case: stylized-concept. Production game decoration for Place Value Factory. Reference supplies style only. Create one closed neutral wooden shipping crate with rounded reinforced corners and plain blank faces, three-quarter view. ONE isolated cohesive object, entire silhouette with generous padding, square canvas, polished soft 3D children's educational game art, clean readable forms, warm upper-left lighting, consistent with reference factory world. Genuine transparent alpha background. No floor or surrounding scene, no text, numbers, labels, logos, watermark, UI, star ratings, robot, border, sheet or collection. Not a functional mathematical counter; purely decorative."
+  },
+  {
+    "name": "cosmetic-crane",
+    "source": "/home/owner/.codex/generated_images/01a0cb23-f3e9-7ec2-8e37-13aea59c44d7/exec-1db214d0-eea6-48db-90cc-04271e776031.png",
+    "prompt": "Use case: stylized-concept. Production game decoration for Place Value Factory. Reference supplies style only. Create one small orange and navy gantry crane with a simple suspended hook, safe friendly toy-like proportions. ONE isolated cohesive object, entire silhouette with generous padding, square canvas, polished soft 3D children's educational game art, clean readable forms, warm upper-left lighting, consistent with reference factory world. Genuine transparent alpha background. No floor or surrounding scene, no text, numbers, labels, logos, watermark, UI, star ratings, robot, border, sheet or collection. Not a functional mathematical counter; purely decorative."
+  },
+  {
+    "name": "cosmetic-sign",
+    "source": "/home/owner/.codex/generated_images/01a0cb23-f3e9-7ec2-8e37-13aea59c44d7/exec-fd7d185b-6ac4-4f40-b213-0065c8c549e2.png",
+    "prompt": "Use case: stylized-concept. Create a standalone decorative game asset: one small freestanding factory sign with blank cream rectangular face, rounded cobalt frame, two navy posts, tiny brass corner bolts. Face must be completely blank for live HTML text. Reference image supplies polished soft 3D children's factory world style only. Clean rounded forms, warm upper-left lighting, 3/4 slightly elevated angle where applicable. Entire subject visible with generous padding, square canvas. Genuinely transparent alpha background; no painted backdrop, floor, scene, checkerboard, words, numbers, logo, watermark, UI or additional objects. One cohesive asset only, not a sheet."
+  },
+  {
+    "name": "cosmetic-shelves",
+    "source": "/home/owner/.codex/generated_images/01a0cb23-f3e9-7ec2-8e37-13aea59c44d7/exec-238f08dd-3dfb-41c8-a16f-f7776b29c964.png",
+    "prompt": "Use case: stylized-concept. Create a standalone decorative game asset: one compact navy warehouse shelving unit with orange shelf edges and neatly arranged neutral wooden crates. Reference image supplies polished soft 3D children's factory world style only. Clean rounded forms, warm upper-left lighting, 3/4 slightly elevated angle where applicable. Entire subject visible with generous padding, square canvas. Genuinely transparent alpha background; no painted backdrop, floor, scene, checkerboard, words, numbers, logo, watermark, UI or additional objects. One cohesive asset only, not a sheet."
+  },
+  {
+    "name": "cosmetic-loading-bay",
+    "source": "/home/owner/.codex/generated_images/01a0cb23-f3e9-7ec2-8e37-13aea59c44d7/exec-bdb885e7-1fbf-4c79-894a-aaac8668bb8b.png",
+    "prompt": "Use case: stylized-concept. Create a standalone decorative game asset: one small green and navy loading-bay platform with short ramp, safety rail and blank overhead canopy; no complete building. Reference image supplies polished soft 3D children's factory world style only. Clean rounded forms, warm upper-left lighting, 3/4 slightly elevated angle where applicable. Entire subject visible with generous padding, square canvas. Genuinely transparent alpha background; no painted backdrop, floor, scene, checkerboard, words, numbers, logo, watermark, UI or additional objects. One cohesive asset only, not a sheet."
+  },
+  {
+    "name": "cosmetic-lab-equipment",
+    "source": "/home/owner/.codex/generated_images/01a0cb23-f3e9-7ec2-8e37-13aea59c44d7/exec-a17ac3e2-29d3-4211-b711-e5c8273fa419.png",
+    "prompt": "Use case: stylized-concept. Create a standalone decorative game asset: one compact turquoise laboratory apparatus with rounded glass chamber, silver pipe and softly glowing cyan core; friendly toy machine. Reference image supplies polished soft 3D children's factory world style only. Clean rounded forms, warm upper-left lighting, 3/4 slightly elevated angle where applicable. Entire subject visible with generous padding, square canvas. Genuinely transparent alpha background; no painted backdrop, floor, scene, checkerboard, words, numbers, logo, watermark, UI or additional objects. One cohesive asset only, not a sheet."
+  },
+  {
+    "name": "effect-steam",
+    "source": "/home/owner/.codex/generated_images/01a0cb23-f3e9-7ec2-8e37-13aea59c44d7/exec-0fbf23e3-08fd-4096-bb84-39cde1114829.png",
+    "prompt": "Use case: stylized-concept. Create a standalone decorative game asset: one small soft stylized curling puff of white steam, gently translucent edges, readable against navy, no pipe. Reference image supplies polished soft 3D children's factory world style only. Clean rounded forms, warm upper-left lighting, 3/4 slightly elevated angle where applicable. Entire subject visible with generous padding, square canvas. Genuinely transparent alpha background; no painted backdrop, floor, scene, checkerboard, words, numbers, logo, watermark, UI or additional objects. One cohesive asset only, not a sheet."
+  },
+  {
+    "name": "effect-celebration",
+    "source": "/home/owner/.codex/generated_images/01a0cb23-f3e9-7ec2-8e37-13aea59c44d7/exec-32bdc271-cb73-4da4-a638-e7cc6fc85c0c.png",
+    "prompt": "Use case: stylized-concept. Create a standalone decorative game asset: one sparse arrangement of warm gold and cyan tiny glints and a few curved orange and blue confetti ribbons around a completely empty transparent center; no stars, no text, no emblem. Reference image supplies polished soft 3D children's factory world style only. Clean rounded forms, warm upper-left lighting, 3/4 slightly elevated angle where applicable. Entire subject visible with generous padding, square canvas. Genuinely transparent alpha background; no painted backdrop, floor, scene, checkerboard, words, numbers, logo, watermark, UI or additional objects. One cohesive asset only, not a sheet."
+  }
+]

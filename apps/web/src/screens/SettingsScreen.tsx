@@ -1,4 +1,5 @@
 import type { Settings } from "../models.js";
+import { Mascot } from "../components/FactoryArt.js";
 type Props = {
   settings: Settings;
   onChange: (settings: Settings) => void;
@@ -9,6 +10,7 @@ type Props = {
 export function SettingsScreen({ settings, onChange, onSave, onBack }: Props) {
   return (
     <main className="login">
+      <Mascot pose="help" className="login-mascot" />
       <h1>Factory settings</h1>
       <p>These supports never change game rewards.</p>
       <label>

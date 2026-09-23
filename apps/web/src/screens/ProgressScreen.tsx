@@ -12,6 +12,7 @@ export function ProgressScreen({ progress, onPractice, onBack }: Props) {
         </button>
       </header>
       <section className="progress-summary">
+        <Mascot pose="instruct" className="summary-mascot" />
         <h2>Learning evidence</h2>
         <p>
           {progress?.completedLevelIds?.length ?? 0} levels completed. Timing is
@@ -41,3 +42,4 @@ export function ProgressScreen({ progress, onPractice, onBack }: Props) {
     </main>
   );
 }
+import { Mascot } from "../components/FactoryArt.js";

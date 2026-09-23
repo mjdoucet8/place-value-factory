@@ -4,6 +4,7 @@ import { MapScreen } from "./MapScreen.js";
 import { LevelIntroScreen } from "./LevelIntroScreen.js";
 import { ProgressScreen } from "./ProgressScreen.js";
 import { ResultsScreen } from "./ResultsScreen.js";
+import { Mascot } from "../components/FactoryArt.js";
 import {
   GAME_FIXTURES,
   INTRO_FIXTURE,
@@ -97,6 +98,7 @@ export function StateGallery() {
     preview = (
       <main>
         <section className="loading-state" aria-busy="true">
+          <Mascot pose="instruct" className="state-mascot" />
           <h1>Loading the factory…</h1>
           <div className="skeleton" />
           <div className="skeleton short" />
@@ -107,6 +109,7 @@ export function StateGallery() {
     preview = (
       <main>
         <section className="error-state" role="alert">
+          <Mascot pose="encourage" className="state-mascot" />
           <h1>The factory could not connect</h1>
           <p>
             Your work is still in this tab. Try again when the connection
@@ -120,6 +123,7 @@ export function StateGallery() {
     preview = (
       <main>
         <section className="empty-state">
+          <Mascot pose="welcome" className="state-mascot" />
           <h1>No learning evidence yet</h1>
           <p>Complete a shipment to begin the progress record.</p>
         </section>
@@ -138,6 +142,7 @@ export function StateGallery() {
           help="H1: Think about groups of ten."
           helpOpen={fixture.helpOpen ?? false}
           saving={fixture.saving ?? false}
+          busy={fixture.pressure === "busy"}
           storageUnavailable={fixture.storageUnavailable ?? false}
           tabId="fixture-tab"
           helpTrigger={helpTrigger}

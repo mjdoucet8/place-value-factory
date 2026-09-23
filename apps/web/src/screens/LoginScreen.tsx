@@ -17,6 +17,7 @@ type Props = {
 export function LoginScreen(props: Props) {
   return (
     <main className="login">
+      <Mascot pose="welcome" className="login-mascot" />
       <h1>Place Value Factory</h1>
       <p>Development mode uses fictional accounts only.</p>
       <form
@@ -75,3 +76,4 @@ export function LoginScreen(props: Props) {
     </main>
   );
 }
+import { Mascot } from "../components/FactoryArt.js";

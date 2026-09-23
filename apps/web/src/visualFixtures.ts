@@ -184,6 +184,25 @@ export const MAP_FIXTURE = {
         },
       ],
     },
+    ...[
+      ["packing", "Packing", 5],
+      ["warehouse", "Warehouse", 10],
+      ["shipping", "Shipping", 16],
+      ["lab", "Lab", 22],
+    ].map(([id, name, level]) => ({
+      id,
+      name,
+      levels: [
+        {
+          id: `level-${level}`,
+          title: "Factory route",
+          stage: Math.max(1, Math.ceil((Number(level) - 1) / 5)),
+          status: "locked",
+          stars: 0,
+          prerequisiteSummary: "Complete the earlier factory route first",
+        },
+      ],
+    })),
   ],
 };
 

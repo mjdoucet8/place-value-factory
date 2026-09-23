@@ -164,7 +164,9 @@ function App() {
         )?.[1];
         if (requestedResultAttempt) {
           const [savedAttempt, savedResult] = await Promise.all([
-            api(`/games/place-value-factory/attempts/${requestedResultAttempt}`),
+            api(
+              `/games/place-value-factory/attempts/${requestedResultAttempt}`,
+            ),
             api(
               `/games/place-value-factory/attempts/${requestedResultAttempt}/results`,
             ),
@@ -207,6 +209,13 @@ function App() {
       })
       .catch(() => undefined);
   }, []);
+  useEffect(() => {
+    document.documentElement.dataset.pressure = settings.pressure;
+    document.documentElement.dataset.motion = settings.reducedMotion
+      ? "reduced"
+      : "standard";
+    document.documentElement.dataset.textScale = settings.textScale;
+  }, [settings]);
   useEffect(() => {
     if (screen === "game") {
       const saved = deviceStorage.read(
@@ -781,6 +790,7 @@ function App() {
         help={help}
         helpOpen={helpOpen}
         saving={saving}
+        busy={settings.pressure === "busy"}
         storageUnavailable={storageUnavailable}
         tabId={tabId}
         helpTrigger={helpTrigger}

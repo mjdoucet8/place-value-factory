@@ -1,5 +1,19 @@
 # Project status
 
+## 2026-09-22 artwork pack delivery
+
+Created 23 original transparent assets in apps/web/public/assets/art-v1/: six mascot poses, five configured zone buildings, five factory props, five zone cosmetics and two effects. Original 1254×1254 PNG masters are preserved; alpha-preserving 512px/768px WebP derivatives total 1,130,984 bytes versus 24,421,384 bytes of originals (95% reduction). Existing scene backgrounds are retained.
+
+Exact prompts, inventory, intended state mapping and integration constraints are in docs/ARTWORK_PROMPTS.json, docs/ASSET_MANIFEST.md and docs/ARTWORK_HANDOFF.md. The standalone artwork preview loads all 23 assets without broken images and was inspected on light/navy backgrounds; npm run build and git diff --check passed. This is artwork-ready delivery, not completion of the full visual integration milestone. The live screens still need pose wiring, layout composition, motion, comprehensive visual QA and owner approval.
+
+## 2026-09-22 original art and visual experience integration
+
+The original `art-v1` WebP pack now decorates the live React screens through reusable presentation components. All six mascot poses are mapped to meaningful non-authoritative states; the map composes all five original zone buildings with live level nodes and CSS available/completed/locked effects; calm gameplay uses the supplied factory scene, and busy gameplay adds separately removable factory props. Results use the celebration effect and mascot while the rating remains semantic HTML. Login, level introduction, progress, settings, teacher, loading/error/empty, pause/takeover, help, feedback and gallery states receive the shared visual treatment without changing game behavior.
+
+Restrained mascot, conveyor, light, steam and celebration animation is disabled for `prefers-reduced-motion` and the saved reduced-motion setting. Decorative images have empty alt treatment, use contained explicit dimensions, and do not carry changing student information. Browser coverage now reaches every documented gallery fixture, verifies primary image loading, calm/busy state wiring, reduced-motion hiding, narrow 390px reflow, controls, results refresh and recovery journeys. Final review captures are in `docs/visual-evidence/`.
+
+Verified: `npm test` (46 tests), `npx tsc --noEmit`, `npm run build`, `npm run test:e2e` (7 Chromium journeys), and `git diff --check` passed. This completes the locally verifiable art-integration slice; final owner visual approval, manual screen-reader/device/zoom review and external production prerequisites remain separate from the fictional-data milestone.
+
 As of 20 September 2026 | Baseline v1.0
 
 **Specification ready; application implementation not started in this handoff.**
