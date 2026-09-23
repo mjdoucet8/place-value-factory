@@ -36,8 +36,28 @@ export type PersistedResponse =
       revision?: number;
     };
 
+export type LeaseCommand = {
+  actorId: string;
+  attemptId: string;
+  commandId: string;
+  payloadHash: string;
+  expectedRevision: number;
+  tabId: string;
+} & (
+  | { action: "heartbeat" | "resume"; leaseEpoch: number }
+  | { action: "takeover" }
+);
+
+export type LeaseSnapshot = {
+  revision: number;
+  leaseEpoch: number;
+  writerTabId: string;
+  leaseExpiresAt: string;
+};
+
 /**
- * PostgreSQL is authoritative when DATABASE_URL is supplied. This repository
+ * Transactional PostgreSQL repository; runtime selection is implemented separately.
+ * This repository
  * uses row locks and a receipt lookup before revision checks so a lost reply
  * can be safely replayed without duplicating evidence.
  */
@@ -54,6 +74,118 @@ export class PostgresGameRepository {
   }
   async close() {
     await this.pool.end();
+  }
+
+  /** Caller supplies an authenticated actor, never a client-selected student ID. */
+  async changeLease(
+    input: LeaseCommand,
+  ): Promise<
+    | { kind: "committed"; snapshot: LeaseSnapshot }
+    | Exclude<PersistedResponse, { kind: "committed" }>
+  > {
+    return this.retryTransaction(async () => {
+      const client = await this.pool.connect();
+      try {
+        await client.query("BEGIN ISOLATION LEVEL SERIALIZABLE");
+        // Ownership must precede receipt access, including a late exact retry.
+        const result = await client.query<{
+          revision: number;
+          lease_epoch: number;
+          writer_tab_id: string;
+          expired: boolean;
+          status: string;
+        }>(
+          `SELECT revision, lease_epoch, writer_tab_id, lease_expires_at <= now() AS expired, status
+           FROM pvf_attempt WHERE id=$1 AND student_id=$2 FOR UPDATE`,
+          [input.attemptId, input.actorId],
+        );
+        if (!result.rowCount) {
+          await client.query("ROLLBACK");
+          return { kind: "conflict", code: "ORDER_NOT_ACTIVE" };
+        }
+        const prior = await client.query(
+          "SELECT payload_hash, status, response FROM pvf_command_receipt WHERE actor_id=$1 AND command_id=$2",
+          [input.actorId, input.commandId],
+        );
+        if (prior.rowCount) {
+          await client.query("COMMIT");
+          return prior.rows[0].payload_hash === input.payloadHash
+            ? {
+                kind: "replay",
+                status: prior.rows[0].status,
+                body: prior.rows[0].response,
+              }
+            : { kind: "conflict", code: "IDEMPOTENCY_CONFLICT" };
+        }
+        const current = result.rows[0];
+        if (!["active", "paused"].includes(current.status)) {
+          await client.query("ROLLBACK");
+          return { kind: "conflict", code: "ORDER_NOT_ACTIVE" };
+        }
+        if (current.revision !== input.expectedRevision) {
+          await client.query("ROLLBACK");
+          return {
+            kind: "conflict",
+            code: "REVISION_CONFLICT",
+            revision: current.revision,
+          };
+        }
+        if (
+          input.action !== "takeover" &&
+          (current.writer_tab_id !== input.tabId ||
+            current.lease_epoch !== input.leaseEpoch ||
+            (input.action === "heartbeat" && current.expired))
+        ) {
+          await client.query("ROLLBACK");
+          return { kind: "conflict", code: "LEASE_LOST" };
+        }
+        const incrementEpoch =
+          input.action === "takeover" ||
+          (input.action === "resume" && current.expired);
+        const incrementRevision = input.action !== "heartbeat";
+        const updated = await client.query<{
+          revision: number;
+          lease_epoch: number;
+          writer_tab_id: string;
+          lease_expires_at: Date;
+        }>(
+          `UPDATE pvf_attempt SET writer_tab_id=$2, lease_epoch=lease_epoch+$3,
+           revision=revision+$4, lease_expires_at=now()+interval '60 seconds',
+           status=CASE WHEN $5 THEN 'active' ELSE status END WHERE id=$1
+           RETURNING revision,lease_epoch,writer_tab_id,lease_expires_at`,
+          [
+            input.attemptId,
+            input.tabId,
+            Number(incrementEpoch),
+            Number(incrementRevision),
+            input.action === "resume",
+          ],
+        );
+        const row = updated.rows[0];
+        const snapshot: LeaseSnapshot = {
+          revision: row.revision,
+          leaseEpoch: row.lease_epoch,
+          writerTabId: row.writer_tab_id,
+          leaseExpiresAt: row.lease_expires_at.toISOString(),
+        };
+        await client.query(
+          "INSERT INTO pvf_command_receipt(actor_id,command_id,payload_hash,status,response) VALUES($1,$2,$3,200,$4::jsonb)",
+          [
+            input.actorId,
+            input.commandId,
+            input.payloadHash,
+            JSON.stringify(snapshot),
+          ],
+        );
+        await client.query("COMMIT");
+        return { kind: "committed", snapshot };
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      } finally {
+        client.release();
+      }
+    });
   }
 
   async evidenceFor(
@@ -93,10 +225,14 @@ export class PostgresGameRepository {
   async persistResponse(
     input: PostgresResponseInput,
   ): Promise<PersistedResponse> {
+    return this.retryTransaction(() => this.persistResponseTransaction(input));
+  }
+
+  private async retryTransaction<T>(operation: () => Promise<T>): Promise<T> {
     // Retry the whole transaction so receipt lookup observes a concurrent winner.
     for (let retry = 0; ; retry++) {
       try {
-        return await this.persistResponseTransaction(input);
+        return await operation();
       } catch (error) {
         const code = (error as { code?: string }).code;
         if (retry >= 3 || (code !== "40001" && code !== "40P01")) throw error;
@@ -150,8 +286,8 @@ export class PostgresGameRepository {
       }
       if (
         current.lease_epoch !== input.leaseEpoch ||
-        (current.lease_expires_at.getTime() > Date.now() &&
-          current.writer_tab_id !== input.tabId)
+        current.lease_expires_at.getTime() <= Date.now() ||
+        current.writer_tab_id !== input.tabId
       ) {
         await client.query("ROLLBACK");
         return { kind: "conflict", code: "LEASE_LOST" };

@@ -1,5 +1,17 @@
 # Task log
 
+## 2026-09-23 | RC-02 | HANDOFF / REVIEW | Repository integrity verified
+
+Composite attempt/order/evidence ownership now rejects mismatched students at the database boundary. A populated migration-001 schema upgrades with order ownership backfilled and evidence unchanged. Expired or foreign response writers are rejected. Explicit transactional heartbeat, same-tab resume after expiry, and takeover use actor-scoped receipts; six concurrent identical takeovers cause one transition and five replays. Heartbeat preserves game revision; reacquisition/takeover advance epochs. Real PostgreSQL tests passed (three cases before restart, durable-response case after restart); existing 46 unit/integration tests and type checking passed. This is repository-level evidence only, not runtime/security completion. Next: RC-03 actual runtime persistence, starting with collision-free issued order identity and explicit evidence ownership.
+
+## 2026-09-23 | RC-03 | CLAIM | Runtime persistence prerequisites and integration
+
+BE/PA editor owns `apps/server/src/`, database migrations, integration tests and coordinated records. Dependencies: verified RC-01/02 PostgreSQL harness and repository; API v1.0 opaque order IDs unchanged. Acceptance: DATA-01..04, SEC-01, RECOVERY-01..07. Audit found deterministic generator IDs reused across attempts and students: assign runtime-issued order IDs without changing mathematical generation, retain exact evidence-to-order links, then persist normalized runtime entities transactionally. Preserve existing issued orders and the user's development JSON file. Runtime security remains incomplete until authenticated identity/session work is verified.
+
+## 2026-09-23 | RC-02 | CLAIM | Database ownership and lease integrity
+
+Owns `db/migrations/002_ownership_integrity.sql`, `apps/server/src/postgres.ts`, real database tests and acceptance records. Dependencies: RC-01 isolated PostgreSQL harness; API v1.0 unchanged. Acceptance: DATA-02, RECOVERY-04, SEC-01. Add composite ownership constraints with prior-schema upgrade coverage; reject expired/foreign writers and verify explicit lease transitions before runtime integration. Existing user JSON data excluded.
+
 ## 2026-09-23 | RC-01 | CLAIM | Full V1 release candidate
 
 Scope: expanded owner objective in `docs/RELEASE_CANDIDATE_PLAN.md`; retain all unmet V1 requirements. Primary editor owns scripts/, database repository tests, acceptance ledger and coordination documents. Start with isolated user-owned PostgreSQL verification; then runtime persistence/security, recovery, educational audit and remaining visual/teacher work. No existing database resets. Contract v1.0 unchanged at this checkpoint. Acceptance: DATA-01..04, RECOVERY-05, SEC-01..03 and full register tracked in the ledger.

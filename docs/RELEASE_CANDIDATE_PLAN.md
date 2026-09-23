@@ -14,7 +14,7 @@ Objective: complete the original product/design handoff for owner review and a c
 
 ## Resumable state
 
-RC-01 in progress: introduce user-owned disposable PostgreSQL harness and real repository tests. Prior system-database credential failure does not block independent work. Next: use real race/rollback results to repair repository and connect runtime. Existing `apps/server/db/local-development.json` is user data and must remain unmodified/unstaged.
+RC-01/02 repository checks passed on a user-owned PostgreSQL 16 cluster: migrations, populated upgrade, ownership constraints, rollback, duplicate races, leases and real process restart. RC-03 in progress: connect normalized runtime persistence. First eliminate collisions in runtime-issued order IDs (pure generator IDs are deterministic and currently reused), retain exact evidence ownership, and add request transaction boundaries before secure identity/rosters. Existing `apps/server/db/local-development.json` is user data and must remain unmodified/unstaged. No full runtime or release completion claimed.
 
 ## External release gates
 
