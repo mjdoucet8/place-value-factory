@@ -1,5 +1,14 @@
 # Local QA evidence
 
+## 23 September 2026 — current release-candidate evidence
+
+- `npm test`: 48 passed, 5 dedicated real-PostgreSQL cases skipped outside their isolated harness; `npx tsc --noEmit` and `npm run build` passed.
+- `npm run test:postgres`: 5 actual PostgreSQL cases passed, then 2 post-restart cases passed. The harness creates a new user-owned private local cluster without touching an existing database.
+- `npm run test:e2e`: 8 Chromium journeys passed, including correction, refresh, optional transfer, competing tabs, dropped reply after commit, all documented gallery states and art loading.
+- `npx playwright test -c playwright.pilot.config.ts` with the private fictional pilot credentials: 4 passed. The integrated journey covered teacher class and roster creation, student five-order completion, refreshed results, teacher count reconciliation and revoked login; the visual tests checked every fixture at 1366/390/320 CSS pixels plus four layout captures and all 30 map nodes.
+- Manually inspected the refreshed map, gameplay and results baselines plus landscape/portrait/narrow captures. Found and corrected the 1024-pixel two-row machine layout and inaccurate star copy before acceptance. Browser images and controls remained decoded and operable.
+- Not yet run: native 200% browser zoom, manual screen reader, physical touch device, school network, non-Chromium engine and bounded classroom load. Owner aesthetic approval is pending. Further math, outbox, report and operations acceptance remains incomplete.
+
 ## 21 September 2026 — integrated local verification
 
 - `npx tsc --noEmit`: passed.

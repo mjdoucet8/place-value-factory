@@ -38,6 +38,8 @@ P-05 Final approval of original art assets and any deliberate change from calmer
 
 ## Change record template
 
+RC-05; 2026-09-23; RECOMMENDED BASELINE implementation clarification; map sidebar requires server-derived last completed efficiency. Add `lastCompletedEfficiency: number|null` to the v1 map response (additive; existing clients ignore it), derive stars per level from best saved main/transfer result and compute current node from actual eligibility. No scoring policy change. PA/FE/BE/QA roles performed sequentially; integration tests and shared gallery reviewed together. No migration required.
+
 ID; date; status; context; proposal; alternatives; mathematical/product impact; contracts/migrations affected; reviewers; owner approval if changing an accepted requirement; rollout and rollback; superseded ID. Do not delete old decisions.
 
 ## Foundation implementation record

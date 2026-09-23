@@ -1,8 +1,8 @@
 # API contracts - Place Value Factory V1
 
-Contract v1.0 | Specification only | 20 September 2026
+Contract v1.0 | Baseline with additive map summary clarification | 23 September 2026
 
-No endpoints exist yet. Implement with shared runtime schemas in packages/contracts. Prefix /api/v1. All game routes below start /games/place-value-factory unless stated otherwise.
+The local fictional runtime implements a subset of these endpoints. This document remains the target contract; an entry here is not proof that its route or behavior has passed acceptance. Prefix /api/v1. All game routes below start /games/place-value-factory unless stated otherwise.
 
 ## Conventions and shared types
 
@@ -88,7 +88,7 @@ Normalize classCode/username with trim and consistent lowercase; preserve PIN le
 | Method/path | Response |
 | --- | --- |
 | GET /profile | {studentAlias,gameKey,highestUnlockedLevelId,achievedTier,totalStars,maxStars:90,settings,revision,activeAttemptId} |
-| GET /map | {configVersion,zones:[{id,name,levels:[{id,title,status,stars,prerequisiteSummary}]}],profileRevision} |
+| GET /map | {configVersion,zones:[{id,name,levels:[{id,title,status,stars,prerequisiteSummary}]}],profileRevision,highestUnlockedLevelId,lastCompletedEfficiency:number\|null} |
 | GET /levels/:levelId | {id,title,stage,zoneId,goals,orderCount:5,example,restrictions,eligible,practiceNeeded,configVersion} |
 | GET /attempts/:attemptId | Snapshot; owns attempt |
 | GET /attempts/:attemptId/orders/current | {order:OrderPublic|null,revision}; does not generate/advance |

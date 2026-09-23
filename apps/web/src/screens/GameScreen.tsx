@@ -1,6 +1,9 @@
 import type { Dispatch, RefObject, SetStateAction } from "react";
 import { BusyFactoryScenery, Mascot } from "../components/FactoryArt.js";
-import { MachineEditor } from "../components/MachineEditor.js";
+import {
+  MachineEditor,
+  RepresentationMonitor,
+} from "../components/MachineEditor.js";
 
 type Props = {
   attempt: any;
@@ -47,6 +50,10 @@ export function GameScreen(props: Props) {
       </main>
     );
   const order = props.attempt.activeOrder;
+  const busyEnabled =
+    props.busy &&
+    Number(props.attempt.levelId?.replace("level-", "")) >= 13 &&
+    !props.helpOpen;
   const objective =
     order.distinctRepresentations === 2
       ? "Build two different crate representations of this target."
@@ -60,11 +67,18 @@ export function GameScreen(props: Props) {
               ? "Use normal place value: 0–9 crates of each size."
               : "Build this target with the open machines.";
   return (
-    <main className="game-screen">
-      <BusyFactoryScenery enabled={props.busy} />
+    <main className="game-screen" data-busy={busyEnabled}>
+      <BusyFactoryScenery enabled={busyEnabled} />
       <header>
-        <h1>Place Value Factory</h1>
-        <span>Order {props.attempt.shippedSlots + 1} of 5</span>
+        <h1>
+          Place Value Factory{" "}
+          <small>Level {props.attempt.levelId?.replace("level-", "")}</small>
+        </h1>
+        <span>
+          {props.attempt.status === "completed"
+            ? "Extra challenge"
+            : `Order ${props.attempt.shippedSlots + 1} of 5`}
+        </span>
         <button
           className="header-help secondary"
           ref={props.helpTrigger}
@@ -74,27 +88,28 @@ export function GameScreen(props: Props) {
           Help
         </button>
       </header>
-      <aside className="robot-guide" aria-label="Factory guide">
-        <Mascot pose="instruct" />
-        <p>
-          Build the target with the open crate machines. Your total updates as
-          you pack.
-        </p>
-      </aside>
+      <div className="factory-brief">
+        <aside className="robot-guide" aria-label="Factory guide">
+          <Mascot pose="instruct" />
+          <p>Let’s pack this number!</p>
+        </aside>
+        <section className="current-order" aria-labelledby="order-heading">
+          <p id="order-heading">CURRENT ORDER</p>
+          <strong>{order.target.toLocaleString()}</strong>
+          <p>{objective}</p>
+        </section>
+        <RepresentationMonitor
+          quantities={props.quantities}
+          quantitiesB={props.quantitiesB}
+          twoWays={order.distinctRepresentations === 2}
+        />
+      </div>
       {props.attempt.writerTabId !== props.tabId && (
         <aside className="takeover" role="status">
           <p>This attempt is open in another tab.</p>
           <button onClick={props.onTakeOver}>Take over this attempt</button>
         </aside>
       )}
-      <section className="current-order" aria-labelledby="order-heading">
-        <p id="order-heading">
-          CURRENT ORDER ·{" "}
-          <span className="difficulty">{order.difficultyBand} practice</span>
-        </p>
-        <strong>{order.target.toLocaleString()}</strong>
-        <p>{objective}</p>
-      </section>
       {order.sourceRepresentation && (
         <section
           className="source-representation"
@@ -119,8 +134,8 @@ export function GameScreen(props: Props) {
             <Mascot pose="help" className="dialog-mascot" />
             <h2 id="help-dialog-title">Step-by-step help</h2>
             <p>
-              Help is optional. It does not change your shipment, but the saved
-              support step is included in learning evidence.
+              Take it one step at a time. Asking for help never takes away your
+              stars.
             </p>
             <button disabled={props.saving} onClick={props.onHelp}>
               {props.attempt.currentHintStep === "H3"

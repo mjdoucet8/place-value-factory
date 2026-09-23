@@ -14,6 +14,8 @@ Objective: complete the original product/design handoff for owner review and a c
 
 ## Resumable state
 
+RC-05 visual correction has passed 48 local tests, real PostgreSQL restart checks, eight standard browser journeys and four secure pilot/browser visual checks. Reviewed screenshots show desktop/tablet/narrow map, gameplay and results; the 1024px landscape controls were tightened after review. Documentation/commit review for RC-05 is in progress. Next: durable IndexedDB pending-command recovery and matching server lease/reconciliation behavior, then math/report/operations. Owner approval and manual device/assistive-tech checks remain external gates; do not treat visual baselines alone as approval.
+
 RC-01/02 repository checks and RC-03 normalized HTTP runtime persistence passed real PostgreSQL transactions/restart. RC-04 secure local adapter and browser class/student journey now pass: authenticated teacher creates class, provisions student, five shipments persist, teacher sees five submitted/accepted orders, reset/revocation invalidates sessions. Teacher UI and isolated resumable pilot launcher added. Remaining security work includes bounded network throttling, expired secret cleanup and operational/retention audit; remaining runtime work includes scoped performance/load, complete command/lease integration and all advanced modes. Next: fix inspected visual defects and verify responsive scenes, then durable browser outbox/math/report/operations queue. Existing `apps/server/db/local-development.json` remains unmodified/unstaged. Full V1 release candidate is NOT complete.
 
 ## External release gates

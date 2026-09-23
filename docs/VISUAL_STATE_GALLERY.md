@@ -1,5 +1,9 @@
 # Visual state gallery
 
+## Current review, 23 September 2026
+
+The 30-node factory world and list, six-machine workbench, and two-/three-star results now share the updated live composition. The browser suite checked every fixture at 1366, 390 and 320 CSS pixels for decoded art and horizontal reflow. Desktop, landscape tablet (1024×768), portrait tablet (768×1024) and narrow (390×844) screenshots were inspected; the landscape machine layout was tightened after review so Ship remains beside the workbench. The map shows only completed-zone cosmetics. Results keep live stars and a continuous celebration scene. Stable Playwright baselines cover map, calm play and three-star results. Additional reviewed captures: `docs/visual-evidence/rc05-game-landscape.png`, `rc05-game-narrow.png`, `rc05-map-portrait.png`, `rc05-results-narrow.png`. These are visual evidence, not owner aesthetic approval. Native 200% browser zoom, manual screen reader and physical-device checks remain NOT RUN.
+
 The development-only gallery at `/dev/place-value-factory/states` renders deterministic, fictional states without changing student progress. Use the **Visual state** selector or append `?fixture=<name>` for a stable browser target.
 
 ## Fixture inventory

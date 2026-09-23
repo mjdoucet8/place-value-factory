@@ -19,70 +19,90 @@ export function ResultsScreen({
 }: Props) {
   const stars = result?.bestLevelStars ?? 2;
   return (
-    <main className="results results-screen">
+    <main className="results-screen">
       <FactoryArt asset="effect-celebration" className="celebration-effect" />
-      <Mascot pose="celebrate" className="results-mascot" />
-      <p className="eyebrow">Mission complete</p>
-      <h1>Level complete!</h1>
-      <p>
-        Great work! You packed {result?.shipped ?? 5} orders for this mission.
-      </p>
-      <dl className="result-counters">
-        <div>
-          <dt>First try</dt>
-          <dd>
-            {result?.firstObjectiveCorrect ?? 0}/{result?.shipped ?? 5}
-          </dd>
+      <div className="results-hero">
+        <Mascot pose="celebrate" className="results-mascot" />
+        <div className="results-heading">
+          <p className="eyebrow">Mission complete</p>
+          <h1>Level complete!</h1>
+          <p>
+            Great work! You packed {result?.shipped ?? 5} orders for this
+            mission.
+          </p>
+          <div className="stars" aria-label={`${stars} earned stars`}>
+            <span aria-hidden="true">{stars === 3 ? "★★★" : "★★☆"}</span>
+          </div>
+          <p className="star-meaning">
+            Two stars for finishing your mission ·{" "}
+            {stars === 3
+              ? "Extra challenge complete"
+              : "Extra challenge still to try"}
+          </p>
         </div>
-        <div>
-          <dt>Kept trying</dt>
-          <dd>
-            {result?.eventuallyCorrect ?? 0}/{result?.shipped ?? 5}
-          </dd>
-        </div>
-        <div>
-          <dt>Best streak</dt>
-          <dd>{result?.bestStreak ?? 0}</dd>
-        </div>
-        <div>
-          <dt>Factory score</dt>
-          <dd>{result?.efficiency ?? 100}%</dd>
-        </div>
-      </dl>
-      <div className="stars" aria-label={`${stars} earned stars`}>
-        {stars === 3 ? "★★★" : "★★☆"}
       </div>
-      {result?.skillStatuses?.length > 0 && (
-        <section className="result-skills">
-          <h2>Skills practiced</h2>
-          <ul>
-            {result.skillStatuses.map((skill: any) => (
-              <li key={skill.skillId}>
-                {studentSkillLabel(skill.skillId)}:{" "}
-                {studentSkillStatus(skill.status)} ({skill.sampleN} orders)
-              </li>
-            ))}
-          </ul>
+      <div className="results-panels">
+        <section className="results-card" aria-label="Mission results">
+          <dl className="result-counters">
+            <div>
+              <dt>First try</dt>
+              <dd>
+                {result?.firstObjectiveCorrect ?? 0}/
+                {result?.submittedOrders ?? result?.shipped ?? 5}
+              </dd>
+            </div>
+            <div>
+              <dt>Orders solved</dt>
+              <dd>
+                {result?.eventuallyCorrect ?? 0}/
+                {result?.submittedOrders ?? result?.shipped ?? 5}
+              </dd>
+            </div>
+            <div>
+              <dt>Best streak</dt>
+              <dd>{result?.bestStreak ?? 0}</dd>
+            </div>
+            <div>
+              <dt>Factory score</dt>
+              <dd>{result?.efficiency ?? 100}%</dd>
+            </div>
+          </dl>
         </section>
-      )}
-      {result?.transferStar ? (
-        <p role="status">Extra challenge complete — third star saved.</p>
-      ) : (
-        <button onClick={onTransfer}>Try the extra challenge</button>
-      )}
-      <div className="controls">
-        {result?.newlyUnlockedLevelIds?.length > 0 && (
-          <button onClick={onNext}>Play next level</button>
+        {result?.skillStatuses?.length > 0 && (
+          <section className="result-skills results-card">
+            <h2>Skills practiced</h2>
+            <ul>
+              {result.skillStatuses.map((skill: any) => (
+                <li key={skill.skillId}>
+                  {studentSkillLabel(skill.skillId)}:{" "}
+                  {studentSkillStatus(skill.status)} ({skill.sampleN}{" "}
+                  {skill.sampleN === 1 ? "order" : "orders"})
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
-        <button className="secondary" onClick={onReplay}>
-          Try again
-        </button>
-        <button className="secondary" onClick={onProgress}>
-          View progress
-        </button>
-        <button className="secondary" onClick={onMap}>
-          Back to map
-        </button>
+      </div>
+      <div className="results-next">
+        {result?.transferStar ? (
+          <p role="status">Extra challenge complete — third star saved.</p>
+        ) : (
+          <button onClick={onTransfer}>Try the extra challenge</button>
+        )}
+        <div className="controls">
+          {result?.newlyUnlockedLevelIds?.length > 0 && (
+            <button onClick={onNext}>Play next level</button>
+          )}
+          <button className="secondary" onClick={onReplay}>
+            Try again
+          </button>
+          <button className="secondary" onClick={onProgress}>
+            View progress
+          </button>
+          <button className="secondary" onClick={onMap}>
+            Back to map
+          </button>
+        </div>
       </div>
     </main>
   );

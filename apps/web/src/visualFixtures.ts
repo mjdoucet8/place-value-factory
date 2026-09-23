@@ -1,4 +1,5 @@
 import type { SelectedLevel } from "./models.js";
+import { LEVELS } from "../../../packages/config/src/index.js";
 
 const baseOrder = {
   id: "fixture-order",
@@ -151,59 +152,31 @@ export const GAME_FIXTURES: Record<
 };
 
 export const MAP_FIXTURE = {
-  profileRevision: 2,
-  highestUnlockedLevelId: "level-3",
-  zones: [
-    {
-      id: "receiving",
-      name: "Receiving",
-      levels: [
-        {
-          id: "level-1",
-          title: "First Shipments",
-          stage: 1,
-          status: "completed",
-          stars: 2,
-          prerequisiteSummary: "Ready",
-        },
-        {
-          id: "level-2",
-          title: "Tall Crates",
-          stage: 1,
-          status: "unlocked",
-          stars: 0,
-          prerequisiteSummary: "Ready to practice",
-        },
-        {
-          id: "level-3",
-          title: "Mixed Machines",
-          stage: 1,
-          status: "locked",
-          stars: 0,
-          prerequisiteSummary: "Complete Level 2 first",
-        },
-      ],
-    },
-    ...[
-      ["packing", "Packing", 5],
-      ["warehouse", "Warehouse", 10],
-      ["shipping", "Shipping", 16],
-      ["lab", "Lab", 22],
-    ].map(([id, name, level]) => ({
-      id,
-      name,
-      levels: [
-        {
-          id: `level-${level}`,
-          title: "Factory route",
-          stage: Math.max(1, Math.ceil((Number(level) - 1) / 5)),
-          status: "locked",
-          stars: 0,
-          prerequisiteSummary: "Complete the earlier factory route first",
-        },
-      ],
+  profileRevision: 11,
+  highestUnlockedLevelId: "level-12",
+  lastCompletedEfficiency: 88,
+  achievedTier: "Converter",
+  certifications: ["Operator", "Converter"],
+  zones: [...new Set(LEVELS.map((level) => level.zone))].map((name) => ({
+    id: name.toLowerCase(),
+    name,
+    levels: LEVELS.filter((level) => level.zone === name).map((level) => ({
+      id: level.id,
+      title: level.title,
+      stage: level.stage,
+      status:
+        level.ordinal < 12
+          ? "completed"
+          : level.ordinal === 12
+            ? "unlocked"
+            : "locked",
+      stars: level.ordinal < 12 ? (level.ordinal % 3 === 0 ? 2 : 3) : 0,
+      prerequisiteSummary:
+        level.ordinal <= 12
+          ? "Ready to practice"
+          : `Complete Level ${level.ordinal - 1} first`,
     })),
-  ],
+  })),
 };
 
 export const INTRO_FIXTURE: SelectedLevel = {

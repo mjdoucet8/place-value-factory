@@ -11,10 +11,9 @@ export default defineConfig({
     headless: true,
   },
   webServer: {
-    command:
-      "rm -f db/e2e-local-development.json && PVF_DATA_PATH=../../db/e2e-local-development.json npm run dev",
+    command: "node scripts/e2e-server.mjs",
     url: "http://127.0.0.1:5181",
-    reuseExistingServer: true,
+    reuseExistingServer: false,
     timeout: 30_000,
   },
 });

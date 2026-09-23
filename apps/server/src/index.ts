@@ -405,7 +405,17 @@ export function createApiServer(
             : eligible(level)
               ? "unlocked"
               : "locked",
-          stars: completed.has(level.id) ? 2 : 0,
+          stars: Math.max(
+            0,
+            ...attempts
+              .filter(
+                (attempt) =>
+                  attempt.completed &&
+                  attempt.levelId === level.id &&
+                  attempt.kind !== "practice",
+              )
+              .map((attempt) => (attempt.transferStar ? 3 : 2)),
+          ),
           prerequisiteSummary: eligible(level)
             ? "Ready to practice"
             : level.ordinal <= highest + 1
@@ -418,7 +428,13 @@ export function createApiServer(
       configVersion: "v1-local",
       zones,
       profileRevision: completed.size,
-      highestUnlockedLevelId: `level-${Math.min(30, highest + 1)}`,
+      highestUnlockedLevelId: LEVELS.filter(eligible).at(-1)?.id ?? "level-1",
+      lastCompletedEfficiency: (() => {
+        const last = attempts
+          .filter((attempt) => attempt.completed && attempt.kind !== "practice")
+          .at(-1);
+        return last ? result(last).efficiency : null;
+      })(),
     };
   }
   function responseError(

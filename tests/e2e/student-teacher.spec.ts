@@ -59,7 +59,7 @@ test("student completes five saved orders, settings, and optional transfer; teac
     page.getByRole("heading", { name: "Level complete!" }),
   ).toBeVisible();
   await expect(page.getByText("First try")).toBeVisible();
-  await expect(page.getByText("Kept trying")).toBeVisible();
+  await expect(page.getByText("Orders solved")).toBeVisible();
   await expect(page.getByText("Factory score")).toBeVisible();
   await expect(page.getByText("Best streak")).toBeVisible();
   await page.reload();
@@ -87,7 +87,7 @@ test("student completes five saved orders, settings, and optional transfer; teac
 
   const teacher = await browser.newPage();
   await teacher.goto("/");
-  await teacher.locator('summary').filter({hasText:'Teacher login'}).click();
+  await teacher.locator("summary").filter({ hasText: "Teacher login" }).click();
   await teacher.getByRole("button", { name: "Teacher login" }).click();
   await expect(
     teacher.getByRole("heading", { name: "Teacher evidence" }),
@@ -254,7 +254,10 @@ test("renders deterministic advanced-mode visual fixtures", async ({
     page.getByRole("button", { name: "Resume saved mission" }),
   ).toBeVisible();
   await page.goto("/dev/place-value-factory/states?fixture=map");
-  await expect(page.getByText("Complete Level 2 first")).toBeVisible();
+  await page.getByRole("button", { name: /Locked — Level 13:/ }).click();
+  await expect(page.getByRole("status")).toContainText(
+    "Complete Level 12 first",
+  );
   await page.goto("/dev/place-value-factory/states?fixture=progress");
   await expect(page.getByText("Still gathering evidence")).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
