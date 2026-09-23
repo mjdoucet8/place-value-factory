@@ -1,5 +1,6 @@
 import type { LevelSummary, SelectedLevel } from "../models.js";
 import { FactoryArt, Mascot } from "../components/FactoryArt.js";
+import { studentSkillLabel } from "../studentCopy.js";
 
 type Props = {
   map: any;
@@ -45,8 +46,10 @@ export function MapScreen(props: Props) {
           <h2>Practice recommendation</h2>
           <p>
             Build more evidence for{" "}
-            <strong>{props.progress.nextPracticeSkillId}</strong> before your
-            next stage gate.
+            <strong>
+              {studentSkillLabel(props.progress.nextPracticeSkillId)}
+            </strong>{" "}
+            before your next stage opens.
           </p>
           <button onClick={props.onPractice}>Start practice</button>
         </section>
@@ -80,7 +83,7 @@ export function MapScreen(props: Props) {
                 loading="lazy"
                 width={768}
               />
-              {cosmetic && (
+              {cosmetic && zoneState === "completed" && (
                 <FactoryArt
                   asset={cosmetic}
                   className="zone-cosmetic"

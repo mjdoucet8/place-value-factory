@@ -1,6 +1,5 @@
+import { studentSkillLabel, studentSkillStatus } from "../studentCopy.js";
 type Props = { progress: any; onPractice: () => void; onBack: () => void };
-const friendlySkill = (id: string) =>
-  id.replaceAll(".", " · ").replaceAll("_", " → ");
 
 export function ProgressScreen({ progress, onPractice, onBack }: Props) {
   return (
@@ -15,26 +14,28 @@ export function ProgressScreen({ progress, onPractice, onBack }: Props) {
         <Mascot pose="instruct" className="summary-mascot" />
         <h2>Learning evidence</h2>
         <p>
-          {progress?.completedLevelIds?.length ?? 0} levels completed. Timing is
-          never used for certification.
+          {progress?.completedLevelIds?.length ?? 0} levels complete. Take the
+          time you need — careful thinking counts.
         </p>
         {progress?.nextPracticeSkillId && (
           <button onClick={onPractice}>
-            Practice {friendlySkill(progress.nextPracticeSkillId)}
+            Practice {studentSkillLabel(progress.nextPracticeSkillId)}
           </button>
         )}
       </section>
       <section className="skill-grid" aria-label="Skill evidence">
         {progress?.skills?.map((skill: any) => (
           <article key={skill.skillId} className="skill-card">
-            <h2>{friendlySkill(skill.skillId)}</h2>
+            <h2>{studentSkillLabel(skill.skillId)}</h2>
             <p className={`status-chip status-${skill.status}`}>
-              {skill.needsRefresh ? "Needs refresh" : skill.status}
+              {skill.needsRefresh
+                ? "Try a quick refresher"
+                : studentSkillStatus(skill.status)}
             </p>
             <p>
               {skill.sampleN === 0
                 ? "Still gathering evidence"
-                : `${skill.sampleN} eligible orders · ${skill.independentFirstN} independent first tries`}
+                : `${skill.sampleN} practice orders · ${skill.independentFirstN} first-try solves`}
             </p>
           </article>
         ))}

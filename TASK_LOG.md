@@ -503,3 +503,25 @@ Evidence level: integrated local fictional-data visual system. The full PNG desi
 Remaining risks or blockers: final owner aesthetic approval plus manual screen-reader, zoom and representative-device review; production identity/data/hosting prerequisites are outside this local art scope. `apps/server/db/local-development.json` contains user/test-session data and is deliberately excluded from this milestone.
 
 Next owner / reviewer: owner visual review of `docs/visual-evidence/art-v1-map.png`, `art-v1-busy-game.png` and `art-v1-results.png`.
+
+## 2026-09-22 | FE-06 | CLAIM | Handoff-Faithful Gameplay and Visual Acceptance
+
+Timestamp (UTC): 2026-09-22T20:25:00Z
+
+Goal and scope: rebuild the game workspace, machines, map rewards and child-facing language against the four original references; maintain deterministic/accessible behavior and capture stable browser evidence.
+
+Owned paths: `apps/web/src/`, `tests/e2e/`, `docs/`, `PROJECT_STATUS.md`, `TASK_LOG.md`.
+
+Dependencies and contract version: UI contract v1.0, `df2b048`, original design PNG references and existing `art-v1` pack; no game or API contract change.
+
+Acceptance IDs: DESIGN-01..05, GAME-02..07 visual usability, MAP-01..03 UI, RESULT-01..03 UI, ACCESS-01..07 local evidence.
+
+## 2026-09-22 | FE-06 | HANDOFF | Handoff-Faithful Gameplay and Visual Acceptance
+
+Changes and artifacts: rebuilt the live game workspace around a compact current-order/guide/monitor/machine/shipping hierarchy; formed each semantic machine with CSS pipe, hopper and crate-state elements; reduced permanent help to a header trigger; kept all order modes and direct inputs intact; translated student-facing skill and result language; hid zone cosmetics until zone completion; added route styling and stable image-ready deterministic screenshot comparisons.
+
+Commands/manual checks and observed results: inspected all four supplied reference PNGs at original size and reviewed regenerated desktop map/calm gameplay/results baselines. `npm test` passed (46 tests), `npx tsc --noEmit`, `npm run build`, `npm run test:e2e` (7 journeys before baseline addition), `npx playwright test -g handoff-faithful --update-snapshots` (1 baseline journey), and `git diff --check` passed. Existing browser journeys exercise keyboard help focus/Escape, correction preservation, results refresh, storage failure, takeover and drop-after-commit recovery.
+
+Evidence level: integrated fictional-data UI with reviewed deterministic browser captures. Manual screen-reader, 200% zoom and physical-device/touch checks are NOT RUN.
+
+Remaining risks or blockers: final owner visual approval; external production identity/data/hosting and classroom-device evidence. Local-development database remains excluded.

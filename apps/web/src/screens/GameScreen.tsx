@@ -64,7 +64,15 @@ export function GameScreen(props: Props) {
       <BusyFactoryScenery enabled={props.busy} />
       <header>
         <h1>Place Value Factory</h1>
-        <span>Shipment {props.attempt.shippedSlots + 1} of 5</span>
+        <span>Order {props.attempt.shippedSlots + 1} of 5</span>
+        <button
+          className="header-help secondary"
+          ref={props.helpTrigger}
+          disabled={props.saving}
+          onClick={props.onHelpOpen}
+        >
+          Help
+        </button>
       </header>
       <aside className="robot-guide" aria-label="Factory guide">
         <Mascot pose="instruct" />
@@ -99,21 +107,6 @@ export function GameScreen(props: Props) {
           </p>
         </section>
       )}
-      <section className="help" aria-labelledby="help-heading">
-        <h2 id="help-heading">Need a hand?</h2>
-        <p>
-          Help is optional. It does not change your shipment, but the saved
-          support step is included in learning evidence.
-        </p>
-        <button
-          className="secondary"
-          ref={props.helpTrigger}
-          disabled={props.saving}
-          onClick={props.onHelpOpen}
-        >
-          Open help
-        </button>
-      </section>
       {props.helpOpen && (
         <div className="dialog-backdrop">
           <div

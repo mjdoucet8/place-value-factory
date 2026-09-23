@@ -53,14 +53,14 @@ test("student completes five saved orders, settings, and optional transfer; teac
     await fillCanonicalOrder(page);
     await page.getByRole("button", { name: "Ship order" }).click();
     if (index < 4)
-      await expect(page.getByText(`Shipment ${index + 2} of 5`)).toBeVisible();
+      await expect(page.getByText(`Order ${index + 2} of 5`)).toBeVisible();
   }
   await expect(
     page.getByRole("heading", { name: "Level complete!" }),
   ).toBeVisible();
   await expect(page.getByText("First try")).toBeVisible();
-  await expect(page.getByText("Eventually correct")).toBeVisible();
-  await expect(page.getByText("This-level efficiency")).toBeVisible();
+  await expect(page.getByText("Kept trying")).toBeVisible();
+  await expect(page.getByText("Factory score")).toBeVisible();
   await expect(page.getByText("Best streak")).toBeVisible();
   await page.reload();
   await expect(
@@ -94,6 +94,31 @@ test("student completes five saved orders, settings, and optional transfer; teac
   ).toBeVisible();
   await expect(teacher.getByText("accepted shipments")).toBeVisible();
   await teacher.close();
+});
+
+test("keeps the handoff-faithful gallery baselines stable", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  for (const fixture of ["map", "calm", "results-three"]) {
+    await page.goto(`/dev/place-value-factory/states?fixture=${fixture}`);
+    await page.locator("img").evaluateAll((images) =>
+      Promise.all(
+        images.map((image) => {
+          const asset = image as HTMLImageElement;
+          return asset.complete
+            ? Promise.resolve()
+            : new Promise((resolve) =>
+                asset.addEventListener("load", resolve, { once: true }),
+              );
+        }),
+      ),
+    );
+    await expect(page).toHaveScreenshot(`handoff-${fixture}.png`, {
+      animations: "disabled",
+      fullPage: true,
+    });
+  }
 });
 
 test("keeps play usable when browser storage cannot save a draft", async ({
@@ -149,7 +174,7 @@ test("a second tab takes over and the stale writer cannot ship", async ({
   await fillCanonicalOrder(secondTab);
   await secondTab.getByRole("button", { name: "Ship order" }).click();
   await expect(
-    secondTab.getByText(`Shipment ${shipmentBefore + 1} of 5`),
+    secondTab.getByText(`Order ${shipmentBefore + 1} of 5`),
   ).toBeVisible();
   await secondTab.close();
 });
@@ -160,7 +185,7 @@ test("help dialog traps focus and Escape restores its trigger", async ({
   await page.goto("/");
   await page.getByRole("button", { name: "Student login" }).click();
   await startFirstMission(page);
-  const trigger = page.getByRole("button", { name: "Open help" });
+  const trigger = page.getByRole("button", { name: "Help" });
   await trigger.click();
   await expect(
     page.getByRole("dialog", { name: "Step-by-step help" }),
@@ -200,7 +225,7 @@ test("recovers a shipment whose server reply was dropped after commit", async ({
   await page.reload();
   await expect(page.getByText("Saved shipment restored.")).toBeVisible();
   await expect(
-    page.getByText(`Shipment ${shipmentBefore + 1} of 5`),
+    page.getByText(`Order ${shipmentBefore + 1} of 5`),
   ).toBeVisible();
 });
 

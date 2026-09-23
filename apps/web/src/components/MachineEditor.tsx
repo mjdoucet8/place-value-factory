@@ -24,9 +24,24 @@ export function MachineEditor({
   );
   return (
     <>
-      <p className="monitor" aria-live="polite">
-        Representation A totals <strong>{total.toLocaleString()}</strong>
-      </p>
+      <section
+        className="representation-monitor"
+        aria-live="polite"
+        aria-label="Current crate representation"
+      >
+        <p className="monitor-label">REPRESENTATION A</p>
+        <strong>{total.toLocaleString()}</strong>
+        <p>
+          {quantities
+            .map(
+              (amount, index) =>
+                amount > 0 &&
+                `${amount} × ${PLACES[index].value.toLocaleString()}`,
+            )
+            .filter(Boolean)
+            .join(" + ") || "Choose crates to build the target."}
+        </p>
+      </section>
       <section
         className="machines"
         aria-label="Representation A place value machines"
@@ -37,10 +52,12 @@ export function MachineEditor({
             key={place.value}
             aria-disabled={!order.allowed.includes(place.value)}
           >
+            <span className="machine-pipe" aria-hidden="true" />
+            <span className="machine-hopper" aria-hidden="true" />
             <h2>
               {place.icon} {place.name}
             </h2>
-            <p>
+            <p className="machine-value">
               {place.value.toLocaleString()} each{" "}
               {!order.allowed.includes(place.value) &&
                 "· Closed for this order"}
@@ -96,6 +113,11 @@ export function MachineEditor({
                 +
               </button>
             </div>
+            <span className="machine-crate" aria-hidden="true">
+              {quantities[index] > 0
+                ? `${quantities[index]} crate${quantities[index] === 1 ? "" : "s"}`
+                : "Ready"}
+            </span>
             {index < 5 && (
               <button
                 className="exchange"

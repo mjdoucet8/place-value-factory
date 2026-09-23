@@ -19,4 +19,6 @@ The `art-v1` pack is integrated through reusable presentation components, not fi
 
 Final-review captures from the browser suite are committed in `docs/visual-evidence/`: `art-v1-map.png`, `art-v1-busy-game.png`, and `art-v1-results.png`. They are evidence only, not UI substitutes.
 
+The handoff-faithful acceptance pass also stores reviewed deterministic Playwright baselines for `map`, `calm`, and `results-three` in `tests/e2e/student-teacher.spec.ts-snapshots/`. They capture with animation disabled and reduced motion, after image readiness, so visual changes require an explicit review rather than a newly generated snapshot alone.
+
 Keep text, numbers, controls, level nodes, stars, and status indicators as semantic live UI. Future original artwork should be added behind or around these components, never baked into interactive screenshots.

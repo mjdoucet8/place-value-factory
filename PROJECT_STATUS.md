@@ -14,6 +14,12 @@ Restrained mascot, conveyor, light, steam and celebration animation is disabled 
 
 Verified: `npm test` (46 tests), `npx tsc --noEmit`, `npm run build`, `npm run test:e2e` (7 Chromium journeys), and `git diff --check` passed. This completes the locally verifiable art-integration slice; final owner visual approval, manual screen-reader/device/zoom review and external production prerequisites remain separate from the fictional-data milestone.
 
+## 2026-09-22 handoff-faithful gameplay and visual acceptance
+
+The game now uses a compact factory workspace: a central current order, small guide, live expression monitor, six semantic factory-machine controls and nearby shipping actions read as one playable workbench rather than a tall form. The map keeps its accessible live level list while visually linking original buildings and nodes; zone cosmetics appear only after a whole zone is complete. Results use readable child-facing summaries, live stars and a correctly layered celebration composition. Internal skill identifiers are translated in map, progress and results screens without modifying scored data.
+
+The acceptance suite adds deterministic, manually inspected gallery baselines for map, calm gameplay and three-star results, with motion disabled. The same suite retains real five-order, correction, refresh, storage, takeover, hint-focus and drop-after-commit recovery journeys. Manual screen-reader, physical touch-device and zoom review remain NOT RUN; owner visual approval remains pending.
+
 As of 20 September 2026 | Baseline v1.0
 
 **Specification ready; application implementation not started in this handoff.**

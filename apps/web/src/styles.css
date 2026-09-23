@@ -751,6 +751,140 @@ td {
     display: none !important;
   }
 }
+
+/* Handoff-faithful compact factory workspace. */
+.game-screen > header {
+  position: sticky;
+  top: 0;
+  z-index: 8;
+}
+.header-help {
+  margin-left: auto;
+}
+.game-screen .robot-guide {
+  margin: 8px auto;
+  max-width: 620px;
+  position: relative;
+  z-index: 2;
+}
+.game-screen .robot-guide .mascot {
+  height: 78px;
+  width: 78px;
+}
+.game-screen .current-order {
+  margin: 18px auto 12px;
+  max-width: 610px;
+  position: relative;
+  z-index: 1;
+}
+.representation-monitor {
+  background: #082251;
+  border: 5px solid #326fe2;
+  border-radius: 20px;
+  box-shadow: 0 7px 0 #07142f;
+  color: white;
+  margin: 12px auto;
+  max-width: 680px;
+  padding: 10px 18px;
+  text-align: center;
+}
+.representation-monitor strong {
+  color: #ffdc55;
+  display: block;
+  font-size: clamp(1.8rem, 4vw, 2.7rem);
+}
+.representation-monitor p {
+  margin: 3px 0;
+}
+.monitor-label {
+  color: #9eeaff;
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+.machine {
+  overflow: visible;
+  padding-top: 34px;
+  position: relative;
+}
+.machine-pipe {
+  background: #334e92;
+  border: 4px solid #0d2358;
+  border-bottom: 0;
+  border-radius: 12px 12px 0 0;
+  height: 36px;
+  left: 34%;
+  position: absolute;
+  top: -28px;
+  width: 32%;
+}
+.machine-hopper {
+  background: var(--machine);
+  clip-path: polygon(0 0, 100% 0, 70% 100%, 30% 100%);
+  height: 34px;
+  left: 17%;
+  position: absolute;
+  top: 0;
+  width: 66%;
+}
+.machine-value {
+  font-weight: 800;
+  margin: 4px 0 10px;
+}
+.machine-crate {
+  background: color-mix(in srgb, var(--machine), #102653 25%);
+  border: 3px solid #102653;
+  border-radius: 7px;
+  color: white;
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 800;
+  margin: 10px auto -29px;
+  padding: 5px;
+  text-align: center;
+  width: 82%;
+}
+.map {
+  position: relative;
+}
+.map::before {
+  background: repeating-linear-gradient(
+    90deg,
+    #f5b51b 0 16px,
+    #0e478f 16px 30px
+  );
+  content: "";
+  height: 10px;
+  left: 18%;
+  opacity: 0.75;
+  position: absolute;
+  right: 18%;
+  top: -7px;
+  z-index: -1;
+}
+.results-screen {
+  background-attachment: fixed;
+  background-position: center top;
+  overflow: hidden;
+}
+.results-screen .celebration-effect {
+  z-index: 0;
+}
+.results-screen > :not(.celebration-effect) {
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 699px) {
+  .header-help {
+    margin-left: 0;
+  }
+  .game-screen > header {
+    position: relative;
+  }
+  .machine-crate {
+    margin-bottom: -22px;
+  }
+}
 :root[data-motion="reduced"] *,
 :root[data-motion="reduced"] *::before,
 :root[data-motion="reduced"] *::after {

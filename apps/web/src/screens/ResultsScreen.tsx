@@ -1,3 +1,5 @@
+import { studentSkillLabel, studentSkillStatus } from "../studentCopy.js";
+
 type Props = {
   result: any;
   onTransfer: () => void;
@@ -20,9 +22,11 @@ export function ResultsScreen({
     <main className="results results-screen">
       <FactoryArt asset="effect-celebration" className="celebration-effect" />
       <Mascot pose="celebrate" className="results-mascot" />
-      <p className="eyebrow">Saved factory record</p>
+      <p className="eyebrow">Mission complete</p>
       <h1>Level complete!</h1>
-      <p>{result?.shipped ?? 5} server-validated shipments saved.</p>
+      <p>
+        Great work! You packed {result?.shipped ?? 5} orders for this mission.
+      </p>
       <dl className="result-counters">
         <div>
           <dt>First try</dt>
@@ -31,7 +35,7 @@ export function ResultsScreen({
           </dd>
         </div>
         <div>
-          <dt>Eventually correct</dt>
+          <dt>Kept trying</dt>
           <dd>
             {result?.eventuallyCorrect ?? 0}/{result?.shipped ?? 5}
           </dd>
@@ -41,7 +45,7 @@ export function ResultsScreen({
           <dd>{result?.bestStreak ?? 0}</dd>
         </div>
         <div>
-          <dt>This-level efficiency</dt>
+          <dt>Factory score</dt>
           <dd>{result?.efficiency ?? 100}%</dd>
         </div>
       </dl>
@@ -54,7 +58,8 @@ export function ResultsScreen({
           <ul>
             {result.skillStatuses.map((skill: any) => (
               <li key={skill.skillId}>
-                {skill.skillId}: {skill.status} ({skill.sampleN} orders)
+                {studentSkillLabel(skill.skillId)}:{" "}
+                {studentSkillStatus(skill.status)} ({skill.sampleN} orders)
               </li>
             ))}
           </ul>
