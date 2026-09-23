@@ -1,5 +1,9 @@
 # Project status
 
+## Current: 23 September 2026 — full V1 release candidate in progress
+
+The previous system-PostgreSQL access blocker is superseded. `npm run test:postgres` creates an isolated user-owned PostgreSQL 16 cluster with a private Unix socket, peer authentication and no TCP listener. Real migration, rollback after partial response writes, receipt replay and persistence across fresh connections passed. Runtime integration, secure identity/rosters, durable browser outbox, complete reports and visual acceptance remain implementable work. The broader release candidate is not complete. See `docs/RELEASE_CANDIDATE_PLAN.md`; all sections below are historical claims, not current acceptance proof.
+
 ## 2026-09-22 artwork pack delivery
 
 Created 23 original transparent assets in apps/web/public/assets/art-v1/: six mascot poses, five configured zone buildings, five factory props, five zone cosmetics and two effects. Original 1254×1254 PNG masters are preserved; alpha-preserving 512px/768px WebP derivatives total 1,130,984 bytes versus 24,421,384 bytes of originals (95% reduction). Existing scene backgrounds are retained.

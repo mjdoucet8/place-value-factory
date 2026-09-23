@@ -1,5 +1,15 @@
 # Task log
 
+## 2026-09-23 | RC-01 | CLAIM | Full V1 release candidate
+
+Scope: expanded owner objective in `docs/RELEASE_CANDIDATE_PLAN.md`; retain all unmet V1 requirements. Primary editor owns scripts/, database repository tests, acceptance ledger and coordination documents. Start with isolated user-owned PostgreSQL verification; then runtime persistence/security, recovery, educational audit and remaining visual/teacher work. No existing database resets. Contract v1.0 unchanged at this checkpoint. Acceptance: DATA-01..04, RECOVERY-05, SEC-01..03 and full register tracked in the ledger.
+
+## 2026-09-23 | RC-01 | UPDATE | Real database path unblocked
+
+Implemented a user-owned PostgreSQL 16 test harness, without TCP, sudo, system-cluster changes or existing database access. Real tests verify migrations from empty schema, two concurrent migration runners, reapplication, rollback after response/order/revision writes, six simultaneous duplicate answers (one commit/five replays), altered key conflict, wrong-student denial, stale revision/lease denial, evidence isolation and process-restart durability. Added bounded whole-transaction serialization/deadlock retries and normalized PostgreSQL Date evidence to ISO strings. Migration CLI now uses the same tested module and resolves migrations independent of current working directory.
+
+Observed commands: `npm run test:postgres` passed before and after a real PostgreSQL restart; `npx tsc --noEmit` passed; `npm test` passed 46 existing tests with the dedicated real-database test skipped outside its harness. This closes the credential blocker only; no full runtime or release completion claimed. Full acceptance ledger and resumable dependency queue added. Next task: normalized runtime entity persistence and authenticated transaction boundary, retaining original math and client recovery invariants.
+
 ## 2026-09-22 | ART-01 | HANDOFF / DONE (asset delivery)
 
 Created and inspected 23 original transparent PNG assets using built-in image generation. Kept the existing robot identity and factory palette; followed the actual Receiving/Packing/Warehouse/Shipping/Lab zones. Added alpha-preserving WebP copies (1.13 MB total, 95% smaller), a light/navy preview page, exact prompt provenance and per-asset integration notes. Original scenes and other work are preserved.

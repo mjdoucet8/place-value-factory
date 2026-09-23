@@ -33,4 +33,6 @@ Fictional student: `FACTORY5` / `ava` / `123456`; teacher: `teacher` / `factory-
 
 ### PostgreSQL preparation
 
-The first forward migration is in `db/migrations/`. With a provisioned PostgreSQL 15+ database, set `DATABASE_URL` and run `npm run db:migrate --workspace=@place-value-factory/server`. No PostgreSQL service is bundled with this repository, and the JSON adapter remains the active local-development backend; it must not be selected for production.
+The first forward migration is in `db/migrations/`. With a provisioned PostgreSQL 15+ database, set `DATABASE_URL` and run `npm run db:migrate --workspace=@place-value-factory/server`. The JSON adapter remains the active development runtime; runtime PostgreSQL integration is still in progress.
+
+Run `npm run test:postgres` for isolated real-database verification. It uses installed PostgreSQL 16 binaries (`PVF_POSTGRES_BIN` can select another binary directory), creates a new user-owned cluster under `/tmp/pvf-postgres-test-*`, permits peer-authenticated connections only on its private Unix socket, and disables TCP. It never reads `DATABASE_URL`, resets existing databases or requires sudo. Tests cover rollback, concurrent duplicate receipts and a real database process restart. The cluster is stopped afterward; temporary files are retained for diagnostics. `npm test` deliberately skips this dedicated real-database test unless the harness supplies its private socket.
