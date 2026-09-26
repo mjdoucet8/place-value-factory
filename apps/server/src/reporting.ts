@@ -178,47 +178,49 @@ export function buildStudentReport(input: {
   const firstWrong = groups.filter((g) => !g[0].validation.objectiveMet);
   const ids = new Set(groups.map((g) => g[0].order.id));
   const allEvidence = attempts.flatMap((a) => a.evidence);
+  const evidenceOrderIds = new Set(allEvidence.map((record) => record.orderId));
+  const independentOrderIds = new Set(
+    allEvidence.filter((record) => record.independentFirst).map((record) => record.orderId),
+  );
   const evidence = allEvidence.filter((e) => !e.orderId || ids.has(e.orderId));
+  const supportsByOrder = new Map<string, Attempt["supportEvents"]>();
+  for (const event of attempts.flatMap((attempt) => attempt.supportEvents)) {
+    const events = supportsByOrder.get(event.orderId) ?? [];
+    events.push(event);
+    supportsByOrder.set(event.orderId, events);
+  }
   const supportCounts = Object.fromEntries(
     ["H1", "H2", "H3"].map((step) => [
       step,
       new Set(
-        attempts
-          .flatMap((a) => a.supportEvents)
+        [...supportsByOrder.values()]
+          .flatMap((events) => events)
           .filter((s) => s.step === step && ids.has(s.orderId))
           .map((s) => s.orderId),
       ).size,
     ]),
   );
-  const misconceptionCounts = [
-    "PLACE_SHIFT",
-    "ZERO_PLACEHOLDER",
-    "FACTOR_TEN",
-    "RENAMING_GAP",
-  ].map((code) => {
-    const exhibiting = groups.filter((g) =>
-      g.some((r) =>
-        [r.representationA, r.representationB].some((v) =>
-          classifyResponse(r.order, v).includes(code),
-        ),
-      ),
-    );
-    const targeted = groups.filter((g) =>
-      code === "FACTOR_TEN"
-        ? g[0].order.allowed.length === 1
-        : code === "RENAMING_GAP"
-          ? g[0].order.allowed.length < 6
-          : g[0].order.canonicalRequired,
-    );
-    return {
-      code,
-      orderN: exhibiting.length,
-      targetedN: targeted.length,
-      candidate: true,
-      ruleVersion: "v1",
-      showPattern: exhibiting.length >= 3,
-    };
-  });
+  const misconceptionCodes = ["PLACE_SHIFT", "ZERO_PLACEHOLDER", "FACTOR_TEN", "RENAMING_GAP"] as const;
+  const misconceptionTotals = Object.fromEntries(misconceptionCodes.map((code) => [code, { orderN: 0, targetedN: 0 }])) as Record<(typeof misconceptionCodes)[number], { orderN: number; targetedN: number }>;
+  for (const group of groups) {
+    const order = group[0].order;
+    const flags = new Set(group.flatMap((record) => [
+      ...classifyResponse(record.order, record.representationA),
+      ...classifyResponse(record.order, record.representationB),
+    ]));
+    for (const code of misconceptionCodes) {
+      if (flags.has(code)) misconceptionTotals[code].orderN++;
+      if (code === "FACTOR_TEN" ? order.allowed.length === 1 : code === "RENAMING_GAP" ? order.allowed.length < 6 : order.canonicalRequired)
+        misconceptionTotals[code].targetedN++;
+    }
+  }
+  const misconceptionCounts = misconceptionCodes.map((code) => ({
+    code,
+    ...misconceptionTotals[code],
+    candidate: true,
+    ruleVersion: "v1",
+    showPattern: misconceptionTotals[code].orderN >= 3,
+  }));
   const skills = [...new Set(Object.values(STAGE_GATE_SKILLS).flat())]
     .sort()
     .map((skillId) => summarizeMastery(skillId, allEvidence, now));
@@ -250,11 +252,8 @@ export function buildStudentReport(input: {
     const selected = groups
       .filter((g) => g[0].order.primarySkill === skillId)
       .reverse();
-    const independent = new Set(
-      allEvidence.filter((e) => e.independentFirst).map((e) => e.orderId),
-    );
     return [
-      ...selected.filter((g) => independent.has(g[0].order.id)).slice(0, 2),
+      ...selected.filter((g) => independentOrderIds.has(g[0].order.id)).slice(0, 2),
       ...selected.filter((g) => !g[0].validation.objectiveMet).slice(0, 2),
     ].map((g) => g[0].order.id);
   });
@@ -290,7 +289,7 @@ export function buildStudentReport(input: {
     evidenceLabel: submittedN ? "Evidence available" : "No evidence",
     pendingN: groups.filter(
       (g) =>
-        !accepted(g) && !allEvidence.some((e) => e.orderId === g[0].order.id),
+        !accepted(g) && !evidenceOrderIds.has(g[0].order.id),
     ).length,
     primaryPracticeSkillId: input.primaryPracticeSkillId,
     lastActivityAt: responses.at(-1)?.at ?? null,
@@ -313,15 +312,13 @@ export function buildStudentReport(input: {
       accepted: accepted(g),
       status: accepted(g)
         ? "shipped"
-        : allEvidence.some((e) => e.orderId === g[0].order.id)
+        : evidenceOrderIds.has(g[0].order.id)
           ? "skipped"
           : "pending",
       role: isTransferOrder(g[0].order) ? "transfer" : "main",
       firstResponse: g[0],
       finalResponse: g.at(-1),
-      supports: attempts
-        .flatMap((a) => a.supportEvents)
-        .filter((s) => s.orderId === g[0].order.id),
+      supports: supportsByOrder.get(g[0].order.id) ?? [],
     })),
   };
 }

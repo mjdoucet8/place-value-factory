@@ -76,17 +76,42 @@ export class PostgresRuntimeStore {
         params,
       );
     const attempts = await readRows(`SELECT * FROM pvf_attempt${scope} ORDER BY created_at,id`, params);
-    const orders = await readRows("SELECT id,attempt_id,spec,slot_index,replacement_index,role,status FROM pvf_order WHERE attempt_id=ANY($1::uuid[]) ORDER BY attempt_id,slot_index,replacement_index,role", [attempts.map((row) => row.id)]);
+    const attemptIds = attempts.map((row) => row.id);
+    // A class report needs the exact issued spec, response history and evidence
+    // for each order. Read those together so one row parser pass covers the
+    // common one-response/one-evidence case, including skipped evidence.
+    const reportRows = reportOnly ? await readRows(
+      `SELECT o.id,o.attempt_id,o.spec,o.slot_index,o.replacement_index,o.role,o.status,
+        r.order_id AS response_order_id,r.command_id,r.active_ms,r.representation_a,r.representation_b,r.validation,
+        r.committed_at AS response_at,r.sequence,
+        e.order_id AS evidence_order_id,e.skill_id,e.score,e.independent_first,e.signature,e.eligible,
+        e.committed_at AS evidence_at
+       FROM pvf_order o
+       LEFT JOIN pvf_response r ON r.order_id=o.id
+       LEFT JOIN pvf_skill_evidence e ON e.order_id=o.id
+       WHERE o.attempt_id=ANY($1::uuid[])`,
+      [attemptIds],
+    ) : [];
+    const orders = reportOnly
+      ? [...new Map(reportRows.map((row) => [row.id, row])).values()]
+      : await readRows("SELECT id,attempt_id,spec,slot_index,replacement_index,role,status FROM pvf_order WHERE attempt_id=ANY($1::uuid[]) ORDER BY attempt_id,slot_index,replacement_index,role", [attemptIds]);
     const byOrder = new Map(orders.map((row) => [row.id, row]));
     const activeAttemptIds = new Set(attempts.filter((row) => row.status !== "completed").map((row) => row.id));
     const responseOrderIds = startCommandId
       ? orders.filter((row) => activeAttemptIds.has(row.attempt_id)).map((row) => row.id)
       : orders.map((row) => row.id);
-    const responses = await readRows(
+    const responses = reportOnly ? reportRows
+      .filter((row) => row.response_order_id !== null)
+      .map((row) => ({ ...row, order_id: row.response_order_id, committed_at: row.response_at }))
+      .sort((a, b) => a.committed_at.getTime() - b.committed_at.getTime() || a.sequence - b.sequence)
+      : await readRows(
         "SELECT * FROM pvf_response WHERE order_id=ANY($1::text[]) ORDER BY committed_at,sequence",
         [responseOrderIds],
       );
-    const evidence = await readRows(
+    const evidence = reportOnly
+      ? [...new Map(reportRows.filter((row) => row.evidence_order_id !== null).map((row) => [row.evidence_order_id, row])).values()]
+        .map((row) => ({ ...row, order_id: row.evidence_order_id, committed_at: row.evidence_at }))
+      : await readRows(
         `SELECT * FROM pvf_skill_evidence${scope} ORDER BY committed_at,id`,
         params,
       );

@@ -61,6 +61,7 @@ describe.skipIf(!socket)("sustained fictional classroom with accumulated history
     });
     const apiProcesses = await Promise.all(Array.from({ length: 3 }, () => launch()));
     const metrics: Record<string, number[]> = { profile: [], start: [], answer: [], retry: [], report: [] };
+    const reportTiming = { headers: [] as number[], body: [] as number[], parse: [] as number[], bytes: [] as number[] };
     const errors: { phase: string; status: number; body: unknown }[] = [];
     let requests = 0, lockWaitSamples = 0, polls = 0, peakRss = 0;
     const childRss = (pid: number | undefined) => {
@@ -83,7 +84,17 @@ describe.skipIf(!socket)("sustained fictional classroom with accumulated history
       const destination = (worker + (phase === "retry" ? 1 : 0)) % 3;
       const base = apiProcesses[destination].base;
       const response = await fetch(base + path, { method: body ? "POST" : "GET", headers: { origin: "https://classroom.test", cookie: `pvf_session=${actor.token}`, "x-csrf-token": actor.csrf, "content-type": "application/json", ...(body?.commandId ? { "idempotency-key": String(body.commandId) } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) });
-      const payload = await response.json();
+      let payload: any;
+      if (phase === "report") {
+        const headersAt = performance.now();
+        const raw = await response.text();
+        const bodyAt = performance.now();
+        payload = JSON.parse(raw);
+        reportTiming.headers.push(headersAt - began);
+        reportTiming.body.push(bodyAt - headersAt);
+        reportTiming.parse.push(performance.now() - bodyAt);
+        reportTiming.bytes.push(Buffer.byteLength(raw));
+      } else payload = await response.json();
       if (phase !== "setup") { metrics[phase].push(performance.now() - began); requests++; }
       if (response.status >= 400) errors.push({ phase, status: response.status, body: payload });
       return { status: response.status, body: payload };
@@ -181,7 +192,8 @@ describe.skipIf(!socket)("sustained fictional classroom with accumulated history
       expect(errors).toEqual([]);
       const elapsedMs = performance.now() - began;
       const summary = Object.fromEntries(Object.entries(metrics).map(([phase, times]) => [phase, { count: times.length, p50Ms: percentile(times, 50), p95Ms: percentile(times, 95), p99Ms: percentile(times, 99), maxMs: Math.round(Math.max(...times)) }]));
-      console.log(`SUSTAINED_LOAD_METRICS ${JSON.stringify({ students: 90, concurrency: 30, apiProcesses: apiProcesses.length, historyPerStudent, seeded, durationTargetMs: durationMs, measuredMs: Math.round(elapsedMs), rounds, requests, throughputRps: Math.round(requests / elapsedMs * 1000), errors: errors.length, lockWaitSamples, polls, baselineRss, peakRss, memoryScope: "load client plus API workers; excludes PostgreSQL", finalCounts, metrics: summary })}`);
+      const reportBreakdown = Object.fromEntries(Object.entries(reportTiming).map(([phase, times]) => [phase, { p50: percentile(times, 50), p95: percentile(times, 95), max: Math.round(Math.max(...times)) }]));
+      console.log(`SUSTAINED_LOAD_METRICS ${JSON.stringify({ students: 90, concurrency: 30, apiProcesses: apiProcesses.length, historyPerStudent, seeded, durationTargetMs: durationMs, measuredMs: Math.round(elapsedMs), rounds, requests, throughputRps: Math.round(requests / elapsedMs * 1000), errors: errors.length, lockWaitSamples, polls, baselineRss, peakRss, memoryScope: "load client plus API workers; excludes PostgreSQL", finalCounts, metrics: summary, reportBreakdown })}`);
       for (const [phase, times] of Object.entries(metrics)) expect(percentile(times, 95), `${phase} p95`).toBeLessThan(500);
     } finally {
       clearInterval(sampler);
