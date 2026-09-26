@@ -42,14 +42,14 @@ export class PostgresRuntimeStore {
     const client = context.client;
     const profiles = (
       await client.query(
-        "SELECT student_id,settings,access_enabled FROM pvf_game_profile",
+        "SELECT student_id,settings,access_enabled,certifications FROM pvf_game_profile",
       )
     ).rows;
     const attempts = (
       await client.query("SELECT * FROM pvf_attempt ORDER BY created_at,id")
     ).rows;
     const orders = (
-      await client.query("SELECT id,attempt_id,spec FROM pvf_order")
+      await client.query("SELECT id,attempt_id,spec,slot_index,replacement_index,role,status FROM pvf_order")
     ).rows;
     const byOrder = new Map(orders.map((row) => [row.id, row]));
     const responses = (
@@ -79,11 +79,14 @@ export class PostgresRuntimeStore {
       studentAccess: Object.fromEntries(
         profiles.map((row) => [row.student_id, row.access_enabled]),
       ),
+      certifications: Object.fromEntries(
+        profiles.map((row) => [row.student_id, row.certifications]),
+      ),
       attempts: attempts.map((row) => ({
         id: row.id,
         studentId: row.student_id,
         levelId: row.level_id,
-        seed: row.seed,
+        seed: Number(row.seed),
         slot: row.slot,
         status: row.status,
         completed: row.status === "completed",
@@ -93,11 +96,23 @@ export class PostgresRuntimeStore {
         leaseExpiresAt: iso(row.lease_expires_at),
         createdAt: iso(row.created_at),
         replacementIndex: row.replacement_index,
+        skippedOrders: row.skipped_orders,
         kind: row.kind,
         practiceSkill: row.practice_skill ?? undefined,
+        practiceSchedule: row.practice_schedule ?? undefined,
+        awardedTier: row.awarded_tier ?? undefined,
         transferStar: row.transfer_star,
         activeOrder: byOrder.get(row.active_order_id)?.spec,
         transferOrder: byOrder.get(row.transfer_order_id)?.spec,
+        issuedOrders: orders
+          .filter((order) => order.attempt_id === row.id)
+          .map((order) => ({
+            spec: order.spec,
+            slot: order.slot_index,
+            replacement: order.replacement_index,
+            role: order.role,
+            status: order.status,
+          })),
         responses: responses
           .filter((r) => byOrder.get(r.order_id)?.attempt_id === row.id)
           .map((r) => ({
@@ -167,12 +182,13 @@ export class PostgresRuntimeStore {
     ]);
     for (const id of studentIds) {
       await client.query(
-        `INSERT INTO pvf_game_profile(student_id,settings,access_enabled) VALUES($1,$2::jsonb,$3)
-        ON CONFLICT(student_id) DO UPDATE SET settings=EXCLUDED.settings,access_enabled=EXCLUDED.access_enabled,updated_at=now()`,
+        `INSERT INTO pvf_game_profile(student_id,settings,access_enabled,certifications) VALUES($1,$2::jsonb,$3,$4::jsonb)
+        ON CONFLICT(student_id) DO UPDATE SET settings=EXCLUDED.settings,access_enabled=EXCLUDED.access_enabled,certifications=EXCLUDED.certifications,updated_at=now()`,
         [
           id,
           JSON.stringify(state.settings?.[id] ?? {}),
           state.studentAccess?.[id] !== false,
+          JSON.stringify(state.certifications?.[id] ?? []),
         ],
       );
     }
@@ -182,11 +198,11 @@ export class PostgresRuntimeStore {
 
   private async persistAttempt(client: PoolClient, attempt: Attempt) {
     await client.query(
-      `INSERT INTO pvf_attempt(id,student_id,level_id,seed,slot,status,revision,lease_epoch,writer_tab_id,lease_expires_at,created_at,kind,practice_skill,replacement_index,transfer_star,active_order_id,transfer_order_id)
-      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+      `INSERT INTO pvf_attempt(id,student_id,level_id,seed,slot,status,revision,lease_epoch,writer_tab_id,lease_expires_at,created_at,kind,practice_skill,replacement_index,transfer_star,active_order_id,transfer_order_id,skipped_orders,awarded_tier,practice_schedule)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20::jsonb)
       ON CONFLICT(id) DO UPDATE SET slot=EXCLUDED.slot,status=EXCLUDED.status,revision=EXCLUDED.revision,lease_epoch=EXCLUDED.lease_epoch,
       writer_tab_id=EXCLUDED.writer_tab_id,lease_expires_at=EXCLUDED.lease_expires_at,replacement_index=EXCLUDED.replacement_index,
-      transfer_star=EXCLUDED.transfer_star,active_order_id=EXCLUDED.active_order_id,transfer_order_id=EXCLUDED.transfer_order_id`,
+      transfer_star=EXCLUDED.transfer_star,active_order_id=EXCLUDED.active_order_id,transfer_order_id=EXCLUDED.transfer_order_id,skipped_orders=EXCLUDED.skipped_orders,awarded_tier=EXCLUDED.awarded_tier,practice_schedule=EXCLUDED.practice_schedule`,
       [
         attempt.id,
         attempt.studentId,
@@ -205,6 +221,9 @@ export class PostgresRuntimeStore {
         attempt.transferStar ?? false,
         attempt.activeOrder?.id ?? null,
         attempt.transferOrder?.id ?? null,
+        attempt.skippedOrders ?? 0,
+        attempt.awardedTier ?? null,
+        JSON.stringify(attempt.practiceSchedule ?? []),
       ],
     );
     const issued = new Map<

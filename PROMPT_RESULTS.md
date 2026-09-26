@@ -45,3 +45,43 @@ Result: Added End Mission, which returns to the refreshed map while preserving t
 ## 2026-09-19 — Maintain this prompt/results document
 
 Result: Created this running log. Future implementation prompts should append a dated brief summary here.
+
+## 2026-09-26 — Add Codex model orchestration
+
+Prompt: Configure Math Factory to use an Astra lead, Luna workers, and Sol escalation/review.
+
+Overall result: Added project-local model defaults, three custom agents, an orchestration runbook, and durable delegation rules in `AGENTS.md`. All four TOML files parsed successfully.
+
+Agent contributions:
+- Main agent — inspected the project guidance, designed the project-specific orchestration policy, created the configuration and agent definitions, updated documentation, and verified the files.
+
+Subagents: none — the configuration work was tightly coupled and completed sequentially.
+
+## 2026-09-26 — Record separate agent accomplishments
+
+Prompt: Require the prompt/result documentation to show what every separate Codex agent accomplished.
+
+Overall result: Expanded this log's required format and made per-agent contribution reporting a required final step in both `AGENTS.md` and the orchestration runbook.
+
+Agent contributions:
+- Main agent — reviewed the existing log, added the agent-level audit requirements and examples, connected them to the orchestration workflow, and verified the documentation changes.
+
+Subagents: none — this was a small documentation-only update with overlapping files.
+
+## 2026-09-26 — Remove Codex subagent orchestration
+
+Prompt: Remove the subagent orchestration strategy because it consumed usage too quickly.
+
+Result: Disabled multi-agent tools for Math Factory, removed the Astra/Luna/Sol routing configuration and custom agents, removed the orchestration runbook, restored single-agent instructions, and simplified future prompt/result logging.
+
+## 2026-09-26 — Assess next milestone and usage-efficient strategy
+
+Prompt: Analyse Math Factory and recommend its next major milestone and the most usage-efficient execution strategy, considering terminals and multiple models.
+
+Result: Recommended completing RC-07 learning progression and trustworthy teacher evidence before the broader local V1 release candidate. Saved docs/MILESTONE_STRATEGY_2026-09-26.md with ordered work packages, acceptance gates and a single-active-model strategy. Fresh checks: type check fails at server index.ts:995; unit tests 55 passed/1 failed; broader suite 56 passed/13 failed/6 skipped, with 12 HTTP cases blocked by sandbox loopback binding (EPERM). Report modules are not yet wired into the server. No application code changed, no agents launched and no implementation goals started.
+
+## 2026-09-26 — Complete RC-07 verified learning progression and teacher evidence
+
+Prompt: Finish the attached RC-07 milestone autonomously, preserving dirty work and development data, with all six stages, practice/recovery/rewards, accurate teacher reports, integrated tests, documentation and a local checkpoint commit.
+
+Overall result: Implemented and verified the local fictional-data RC-07 checkpoint. Earned HTTP evidence reaches every stage gate and Factory Master across 30 levels; nonminimal restricted and advanced correction cases pass; practice schedules, issued orders, certifications and rewards persist across PostgreSQL restart. Authorized teacher reports reconcile stored first/final answers and expose class-local filters and skill detail. Full unit/integration, isolated PostgreSQL/restart, standard browser and secure-pilot browser checks pass. The development database and private pilot data were preserved outside the commit. Full V1 operations, load, accessibility/device and external school gates remain open.

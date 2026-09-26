@@ -194,6 +194,7 @@ describe.skipIf(!socket || process.env.PVF_TEST_PG_RESTART === "1")(
         );
         expect(started.status).toBe(201);
         let snapshot = started.body;
+        const firstOrderId = snapshot.activeOrder.id;
         expect(
           (
             await request(
@@ -235,6 +236,17 @@ describe.skipIf(!socket || process.env.PVF_TEST_PG_RESTART === "1")(
           submittedN: 5,
           eventuallyCorrectN: 5,
         });
+        expect((await request(
+          `/teacher/students/${one.body.student.id}/games/place-value-factory/report`,
+          undefined, t1,
+        )).body.submittedN).toBe(5);
+        expect((await request(
+          `/teacher/students/${one.body.student.id}/games/place-value-factory/report`,
+          undefined, t2,
+        )).status).toBe(404);
+        expect((await request(
+          `/teacher/orders/${firstOrderId}/evidence`, undefined, t2,
+        )).status).toBe(404);
         expect(
           (
             await request(

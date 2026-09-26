@@ -51,9 +51,136 @@ function canonical(target: number) {
 }
 
 describe("fictional-data command safety", () => {
+  it("rejects malformed submissions without changing educational history or first try", async () => {
+    const started = await request("/games/place-value-factory/attempts", {
+      commandId: "schema-start", profileRevision: 0, tabId: "schema-tab", levelId: "level-1",
+    }, { ...studentHeaders, "idempotency-key": "schema-start" });
+    const initial = started.body;
+    const path = `/games/place-value-factory/attempts/${initial.attemptId}/orders/${initial.activeOrder.id}/responses`;
+    const malformed = [
+      { representationA: [0, 0, 0, 0, 0, -1] },
+      { representationA: [0, 0, 0, 0, 0, 1.5] },
+      { representationA: [0, 0, 0, 0, 0, "1"] },
+      { representationA: [0, 0, 0, 0, 0, 1000000] },
+      { representationA: [0, 0] },
+      { representationA: null },
+      { representationA: canonical(initial.activeOrder.target), stars: 3 },
+      { representationA: canonical(initial.activeOrder.target), activeMs: -1 },
+    ];
+    for (const [index, fields] of malformed.entries()) {
+      const key = `schema-${index}`;
+      const rejected = await request(path, {
+        commandId: key, expectedRevision: initial.revision, leaseEpoch: initial.leaseEpoch,
+        tabId: "schema-tab", ...fields,
+      }, { ...studentHeaders, "idempotency-key": key });
+      expect(rejected.status).toBe(422);
+    }
+    expect((await request(`/games/place-value-factory/attempts/${initial.attemptId}`)).body)
+      .toMatchObject({ revision: initial.revision, shippedSlots: 0 });
+    const report = await request("/teacher/classes/class-demo/games/place-value-factory/report", undefined, { "x-session": "teacher-dev" });
+    expect(report.body.students[0].submittedN).toBe(0);
+    const saved = await request(path, {
+      commandId: "schema-correct", expectedRevision: initial.revision, leaseEpoch: initial.leaseEpoch,
+      tabId: "schema-tab", representationA: canonical(initial.activeOrder.target),
+    }, { ...studentHeaders, "idempotency-key": "schema-correct" });
+    expect(saved.status).toBe(200);
+    const stored = JSON.parse(await readFile(join(dataDirectory, "development.json"), "utf8"));
+    expect(stored.attempts[0].responses).toHaveLength(1);
+    expect(stored.attempts[0].evidence[0]).toMatchObject({ score: 1, independentFirst: true });
+  });
+  it("keeps practice off the level path and awards only best replay stars", async () => {
+    async function finish(commandPrefix: string, kind: "practice" | "path") {
+      const startKey = `${commandPrefix}-start`;
+      const profile = await request("/profile");
+      const started = await request(
+        "/games/place-value-factory/attempts",
+        {
+          commandId: startKey,
+          profileRevision: profile.body.revision,
+          tabId: "tab-rewards",
+          levelId: "level-1",
+          kind,
+        },
+        { ...studentHeaders, "idempotency-key": startKey },
+      );
+      expect(started.status).toBe(201);
+      let snapshot = started.body;
+      for (let slot = 0; slot < 5; slot++) {
+        const order = snapshot.activeOrder;
+        const key = `${commandPrefix}-answer-${slot}`;
+        const answer = await request(
+          `/games/place-value-factory/attempts/${snapshot.attemptId}/orders/${order.id}/responses`,
+          {
+            commandId: key,
+            expectedRevision: snapshot.revision,
+            leaseEpoch: snapshot.leaseEpoch,
+            tabId: "tab-rewards",
+            representationA: canonical(order.target),
+          },
+          { ...studentHeaders, "idempotency-key": key },
+        );
+        expect(answer.status).toBe(200);
+        snapshot = answer.body.snapshot;
+      }
+      return request(`/games/place-value-factory/attempts/${snapshot.attemptId}/results`);
+    }
+    const practice = await finish("practice", "practice");
+    expect(practice.body).toMatchObject({ mainStars: 0, newlyUnlockedLevelIds: [] });
+    expect((await request("/profile")).body).toMatchObject({ totalStars: 0, revision: 0 });
+    expect((await request("/games/place-value-factory/progress")).body.completedLevelIds).toEqual([]);
+    const mapBefore = await request("/games/place-value-factory/map");
+    expect(mapBefore.body.zones[0].levels[0]).toMatchObject({ status: "unlocked", stars: 0 });
+
+    const path = await finish("path", "path");
+    expect(path.body).toMatchObject({ mainStars: 2, bestLevelStars: 2 });
+    expect((await request("/profile")).body).toMatchObject({ totalStars: 2, revision: 1 });
+    const replay = await finish("replay", "path");
+    expect(replay.body.bestLevelStars).toBe(2);
+    expect((await request("/profile")).body).toMatchObject({ totalStars: 2, revision: 1 });
+    expect((await request("/games/place-value-factory/progress")).body.completedLevelIds).toEqual(["level-1"]);
+  });
+  it("persists skip cost without counting a replaced wrong order as a corrected shipment", async () => {
+    const start = await request(
+      "/games/place-value-factory/attempts",
+      { commandId: "skip-start", profileRevision: 0, tabId: "tab-skip", levelId: "level-1" },
+      { ...studentHeaders, "idempotency-key": "skip-start" },
+    );
+    let snapshot = start.body;
+    const firstOrder = snapshot.activeOrder;
+    for (let index = 0; index < 2; index++) {
+      const key = `wrong-${index}`;
+      const wrong = await request(
+        `/games/place-value-factory/attempts/${snapshot.attemptId}/orders/${firstOrder.id}/responses`,
+        { commandId: key, expectedRevision: snapshot.revision, leaseEpoch: snapshot.leaseEpoch, tabId: "tab-skip", representationA: [0, 0, 0, 0, 0, 0] },
+        { ...studentHeaders, "idempotency-key": key },
+      );
+      expect(wrong.status).toBe(200);
+      snapshot = wrong.body.snapshot;
+    }
+    const skipped = await request(
+      `/games/place-value-factory/attempts/${snapshot.attemptId}/orders/${firstOrder.id}/skip`,
+      { commandId: "skip-order", expectedRevision: snapshot.revision, leaseEpoch: snapshot.leaseEpoch, tabId: "tab-skip" },
+      { ...studentHeaders, "idempotency-key": "skip-order" },
+    );
+    expect(skipped.status).toBe(200);
+    snapshot = skipped.body.snapshot;
+    expect(snapshot.skippedOrders).toBe(1);
+    for (let slot = 0; slot < 5; slot++) {
+      const order = snapshot.activeOrder;
+      const key = `after-skip-${slot}`;
+      const shipped = await request(
+        `/games/place-value-factory/attempts/${snapshot.attemptId}/orders/${order.id}/responses`,
+        { commandId: key, expectedRevision: snapshot.revision, leaseEpoch: snapshot.leaseEpoch, tabId: "tab-skip", representationA: canonical(order.target) },
+        { ...studentHeaders, "idempotency-key": key },
+      );
+      expect(shipped.status).toBe(200);
+      snapshot = shipped.body.snapshot;
+    }
+    const result = await request(`/games/place-value-factory/attempts/${snapshot.attemptId}/results`);
+    expect(result.body).toMatchObject({ shipped: 5, skippedOrders: 1, correctedSlots: 0, efficiency: 96, submittedOrders: 6 });
+  });
   it("issues distinct persisted order identities when replaying the same deterministic level", async () => {
     const issuedIds = new Set<string>();
-    const targets: number[][] = [];
     for (let run = 0; run < 2; run++) {
       const startKey = `repeat-start-${run}`;
       const started = await request(
@@ -68,13 +195,11 @@ describe("fictional-data command safety", () => {
       );
       expect(started.status).toBe(201);
       let snapshot = started.body;
-      targets.push([]);
       for (let slot = 0; slot < 5; slot++) {
         const order = snapshot.activeOrder;
         expect(issuedIds.has(order.id)).toBe(false);
         expect(order.id.startsWith(`${snapshot.attemptId}.`)).toBe(true);
         issuedIds.add(order.id);
-        targets[run].push(order.target);
         const key = `repeat-answer-${run}-${slot}`;
         const answer = await request(
           `/games/place-value-factory/attempts/${snapshot.attemptId}/orders/${order.id}/responses`,
@@ -92,7 +217,12 @@ describe("fictional-data command safety", () => {
         snapshot = answer.body.snapshot;
       }
     }
-    expect(targets[0]).toEqual(targets[1]);
+    const saved = JSON.parse(
+      await readFile(join(dataDirectory, "development.json"), "utf8"),
+    );
+    expect(
+      new Set(saved.attempts.map((item: { seed: number }) => item.seed)).size,
+    ).toBe(2);
     expect(issuedIds.size).toBe(10);
     const report = await request(
       "/teacher/classes/class-demo/games/place-value-factory/report",
@@ -100,6 +230,30 @@ describe("fictional-data command safety", () => {
       { "x-session": "teacher-dev" },
     );
     expect(report.body.students[0].submittedN).toBe(10);
+    expect(report.body.students[0].evidence).toHaveLength(10);
+    expect(report.body.students[0].evidence[0].firstResponse.representationA).toEqual(
+      canonical(report.body.students[0].evidence[0].target),
+    );
+    const individual = await request(
+      "/teacher/students/student-ava/games/place-value-factory/report?includeTransfer=false",
+      undefined,
+      { "x-session": "teacher-dev" },
+    );
+    expect(individual.status).toBe(200);
+    expect(individual.body).toMatchObject({ studentId: "student-ava", submittedN: 10 });
+    expect(individual.body.evidence).toHaveLength(10);
+    const outside = await request(
+      "/teacher/classes/class-demo/games/place-value-factory/report?from=2000-01-01&to=2000-01-02",
+      undefined,
+      { "x-session": "teacher-dev" },
+    );
+    expect(outside.body.students[0]).toMatchObject({ submittedN: 0, evidenceLabel: "No evidence", firstObjectiveAccuracy: null });
+    const invalid = await request(
+      "/teacher/classes/class-demo/games/place-value-factory/report?from=2026-09-27&to=2026-09-26",
+      undefined,
+      { "x-session": "teacher-dev" },
+    );
+    expect(invalid.status).toBe(422);
     for (const orderId of issuedIds) {
       const evidence = await request(
         `/teacher/orders/${orderId}/evidence`,

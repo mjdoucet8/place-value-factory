@@ -157,6 +157,10 @@ test("teacher issues access, student ships, and teacher reviews and revokes it",
   await expect(
     page.getByText("5 submitted orders · 5 accepted shipments"),
   ).toBeVisible();
+  await expect(page.getByRole("table", { name: /Stored question and first\/final answers/ })).toBeVisible();
+  await expect(page.getByRole("columnheader", { name: "First answer" })).toBeVisible();
+  await expect(page.getByRole("columnheader", { name: "Final answer" })).toBeVisible();
+  await page.screenshot({ path: "test-results/pilot-teacher-evidence.png", fullPage: true });
   await page
     .getByRole("button", { name: "Revoke access for Pilot Learner" })
     .click();

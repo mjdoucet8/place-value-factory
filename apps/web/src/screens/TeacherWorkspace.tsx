@@ -22,6 +22,9 @@ export function TeacherWorkspace() {
   const [classId, setClassId] = useState("");
   const [students, setStudents] = useState<Student[]>([]);
   const [report, setReport] = useState<any>();
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [includeTransfer, setIncludeTransfer] = useState(false);
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [name, setName] = useState("");
@@ -31,10 +34,17 @@ export function TeacherWorkspace() {
     null,
   );
   const selected = classes.find((item) => item.id === classId);
+  const reportPath = (id: string) => {
+    const params = new URLSearchParams();
+    if (from) params.set("from", from);
+    if (to) params.set("to", to);
+    if (includeTransfer) params.set("includeTransfer", "true");
+    return `/teacher/classes/${id}/games/place-value-factory/report?${params}`;
+  };
   const refresh = async (id: string) => {
     const [roster, evidence] = await Promise.all([
       api(`/teacher/classes/${id}/students`),
-      api(`/teacher/classes/${id}/games/place-value-factory/report`),
+      api(reportPath(id)),
     ]);
     setStudents(roster.students);
     setReport(evidence);
@@ -63,7 +73,7 @@ export function TeacherWorkspace() {
     setIssued(null);
     Promise.all([
       api(`/teacher/classes/${classId}/students`),
-      api(`/teacher/classes/${classId}/games/place-value-factory/report`),
+      api(reportPath(classId)),
     ])
       .then(([roster, evidence]) => {
         if (!cancelled) {
@@ -102,7 +112,7 @@ export function TeacherWorkspace() {
     }
   };
   return (
-    <TeacherScreen report={report}>
+    <TeacherScreen report={report} filters={{ from, to, includeTransfer, setFrom, setTo, setIncludeTransfer, apply: () => void run(() => refresh(classId)) }}>
       <section
         className="teacher-management"
         aria-label="Class and access management"

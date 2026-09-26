@@ -65,10 +65,10 @@ export function GameScreen(props: Props) {
         ? "Use the fewest crates with the open machines."
         : order.exactTypes
           ? `Use exactly ${order.exactTypes} crate sizes.`
-          : order.allowed.length < 6
-            ? `Use only: ${order.allowed.map((value: number) => value.toLocaleString()).join(", ")}.`
-            : order.canonicalRequired
-              ? "Use normal place value: 0–9 crates of each size."
+          : order.canonicalRequired
+            ? "Use normal place value: 0–9 crates of each size."
+            : order.allowed.length < 6
+              ? `Use only: ${order.allowed.map((value: number) => value.toLocaleString()).join(", ")}.`
               : "Build this target with the open machines.";
   return (
     <main className="game-screen" data-busy={busyEnabled}>

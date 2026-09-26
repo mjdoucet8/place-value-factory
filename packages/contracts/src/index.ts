@@ -22,6 +22,16 @@ export type DifficultyBand = "easy" | "medium" | "hard";
 
 export interface OrderSpec {
   id: string;
+  /** Additive issuance metadata; absent on historical v1-local orders. */
+  attemptId?: string;
+  slotIndex?: number;
+  replacementIndex?: number;
+  role?: "main" | "transfer";
+  seed?: number;
+  configVersion?: string;
+  engineVersion?: string;
+  forbidden?: readonly Denomination[];
+  skillIds?: readonly string[];
   target: number;
   allowed: readonly Denomination[];
   canonicalRequired: boolean;

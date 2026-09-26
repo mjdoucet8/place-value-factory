@@ -198,3 +198,13 @@ Codes include INVALID_CREDENTIALS, SESSION_EXPIRED, ACCESS_DISABLED, NOT_FOUND, 
 ## Contract acceptance
 
 Schema and golden tests for every route; first wrong and corrected response remain separate; unauthorized IDs return no data; duplicate start/complete/transfer yields no extra evidence or stars; hint ordering survives reconnect; stale lease rejected; new config does not mutate existing order; teacher count queries match response history. Version changes require AGENTS.md contract workflow and a migration plan.
+
+## RC-07 additive integrity metadata (local checkpoint)
+
+New issued order records carry `attemptId`, `slotIndex`, `replacementIndex`, `role`, `configVersion`, `engineVersion`, `forbidden`, and `skillIds`. Historical v1-local records may omit these fields and remain interpreted from their stored mathematical spec; never regenerate a historical order. Stored `seed` is server-only and must be removed from public snapshots. Witnesses are validated at issuance and never published as order answers.
+
+Persistent certifications identify completed stage gates (`stage-1` through `stage-6`), independently of the displayed `achievedTier`. See RC07-CERT in DECISIONS.md. Stage 6 is the only Factory Master award; teacher overrides open an explicit level without completing prerequisites or earning a certificate.
+
+Report details add nullable accuracy fractions, `evidenceLabel`, `pendingN`, `supportCounts`, `misconceptionCounts`, `trends`, `representativeOrderIds`, and exact first/final response history. Class and individual reports use the same reconstruction; no submitted orders means null fractions and “No evidence”. `includeTransfer=true` includes optional transfer in the requested report; default excludes it. Date-only `from`/`to` use class-local midnight with an exclusive end. Current skill statuses remain based on full committed learning history; trend and response counts use the selected report window. Candidate flags are deterministic observations, not diagnoses.
+
+Current HTTP shape is additive to v1.0: class rows and the individual report include `certifications`, `firstObjectiveAccuracy`, `firstValueAccuracy`, `eventualAccuracy`, `correctionAccuracy`, `pendingN`, `supportCounts`, `misconceptionCounts`, `trends`, `representativeOrderIds`, and `evidence[]`. Each evidence row carries the stored order target and first/final response records, including original crate vectors and validation flags. Date filters are optional and default to the last seven class-local days; `includeTransfer` accepts only `true` or `false`. Student access to teacher reports is denied, and a teacher outside the class receives 404. Migration 008 stores practice schedules and override integrity without rewriting historical order specs.

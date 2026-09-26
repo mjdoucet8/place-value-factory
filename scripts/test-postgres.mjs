@@ -42,6 +42,7 @@ try {
       "vitest",
       "run",
       "tests/integration/postgres-real.test.ts",
+      "tests/integration/rc07-progression-real.test.ts",
       "tests/integration/security-real.test.ts",
     ],
     {
@@ -54,15 +55,24 @@ try {
     },
   );
   run(join(binary, "pg_ctl"), ["-D", data, "-m", "fast", "-w", "restart"]);
-  run("npx", ["vitest", "run", "tests/integration/postgres-real.test.ts"], {
-    env: {
-      ...process.env,
-      PVF_TEST_PG_SOCKET: socket,
-      PVF_TEST_PG_RESTART: "1",
-      PGUSER: userInfo().username,
-      PGDATABASE: "postgres",
+  run(
+    "npx",
+    [
+      "vitest",
+      "run",
+      "tests/integration/postgres-real.test.ts",
+      "tests/integration/rc07-progression-real.test.ts",
+    ],
+    {
+      env: {
+        ...process.env,
+        PVF_TEST_PG_SOCKET: socket,
+        PVF_TEST_PG_RESTART: "1",
+        PGUSER: userInfo().username,
+        PGDATABASE: "postgres",
+      },
     },
-  });
+  );
 } finally {
   if (started)
     run(join(binary, "pg_ctl"), ["-D", data, "-m", "fast", "-w", "stop"]);

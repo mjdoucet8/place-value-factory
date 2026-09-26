@@ -7,11 +7,15 @@ import {
 } from "../../contracts/src/index.js";
 import {
   DIGIT_RANGES,
+  LEVELS,
   LEVEL_ONE_SLOTS,
+  STAGE_ONE_PLACES,
+  STAGE_TWO_PLACES,
   STAGE_GATE_SKILLS,
   levelById,
   placeValueSkill,
   type DifficultyBand,
+  type LevelMode,
 } from "../../config/src/index.js";
 
 export { DENOMINATIONS } from "../../contracts/src/index.js";
@@ -24,6 +28,44 @@ export type {
 
 const MAX_QUANTITY = 999999;
 const indexFor = new Map<number, number>(DENOMINATIONS.map((d, i) => [d, i]));
+
+/** Published V1 xorshift32 stream; generated orders store the original seed. */
+export function xorshift32(seed: number): number {
+  if (!Number.isInteger(seed) || seed < 1 || seed > 0xffffffff)
+    throw new Error("CONFIG_INVALID");
+  let value = seed >>> 0;
+  value ^= value << 13;
+  value >>>= 0;
+  value ^= value >>> 17;
+  value >>>= 0;
+  value ^= value << 5;
+  return value >>> 0;
+}
+
+function seededRange(
+  seed: number,
+  level: number,
+  slot: number,
+  low: number,
+  high: number,
+  drawIndex = 0,
+) {
+  const mixed =
+    (seed ^
+      Math.imul(level, 0x9e3779b9) ^
+      Math.imul(slot + 1, 0x85ebca6b) ^
+      Math.imul(drawIndex + 1, 0xc2b2ae35)) >>>
+    0;
+  const draw = xorshift32(mixed || 1);
+  return Math.floor((draw / 2 ** 32) * (high - low + 1)) + low;
+}
+
+function assertSeedAndSlot(seed: number, slotIndex: number): void {
+  if (!Number.isInteger(seed) || seed < 1 || seed > 0xffffffff)
+    throw new Error("CONFIG_INVALID");
+  if (!Number.isInteger(slotIndex) || slotIndex < 0 || slotIndex > 4)
+    throw new Error("CONFIG_INVALID");
+}
 
 export function isRepresentation(value: unknown): value is Representation {
   return (
@@ -71,7 +113,12 @@ export function assertValidOrder(
     !Number.isInteger(spec.target) ||
     spec.target < 0 ||
     spec.target > 999999 ||
-    spec.allowed.length === 0
+    !Array.isArray(spec.allowed) ||
+    spec.allowed.length === 0 ||
+    typeof spec.canonicalRequired !== "boolean" ||
+    typeof spec.minimumRequired !== "boolean" ||
+    ![null, 2, 3].includes(spec.exactTypes) ||
+    ![1, 2].includes(spec.distinctRepresentations)
   )
     throw new Error("CONFIG_INVALID");
   const allowed = [...spec.allowed];
@@ -82,8 +129,24 @@ export function assertValidOrder(
     throw new Error("CONFIG_INVALID");
   if (
     spec.minimumRequired &&
-    (spec.exactTypes !== null || spec.distinctRepresentations !== 1)
+    (spec.exactTypes !== null || spec.distinctRepresentations !== 1 || spec.target === 0)
   )
+    throw new Error("CONFIG_INVALID");
+  if (
+    (spec.canonicalRequired &&
+      (spec.minimumRequired || spec.exactTypes !== null ||
+        spec.distinctRepresentations !== 1)) ||
+    (spec.exactTypes !== null && spec.distinctRepresentations !== 1) ||
+    (spec.mode !== undefined &&
+      !["standard", "single", "restricted", "forbidden", "minimum", "exactTypes", "twoWays", "repack", "mixed"].includes(spec.mode)) ||
+    (spec.mode === "minimum" && !spec.minimumRequired) ||
+    (spec.mode === "exactTypes" && spec.exactTypes === null) ||
+    (spec.mode === "twoWays" && spec.distinctRepresentations !== 2) ||
+    (spec.mode === "standard" && !spec.canonicalRequired) ||
+    (spec.mode === "single" && (spec.allowed.length !== 1 || spec.canonicalRequired))
+  )
+    throw new Error("CONFIG_INVALID");
+  if (spec.target === 0 && (spec.exactTypes !== null || spec.distinctRepresentations !== 1))
     throw new Error("CONFIG_INVALID");
   if (!isRepresentable(spec.target, allowed)) throw new Error("CONFIG_INVALID");
 }
@@ -181,11 +244,12 @@ export function validateRepresentation(
     distinctMet &&
     minimumMet;
   let feedbackCode: Validation["feedbackCode"] = "SHIPMENT_CORRECT";
-  if (!valueMatches)
+  if (!restrictionsMet)
+    feedbackCode = "MACHINE_UNAVAILABLE";
+  else if (!valueMatches)
     feedbackCode = totals.some((total) => total < spec.target)
       ? "UNDERPRODUCTION"
       : "OVERPRODUCTION";
-  else if (!restrictionsMet) feedbackCode = "MACHINE_UNAVAILABLE";
   else if (!canonicalMet) feedbackCode = "STANDARD_REQUIRED";
   else if (!typesMet) feedbackCode = "TYPE_COUNT";
   else if (!distinctMet) feedbackCode = "SAME_REPRESENTATION";
@@ -198,7 +262,8 @@ export function validateRepresentation(
     shipmentAccepted: objectiveMet,
     representedTotals: totals,
     crateCounts: counts,
-    minimumCrates: minimum,
+    // Do not disclose the minimum answer while the learner's total is wrong.
+    minimumCrates: valueMatches ? minimum : null,
     feedbackCode,
   };
 }
@@ -223,6 +288,8 @@ export function generateOrder(
   difficultyBand: DifficultyBand = LEVEL_ONE_SLOTS[slotIndex]?.defaultBand ??
     "easy",
 ): OrderSpec {
+  assertSeedAndSlot(seed, slotIndex);
+  if (!(difficultyBand in DIGIT_RANGES)) throw new Error("CONFIG_INVALID");
   const slot = LEVEL_ONE_SLOTS[slotIndex];
   if (!slot) throw new Error("CONFIG_INVALID");
   const [minimumDigit, maximumDigit] = DIGIT_RANGES[difficultyBand];
@@ -232,7 +299,7 @@ export function generateOrder(
   return {
     id: `order-${seed}-${slotIndex}-${difficultyBand}`,
     target: digit * slot.place,
-    allowed: DENOMINATIONS,
+    allowed: [slot.place],
     canonicalRequired: true,
     minimumRequired: false,
     exactTypes: null,
@@ -248,7 +315,13 @@ export function generatePracticeOrder(
   seed: number,
   slotIndex: number,
   difficultyBand: DifficultyBand = "easy",
+  availableThrough = 30,
+  recentSignatures: readonly string[] = [],
 ): OrderSpec {
+  assertSeedAndSlot(seed, slotIndex);
+  if (!Number.isInteger(availableThrough) || availableThrough < 1 || availableThrough > 30)
+    throw new Error("CONFIG_INVALID");
+  if (!(difficultyBand in DIGIT_RANGES)) throw new Error("CONFIG_INVALID");
   const placeBySkill: Record<string, Denomination> = {
     "pv.ones": 1,
     "pv.tens": 10,
@@ -260,9 +333,9 @@ export function generatePracticeOrder(
   const place = placeBySkill[skillId];
   if (place) {
     const [low, high] = DIGIT_RANGES[difficultyBand];
-    const digit = low + (Math.abs(seed + slotIndex) % (high - low + 1));
-    return {
-      id: `practice-${skillId}-${seed}-${slotIndex}`,
+    const recent = new Set(recentSignatures.slice(-10));
+    const practiceOrder = (digit: number, idSeed: string): OrderSpec => ({
+      id: `practice-${skillId}-${idSeed}-${slotIndex}`,
       target: digit * place,
       allowed: DENOMINATIONS,
       canonicalRequired: true,
@@ -272,51 +345,68 @@ export function generatePracticeOrder(
       difficultyBand,
       primarySkill: skillId,
       mode: "standard",
-    };
+    });
+    for (let attempt = 0; attempt < 100; attempt++) {
+      const candidateSeed = attempt === 0 ? seed : xorshift32((seed ^ Math.imul(attempt, 0x9e3779b9)) >>> 0 || 1);
+      const digit = low + (xorshift32(candidateSeed) % (high - low + 1));
+      const order = practiceOrder(digit, String(candidateSeed));
+      if (validateRepresentation(order, canonicalRepresentation(order.target)).shipmentAccepted && !recent.has(orderSignature(order))) return order;
+    }
+    const fallback = practiceOrder(low, `fallback-${difficultyBand}`);
+    if (validateRepresentation(fallback, canonicalRepresentation(fallback.target)).shipmentAccepted) return fallback;
+    throw new Error("CONFIG_INVALID");
   }
-  const level = LEVELS_FOR_PRACTICE(skillId);
-  return generateLevelOrder(level.id, seed, slotIndex, difficultyBand);
+  const level = practiceBlueprintFor(skillId, availableThrough);
+  return generateLevelOrder(level.id, seed, slotIndex, difficultyBand, recentSignatures);
 }
 
-function LEVELS_FOR_PRACTICE(skillId: string) {
-  const level = [
-    "standard.decompose",
-    "standard.zero",
-    "rename.100000_10000",
-    "rename.10000_1000",
-    "rename.1000_100",
-    "rename.100_10",
-    "rename.10_1",
-    "rename.multi",
-    "compose.allowed",
-    "compose.forbidden",
-    "reason.minimum",
-    "reason.exactTypes",
-    "reason.multiple",
-  ].indexOf(skillId);
-  return level >= 0
-    ? (levelById(`level-${level < 2 ? 5 + level * 3 : level + 8}`) ??
-        levelById("level-1")!)
-    : levelById("level-1")!;
+export function practiceBlueprintFor(skillId: string, availableThrough: number) {
+  const pureBlueprints: Record<string, readonly number[]> = {
+    "pv.ones": [1, 3, 4],
+    "pv.tens": [1, 3, 4],
+    "pv.hundreds": [1, 3, 4],
+    "pv.thousands": [2, 3],
+    "pv.tenThousands": [2, 4],
+    "pv.hundredThousands": [2, 3, 4],
+    "standard.decompose": [5, 6, 7],
+    "standard.zero": [8],
+    "rename.100000_10000": [10],
+    "rename.10000_1000": [11],
+    "rename.1000_100": [12],
+    "rename.100_10": [13],
+    "rename.10_1": [14],
+    "rename.multi": [15],
+    "compose.allowed": [16, 17, 18],
+    "compose.forbidden": [19, 20, 21],
+    "reason.minimum": [22, 23, 28],
+    "reason.exactTypes": [24, 25],
+    "reason.multiple": [26, 27],
+  };
+  const ordinal = pureBlueprints[skillId]
+    ?.filter((number) => number <= availableThrough)
+    .sort((a, b) => b - a)[0];
+  const level = ordinal ? levelById(`level-${ordinal}`) : undefined;
+  if (!level) throw new Error("CONFIG_INVALID");
+  return level;
 }
 
 /** Deterministic level generator; every branch supplies a whole-crate witness. */
-export function generateLevelOrder(
+function constructLevelOrder(
   levelId: string,
   seed: number,
   slotIndex: number,
   difficultyBand: DifficultyBand = "easy",
 ): OrderSpec {
+  assertSeedAndSlot(seed, slotIndex);
+  if (!(difficultyBand in DIGIT_RANGES)) throw new Error("CONFIG_INVALID");
   const level = levelById(levelId);
   if (!level) throw new Error("CONFIG_INVALID");
   if (level.stage === 1) {
-    const configuredSlot =
-      level.ordinal === 1 ? LEVEL_ONE_SLOTS[slotIndex] : undefined;
-    const place =
-      configuredSlot?.place ??
-      DENOMINATIONS[(level.ordinal + slotIndex + 1) % DENOMINATIONS.length];
+    const configuredSlot = LEVEL_ONE_SLOTS[slotIndex];
+    const place = STAGE_ONE_PLACES[level.ordinal]?.[slotIndex];
+    if (!place) throw new Error("CONFIG_INVALID");
     const [low, high] = DIGIT_RANGES[difficultyBand];
-    const digit = low + ((seed + slotIndex + level.ordinal) % (high - low + 1));
+    const digit = seededRange(seed, level.ordinal, slotIndex, low, high);
     return {
       id: `${levelId}-${seed}-${slotIndex}`,
       target: digit * place,
@@ -326,35 +416,56 @@ export function generateLevelOrder(
       exactTypes: null,
       distinctRepresentations: 1,
       difficultyBand,
-      primarySkill: configuredSlot?.skillId ?? placeValueSkill(place),
+      primarySkill:
+        level.ordinal === 1 ? configuredSlot.skillId : placeValueSkill(place),
       mode: "standard",
     };
   }
   if (level.stage === 2) {
-    const targets = [1203, 23040, 506020, 423892, 918273];
+    const places = STAGE_TWO_PLACES[level.ordinal]?.[slotIndex];
+    if (!places) throw new Error("CONFIG_INVALID");
+    const [low, high] = DIGIT_RANGES[difficultyBand];
+    const target = places.reduce(
+      (sum, place, index) =>
+        sum +
+        place * seededRange(seed, level.ordinal, slotIndex, low, high, index),
+      0,
+    );
     return {
       id: `${levelId}-${seed}-${slotIndex}`,
-      target: targets[(seed + slotIndex + level.ordinal) % targets.length],
+      target,
       allowed: DENOMINATIONS,
       canonicalRequired: true,
       minimumRequired: false,
       exactTypes: null,
       distinctRepresentations: 1,
       difficultyBand,
-      primarySkill: level.primarySkill,
+      primarySkill:
+        level.ordinal === 9 && slotIndex === 4
+          ? "standard.decompose"
+          : level.primarySkill,
       mode: "standard",
     };
   }
   if (level.stage === 3) {
-    const units =
+    const unit =
       level.ordinal === 15
-        ? [1000, 100, 10, 1, 1000]
-        : [10000, 1000, 100, 10, 1];
-    const unit = units[slotIndex];
-    const quotient =
+        ? ([1000, 100, 10, 1, 1000] as const)[slotIndex]
+        : ([10000, 1000, 100, 10, 1] as const)[level.ordinal - 10];
+    if (!unit) throw new Error("CONFIG_INVALID");
+    const [low, high] =
       level.ordinal === 15
-        ? 120 + ((seed + slotIndex) % 80)
-        : 10 + ((seed + slotIndex) % 90);
+        ? difficultyBand === "easy"
+          ? [100, 299]
+          : difficultyBand === "medium"
+            ? [300, 699]
+            : [700, 999]
+        : difficultyBand === "easy"
+          ? [10, 29]
+          : difficultyBand === "medium"
+            ? [30, 69]
+            : [70, 99];
+    const quotient = seededRange(seed, level.ordinal, slotIndex, low, high);
     return {
       id: `${levelId}-${seed}-${slotIndex}`,
       target: unit * quotient,
@@ -369,13 +480,42 @@ export function generateLevelOrder(
     };
   }
   if (level.stage === 4) {
-    const allowed = slotIndex % 2 ? [1000, 10] : [100, 1];
-    const minimum = Math.min(...allowed);
-    const target = (1000 + (seed % 300)) * minimum;
+    const allowed: Denomination[] =
+      level.ordinal === 16
+        ? slotIndex % 2
+          ? [1000, 10]
+          : [100, 1]
+        : level.ordinal === 17
+          ? slotIndex % 2
+            ? [100000, 1000, 10]
+            : [10000, 100, 1]
+          : (
+              [
+                [10000, 100, 1],
+                [100000, 1000, 10],
+                [100000, 10000, 1],
+                [10000, 100, 10, 1],
+                [1000, 100, 10, 1],
+              ] as Denomination[][]
+            )[slotIndex];
+    if (!allowed) throw new Error("CONFIG_INVALID");
+    const target =
+      level.ordinal === 18 && slotIndex === 0
+        ? 529521
+        : level.ordinal === 16
+          ? allowed[0] * seededRange(seed, level.ordinal, slotIndex, 1, 7) +
+            allowed[1] * seededRange(seed, level.ordinal, slotIndex, 1, 9, 1)
+          : allowed.reduce(
+              (sum, place, index) =>
+                sum +
+                place *
+                  seededRange(seed, level.ordinal, slotIndex, 1, 6, index),
+              0,
+            );
     return {
       id: `${levelId}-${seed}-${slotIndex}`,
       target,
-      allowed: allowed as Denomination[],
+      allowed,
       canonicalRequired: false,
       minimumRequired: false,
       exactTypes: null,
@@ -386,8 +526,32 @@ export function generateLevelOrder(
     };
   }
   if (level.stage === 5) {
-    const allowed = [10000, 1000, 10, 1] as Denomination[];
-    const target = 458123;
+    const forbiddenByLevel: Record<
+      number,
+      readonly (readonly Denomination[])[]
+    > = {
+      19: [[10000], [1000], [100], [10], [10000]],
+      20: [
+        [100000, 100],
+        [10000, 100],
+        [1000, 10],
+        [100000, 1000],
+        [10000, 10],
+      ],
+      21: [[100000, 100], [10000], [1000, 10], [100, 10], [100000, 10000]],
+    };
+    const forbidden = forbiddenByLevel[level.ordinal]?.[slotIndex];
+    if (!forbidden) throw new Error("CONFIG_INVALID");
+    const allowed = DENOMINATIONS.filter((place) => !forbidden.includes(place));
+    const target =
+      level.ordinal === 20 && slotIndex === 0
+        ? 458123
+        : DENOMINATIONS.reduce(
+            (sum, place, index) =>
+              sum +
+              place * seededRange(seed, level.ordinal, slotIndex, 1, 6, index),
+            0,
+          );
     return {
       id: `${levelId}-${seed}-${slotIndex}`,
       target,
@@ -404,66 +568,148 @@ export function generateLevelOrder(
         : {}),
     };
   }
-  if (level.mode === "exactTypes") {
-    const tens = 1 + ((seed + slotIndex) % 9);
-    const ones = 1 + ((seed * 3 + slotIndex) % 9);
-    const hundreds = 1 + ((seed * 5 + slotIndex) % 9);
-    return {
-      id: `${levelId}-${seed}-${slotIndex}`,
-      target:
-        level.ordinal === 24
-          ? tens * 10 + ones
-          : hundreds * 100 + tens * 10 + ones,
-      allowed: DENOMINATIONS,
-      canonicalRequired: false,
-      minimumRequired: false,
-      exactTypes: level.ordinal === 24 ? 2 : 3,
-      distinctRepresentations: 1,
-      difficultyBand,
-      primarySkill: level.primarySkill,
-      mode: "exactTypes",
-    };
-  }
-  if (level.mode === "twoWays") {
-    const target = (1 + ((seed + slotIndex) % 9)) * 100;
+  const challengeMode: LevelMode =
+    level.ordinal >= 29
+      ? (
+          [
+            "minimum",
+            "exactTypes",
+            "exactTypes",
+            "twoWays",
+            "restricted",
+          ] as const
+        )[slotIndex]
+      : level.mode;
+  if (!challengeMode) throw new Error("CONFIG_INVALID");
+  const digit = (draw: number) =>
+    seededRange(seed, level.ordinal, slotIndex, 1, 9, draw);
+  const primarySkill =
+    challengeMode === "exactTypes"
+      ? "reason.exactTypes"
+      : challengeMode === "twoWays"
+        ? "reason.multiple"
+        : challengeMode === "restricted"
+          ? "compose.allowed"
+          : "reason.minimum";
+  if (challengeMode === "exactTypes") {
+    const exactTypes =
+      level.ordinal === 24 || (level.ordinal >= 29 && slotIndex === 1) ? 2 : 3;
+    const target =
+      exactTypes === 2
+        ? (level.ordinal === 30
+            ? 100000
+            : level.ordinal === 24
+              ? 1000
+              : 10000) *
+            digit(0) +
+          digit(1)
+        : (level.ordinal === 30 ? 100000 : 10000) * digit(0) +
+          100 * digit(1) +
+          10 * digit(2) +
+          digit(3);
     return {
       id: `${levelId}-${seed}-${slotIndex}`,
       target,
       allowed: DENOMINATIONS,
       canonicalRequired: false,
       minimumRequired: false,
+      exactTypes,
+      distinctRepresentations: 1,
+      difficultyBand,
+      primarySkill,
+      mode: "exactTypes",
+    };
+  }
+  if (challengeMode === "twoWays") {
+    const target =
+      level.ordinal === 27
+        ? digit(0) * 1000 + digit(1) * 100
+        : (level.ordinal === 30 ? 100000 : level.ordinal === 29 ? 10000 : 100) *
+          digit(0);
+    return {
+      id: `${levelId}-${seed}-${slotIndex}`,
+      target,
+      allowed: level.ordinal === 27 ? [1000, 100, 10] : DENOMINATIONS,
+      canonicalRequired: false,
+      minimumRequired: false,
       exactTypes: null,
       distinctRepresentations: 2,
       difficultyBand,
-      primarySkill: level.primarySkill,
+      primarySkill,
       mode: "twoWays",
     };
   }
-  const allowed =
+  const allowed: Denomination[] =
     level.ordinal === 23 || level.ordinal === 28
-      ? ([1000, 100, 1] as Denomination[])
-      : DENOMINATIONS;
+      ? [1000, 100, 1]
+      : challengeMode === "restricted"
+        ? level.ordinal === 30
+          ? [100000, 1000, 10, 1]
+          : [10000, 100, 1]
+        : [...DENOMINATIONS];
   const target =
     level.ordinal === 23
-      ? 5212
+      ? 1000 * digit(0) + 100 * digit(1) + digit(2)
       : level.ordinal === 28
-        ? 346
-        : 346 + ((seed + slotIndex) % 40) * 10;
+        ? 1000 * digit(0) + 100 * digit(1) + 10 * digit(2) + digit(3)
+        : challengeMode === "restricted"
+          ? level.ordinal === 30
+            ? 100000 * digit(0) + 1000 * digit(1) + 10 * digit(2) + digit(3)
+            : 10000 * digit(0) + 100 * digit(1) + digit(2)
+          : seededRange(
+              seed,
+              level.ordinal,
+              slotIndex,
+              level.ordinal === 30 ? 100000 : level.ordinal === 22 ? 100 : 1000,
+              level.ordinal === 22 ? 99999 : 999999,
+            );
   return {
     id: `${levelId}-${seed}-${slotIndex}`,
     target,
     allowed,
     canonicalRequired: false,
-    minimumRequired: level.mode === "minimum" || level.mode === "repack",
+    minimumRequired: challengeMode === "minimum" || challengeMode === "repack",
     exactTypes: null,
     distinctRepresentations: 1,
     difficultyBand,
-    primarySkill: level.primarySkill,
-    mode: level.mode,
-    ...(level.mode === "repack"
+    primarySkill,
+    mode: challengeMode,
+    ...(challengeMode === "repack"
       ? { sourceRepresentation: canonicalRepresentation(target) }
       : {}),
   };
+}
+
+/** Generate only after the independent mathematical validator accepts a witness. */
+export function generateLevelOrder(
+  levelId: string,
+  seed: number,
+  slotIndex: number,
+  difficultyBand: DifficultyBand = "easy",
+  recentSignatures: readonly string[] = [],
+): OrderSpec {
+  assertSeedAndSlot(seed, slotIndex);
+  if (!(difficultyBand in DIGIT_RANGES)) throw new Error("CONFIG_INVALID");
+  if (!Array.isArray(recentSignatures) || recentSignatures.some((s) => typeof s !== "string"))
+    throw new Error("CONFIG_INVALID");
+  const recent = new Set(recentSignatures.slice(-10));
+  // Construction is deterministic. Retry with deterministic seed draws if a
+  // future blueprint edit produces an invalid witness or a recent signature.
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const candidateSeed = attempt === 0 ? seed : xorshift32((seed ^ Math.imul(attempt, 0x9e3779b9)) >>> 0 || 1);
+    const order = constructLevelOrder(levelId, candidateSeed, slotIndex, difficultyBand);
+    if (validGeneratedOrder(order) && !recent.has(orderSignature(order)))
+      return order;
+  }
+  // Signature avoidance relaxes only after all 100 candidates are exhausted.
+  const fallback = validatedFallbacks.get(`${levelId}:${slotIndex}:${difficultyBand}`);
+  if (fallback) return fallback;
+  throw new Error("CONFIG_INVALID");
+}
+
+/** Stable student-history key for recent-order suppression. */
+export function orderSignature(order: OrderSpec): string {
+  return [order.target, [...order.allowed].sort((a, b) => b - a).join(","), order.mode ?? "", order.canonicalRequired ? "canonical" : "", order.minimumRequired ? "minimum" : "", order.exactTypes ?? "", order.distinctRepresentations, order.primarySkill ?? ""].join("|");
 }
 
 /** Server/test witness helper; it is never sent to a learner as an answer. */
@@ -495,8 +741,52 @@ export function witnessFor(order: OrderSpec): Representation {
 
 export function alternateWitnessFor(order: OrderSpec): Representation | null {
   if (order.distinctRepresentations !== 2) return null;
-  return [0, 0, 0, 0, order.target / 10, 0] as Representation;
+  const first = witnessFor(order);
+  for (let largerIndex = 0; largerIndex < DENOMINATIONS.length; largerIndex++) {
+    const larger = DENOMINATIONS[largerIndex];
+    if (first[largerIndex] < 1 || !order.allowed.includes(larger)) continue;
+    for (let smallerIndex = largerIndex + 1; smallerIndex < DENOMINATIONS.length; smallerIndex++) {
+      const smaller = DENOMINATIONS[smallerIndex];
+      if (!order.allowed.includes(smaller) || larger % smaller !== 0) continue;
+      const exchanged = [...first] as number[];
+      exchanged[largerIndex] -= 1;
+      exchanged[smallerIndex] += larger / smaller;
+      return exchanged as unknown as Representation;
+    }
+  }
+  return null;
 }
+
+function validGeneratedOrder(order: OrderSpec): boolean {
+  try {
+    return validateRepresentation(order, witnessFor(order), alternateWitnessFor(order)).shipmentAccepted;
+  } catch {
+    return false;
+  }
+}
+
+// Validate the complete fallback inventory when the engine loads. A future
+// blueprint edit cannot silently issue a fallback with an invalid objective.
+const validatedFallbacks = new Map<string, OrderSpec>();
+for (const level of LEVELS) for (let slot = 0; slot < 5; slot++)
+  for (const band of ["easy", "medium", "hard"] as const) {
+    const order = constructLevelOrder(level.id, 0x6d2b79f5, slot, band);
+    if (!validGeneratedOrder(order)) throw new Error(`CONFIG_INVALID: fallback ${level.id}/${slot}/${band}`);
+    validatedFallbacks.set(`${level.id}:${slot}:${band}`, order);
+  }
+for (const [skillId, place] of [
+  ["pv.ones", 1], ["pv.tens", 10], ["pv.hundreds", 100],
+  ["pv.thousands", 1000], ["pv.tenThousands", 10000],
+  ["pv.hundredThousands", 100000],
+] as const) for (const band of ["easy", "medium", "hard"] as const)
+  for (let slot = 0; slot < 5; slot++) {
+    const [low, high] = DIGIT_RANGES[band];
+    const baseline = generatePracticeOrder(skillId, 1, slot, band);
+    const recent = Array.from({ length: high - low + 1 }, (_, index) =>
+      orderSignature({ ...baseline, target: (low + index) * place }));
+    const fallback = generatePracticeOrder(skillId, 1, slot, band, 30, recent);
+    if (!validGeneratedOrder(fallback)) throw new Error(`CONFIG_INVALID: practice fallback ${skillId}/${slot}/${band}`);
+  }
 
 export type HintStep = "none" | "H1" | "H2" | "H3";
 export type ResolutionFacts = {
@@ -709,7 +999,39 @@ export function nextPracticeSkill(
     if (leftUnknown !== rightUnknown) return leftUnknown - rightUnknown;
     if ((left.score ?? 0) !== (right.score ?? 0))
       return (left.score ?? 0) - (right.score ?? 0);
+    const leftAt = left.lastEvidenceAt === null ? Number.NEGATIVE_INFINITY : Date.parse(left.lastEvidenceAt);
+    const rightAt = right.lastEvidenceAt === null ? Number.NEGATIVE_INFINITY : Date.parse(right.lastEvidenceAt);
+    if (leftAt !== rightAt) return leftAt - rightAt;
     return left.skillId.localeCompare(right.skillId);
   });
   return candidates[0].skillId;
+}
+
+/** Fixed V1 focus/focus/review/focus/stretch practice blueprint. */
+export function schedulePracticeSkills(
+  requiredSkillIds: readonly string[],
+  evidence: readonly EvidenceRecord[],
+  eligibleSkillIds: readonly string[],
+  now: Date = new Date(),
+): string[] {
+  const eligible = [...new Set(eligibleSkillIds)];
+  const required = requiredSkillIds.filter((skill) => eligible.includes(skill));
+  const focus = nextPracticeSkill(required.length ? required : eligible, evidence, now);
+  if (!focus) throw new Error("CONFIG_INVALID");
+  const summaries = eligible.map((skillId) => summarizeMastery(skillId, evidence, now));
+  const secure = summaries.filter((summary) => summary.status === "secure");
+  secure.sort((a, b) => {
+    const aStale = a.needsRefresh ? 0 : 1;
+    const bStale = b.needsRefresh ? 0 : 1;
+    if (aStale !== bStale) return aStale - bStale;
+    const aAt = a.lastEvidenceAt === null ? Number.NEGATIVE_INFINITY : Date.parse(a.lastEvidenceAt);
+    const bAt = b.lastEvidenceAt === null ? Number.NEGATIVE_INFINITY : Date.parse(b.lastEvidenceAt);
+    return aAt - bAt || a.skillId.localeCompare(b.skillId);
+  });
+  const review = secure[0]?.skillId ?? eligible
+    .filter((skill) => skill !== focus)
+    .map((skillId) => summarizeMastery(skillId, evidence, now))
+    .sort((a, b) => a.sampleN - b.sampleN || a.skillId.localeCompare(b.skillId))[0]?.skillId ?? focus;
+  const stretch = eligible.find((skill) => skill !== focus && skill !== review) ?? focus;
+  return [focus, focus, review, focus, stretch];
 }

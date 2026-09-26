@@ -17,6 +17,7 @@ export function ResultsScreen({
   onProgress,
   onMap,
 }: Props) {
+  const practice = result?.mainStars === 0;
   const stars = result?.bestLevelStars ?? 2;
   return (
     <main className="results-screen">
@@ -24,21 +25,25 @@ export function ResultsScreen({
       <div className="results-hero">
         <Mascot pose="celebrate" className="results-mascot" />
         <div className="results-heading">
-          <p className="eyebrow">Mission complete</p>
-          <h1>Level complete!</h1>
+          <p className="eyebrow">{practice ? "Practice complete" : "Mission complete"}</p>
+          <h1>{practice ? "Great practicing!" : "Level complete!"}</h1>
           <p>
             Great work! You packed {result?.shipped ?? 5} orders for this
             mission.
           </p>
-          <div className="stars" aria-label={`${stars} earned stars`}>
-            <span aria-hidden="true">{stars === 3 ? "★★★" : "★★☆"}</span>
-          </div>
-          <p className="star-meaning">
-            Two stars for finishing your mission ·{" "}
-            {stars === 3
-              ? "Extra challenge complete"
-              : "Extra challenge still to try"}
-          </p>
+          {!practice && (
+            <>
+              <div className="stars" aria-label={`${stars} earned stars`}>
+                <span aria-hidden="true">{stars === 3 ? "★★★" : "★★☆"}</span>
+              </div>
+              <p className="star-meaning">
+                Two stars for finishing your mission ·{" "}
+                {stars === 3
+                  ? "Extra challenge complete"
+                  : "Extra challenge still to try"}
+              </p>
+            </>
+          )}
         </div>
       </div>
       <div className="results-panels">
@@ -84,7 +89,9 @@ export function ResultsScreen({
         )}
       </div>
       <div className="results-next">
-        {result?.transferStar ? (
+        {practice ? (
+          <p role="status">Practice builds your skills. Your map stars stay the same.</p>
+        ) : result?.transferStar ? (
           <p role="status">Extra challenge complete — third star saved.</p>
         ) : (
           <button onClick={onTransfer}>Try the extra challenge</button>

@@ -75,3 +75,9 @@ BE-01: identity adapter and class/student isolation migrations; owns apps/server
 QA-01: independent small-target dynamic-programming oracle and acceptance register; owns tests/oracles and docs/qa; no production validator edits.
 
 Conflict resolution: stop only overlapping edits, not unrelated progress; notify PA with both assumptions and concrete options. Accepted product changes require owner decision. Routine implementation choices can follow labelled baselines. Final handoff includes commit, files, tests, contract impact and limitations; shared status is updated by PA after review.
+
+## Codex execution mode
+
+Work in a single main-agent thread. Do not spawn or delegate to subagents in
+this project. After each user prompt that produces project work, append the
+prompt in brief and a concise overall result to `PROMPT_RESULTS.md`.

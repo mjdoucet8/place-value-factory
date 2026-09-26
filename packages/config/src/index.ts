@@ -7,19 +7,69 @@ export type StageOneSlot = {
   defaultBand: DifficultyBand;
 };
 
-/** Level 1 preserves its required five-place coverage while varying only digit size. */
-export const LEVEL_ONE_SLOTS: readonly StageOneSlot[] = [
-  { place: 1, skillId: "pv.ones", defaultBand: "easy" },
-  { place: 10, skillId: "pv.tens", defaultBand: "medium" },
-  { place: 100, skillId: "pv.hundreds", defaultBand: "hard" },
-  { place: 1, skillId: "pv.ones", defaultBand: "easy" },
-  { place: 10, skillId: "pv.tens", defaultBand: "medium" },
-];
+/** Fixed Stage 1 slot coverage; adaptation changes digits, never the place. */
+export const STAGE_ONE_PLACES: Readonly<
+  Record<number, readonly Denomination[]>
+> = {
+  1: [1, 10, 100, 1, 10],
+  2: [1000, 10000, 100000, 1000, 10000],
+  3: [100000, 100, 1, 10, 1000],
+  4: [10000, 100000, 1, 10, 100],
+};
+
+export const LEVEL_ONE_SLOTS: readonly StageOneSlot[] = STAGE_ONE_PLACES[1].map(
+  (place, index) => ({
+    place,
+    skillId: ["pv.ones", "pv.tens", "pv.hundreds", "pv.ones", "pv.tens"][index],
+    defaultBand: (["easy", "medium", "hard", "easy", "medium"] as const)[index],
+  }),
+);
+
+/** Required active places for each canonical Stage 2 slot. */
+export const STAGE_TWO_PLACES: Readonly<
+  Record<number, readonly (readonly Denomination[])[]>
+> = {
+  5: [
+    [1000, 10],
+    [100, 1],
+    [10, 1],
+    [1000, 1],
+    [100, 10],
+  ],
+  6: [
+    [10000, 100, 1],
+    [1000, 10, 1],
+    [100, 10, 1],
+    [10000, 1000, 10],
+    [1000, 100, 1],
+  ],
+  7: [
+    [10000, 1000, 100, 1],
+    [100000, 10000, 1000, 10, 1],
+    [100000, 10000, 1000, 100, 10, 1],
+    [100000, 1000, 100, 1],
+    [100000, 10000, 100, 10, 1],
+  ],
+  8: [
+    [100000, 1000, 10],
+    [10000, 100, 1],
+    [100000, 10000, 100, 1],
+    [1000, 10],
+    [100000, 1000, 100, 1],
+  ],
+  9: [
+    [100000, 1000, 100],
+    [10000, 1000, 10],
+    [100000, 1000, 10, 1],
+    [10000, 100, 1],
+    [100000, 10000, 1000, 100, 10, 1],
+  ],
+};
 
 export const DIGIT_RANGES: Record<DifficultyBand, readonly [number, number]> = {
   easy: [1, 3],
-  medium: [4, 6],
-  hard: [7, 9],
+  medium: [1, 6],
+  hard: [1, 9],
 };
 
 export const STAGE_GATE_SKILLS: Readonly<Record<number, readonly string[]>> = {
@@ -53,7 +103,8 @@ export type LevelMode =
   | "minimum"
   | "exactTypes"
   | "twoWays"
-  | "repack";
+  | "repack"
+  | "mixed";
 export type LevelDefinition = {
   id: string;
   ordinal: number;
@@ -106,9 +157,7 @@ const mode = (value: number): LevelMode =>
                   ? "twoWays"
                   : value === 28
                     ? "repack"
-                    : value === 29
-                      ? "minimum"
-                      : "twoWays";
+                    : "mixed";
 const skill = (value: number) =>
   value <= 4
     ? "pv.ones"

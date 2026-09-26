@@ -65,6 +65,11 @@ try {
     PGDATABASE: "postgres",
     PGPORT: "5432",
   };
+  const databaseUrl = `postgresql://${encodeURIComponent(env.PGUSER)}@/postgres?host=${encodeURIComponent(socket)}`;
+  run("npx", ["tsx", "apps/server/src/migrate.ts"], {
+    cwd: repo,
+    env: { ...env, DATABASE_URL: databaseUrl },
+  });
   let config;
   if (!resume) {
     const seeded = run("npx", ["tsx", "scripts/seed-pilot.ts"], {
@@ -92,7 +97,6 @@ try {
   console.log(
     `Fictional-data pilot: ${url}\nTeacher credentials: ${join(directory, "pilot-private.json")}\nResume later: npm run pilot:local -- ${directory}\nData stays in this private temporary directory; no existing database was changed.`,
   );
-  const databaseUrl = `postgresql://${encodeURIComponent(env.PGUSER)}@/postgres?host=${encodeURIComponent(socket)}`;
   child = spawn("npm", ["run", "dev"], {
     detached: true,
     cwd: repo,

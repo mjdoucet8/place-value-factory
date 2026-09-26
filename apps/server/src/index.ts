@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import {
   createServer,
   type IncomingMessage,
@@ -17,17 +17,21 @@ import {
   sessionToken,
 } from "./identity.js";
 import { PostgresRuntimeStore } from "./runtime-store.js";
+import { buildStudentReport, reportWindow } from "./reporting.js";
 import {
+  DENOMINATIONS,
   difficultyFor,
   evidenceScore,
   generateLevelOrder,
   generatePracticeOrder,
   isIndependentFirst,
   nextPracticeSkill,
+  schedulePracticeSkills,
   stageGate,
   summarizeMastery,
   validateRepresentation,
   witnessFor,
+  orderSignature,
   type EvidenceRecord,
 } from "../../../packages/game-engine/src/index.js";
 import {
@@ -41,6 +45,8 @@ const defaultDataPath = process.env.PVF_DATA_PATH
   ? resolve(process.env.PVF_DATA_PATH)
   : resolve(process.cwd(), "db/local-development.json");
 const leaseDurationMs = 60_000;
+const stageCertificationIds = ["stage-1", "stage-2", "stage-3", "stage-4", "stage-5", "stage-6"];
+const stageDisplayTiers = ["Packer", "Converter", "Specialist", "Supervisor", "Supervisor", "Factory Master"];
 
 type Order = ReturnType<typeof generateLevelOrder>;
 type ResponseRecord = {
@@ -68,6 +74,7 @@ export type Attempt = {
   seed: number;
   slot: number;
   replacementIndex?: number;
+  skippedOrders?: number;
   activeOrder?: Order;
   responses: ResponseRecord[];
   completed: boolean;
@@ -82,8 +89,11 @@ export type Attempt = {
   transferOrder?: Order;
   transferStar?: boolean;
   status?: "active" | "paused" | "completed";
-  kind?: "path" | "practice";
+  kind?: "path" | "practice" | "replay";
   practiceSkill?: string;
+  practiceSchedule?: string[];
+  awardedTier?: string;
+  issuedOrders?: { spec: Order; slot: number; replacement: number; role: "main" | "transfer"; status: "active" | "resolved" | "skipped" }[];
 };
 type Settings = {
   sound: boolean;
@@ -95,6 +105,8 @@ export type Store = {
   attempts: Attempt[];
   settings?: Record<string, Settings>;
   studentAccess?: Record<string, boolean>;
+  certifications?: Record<string, string[]>;
+  levelAccessOverrides?: { teacherId: string; studentId: string; levelId: string; enabled: boolean; reasonCode: string; commandId: string; at: string }[];
 };
 type Actor = { id: string; role: "student" | "teacher" };
 type Command = {
@@ -184,8 +196,11 @@ export function createApiServer(
   options: {
     database?: Pool;
     identity?: { origin: string; receiptKey: string };
+    /** Injectable authoritative clock for deterministic evidence and lease journeys. */
+    now?: () => Date;
   } = {},
 ): Server {
+  const now = options.now ?? (() => new Date());
   if (
     (process.env.NODE_ENV === "production" ||
       process.env.PVF_MODE === "pilot") &&
@@ -242,10 +257,12 @@ export function createApiServer(
         attempts: parsed.attempts.map(hydrateAttempt),
         settings: parsed.settings ?? {},
         studentAccess: parsed.studentAccess ?? {},
+        certifications: parsed.certifications ?? {},
+        levelAccessOverrides: parsed.levelAccessOverrides ?? [],
       };
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === "ENOENT")
-        return { attempts: [], settings: {}, studentAccess: {} };
+        return { attempts: [], settings: {}, studentAccess: {}, certifications: {}, levelAccessOverrides: [] };
       throw error;
     }
   }
@@ -336,18 +353,79 @@ export function createApiServer(
     return request.headers["idempotency-key"] === command.commandId;
   }
   function activeLease(attempt: Attempt) {
-    return Date.parse(attempt.leaseExpiresAt) > Date.now();
+    return Date.parse(attempt.leaseExpiresAt) > now().getTime();
   }
   function correctedSlots(attempt: Attempt) {
     const firstOrderResponse = new Map<string, ResponseRecord>();
     for (const record of attempt.responses)
-      if (!firstOrderResponse.has(record.order.id))
+      if (!record.order.id.endsWith("-transfer") && !firstOrderResponse.has(record.order.id))
         firstOrderResponse.set(record.order.id, record);
+    const accepted = new Set(
+      attempt.responses
+        .filter((record) => !record.order.id.endsWith("-transfer") && record.validation.shipmentAccepted)
+        .map((record) => record.order.id),
+    );
     return [...firstOrderResponse.values()].filter(
-      (record) => !record.validation.shipmentAccepted,
+      (record) => accepted.has(record.order.id) && !record.validation.shipmentAccepted,
     ).length;
   }
-  function snapshot(attempt: Attempt) {
+  function completedPathLevels(attempts: Attempt[]) {
+    return new Set(
+      attempts
+        .filter((attempt) => attempt.completed && attempt.kind !== "practice")
+        .map((attempt) => attempt.levelId),
+    );
+  }
+  function bestStars(attempts: Attempt[], levelId: string) {
+    return Math.max(
+      0,
+      ...attempts
+        .filter(
+          (attempt) =>
+            attempt.completed &&
+            attempt.kind !== "practice" &&
+            attempt.levelId === levelId,
+        )
+        .map((attempt) => (attempt.transferStar ? 3 : 2)),
+    );
+  }
+  function tierFor(state: Store, studentId: string) {
+    const certifications = state.certifications?.[studentId] ?? [];
+    const stage = Math.max(-1, ...certifications.map((item) => stageCertificationIds.indexOf(item)));
+    return stage < 0 ? "Trainee" : stageDisplayTiers[stage];
+  }
+  function hasStageCertification(state: Store, studentId: string, stage: number) {
+    const values = state.certifications?.[studentId] ?? [];
+    return values.includes(stageCertificationIds[stage - 1]) || values.includes(stageDisplayTiers[stage - 1]);
+  }
+  function displayCertifications(state: Store, studentId: string) {
+    return (state.certifications?.[studentId] ?? []).map((value) => {
+      const index = stageCertificationIds.indexOf(value);
+      return index >= 0 ? stageDisplayTiers[index] : value;
+    });
+  }
+  function awardCertifications(state: Store, studentId: string) {
+    const attempts = state.attempts.filter((item) => item.studentId === studentId);
+    const completed = completedPathLevels(attempts);
+    const evidence = attempts.flatMap((item) => item.evidence);
+    state.certifications ??= {};
+    const earned = state.certifications[studentId] ?? [];
+    let newest: string | null = null;
+    for (let stage = 1; stage <= 6; stage++) {
+      const last = LEVELS.filter((level) => level.stage === stage).at(-1);
+      const certification = stageCertificationIds[stage - 1];
+      if (
+        last && completed.has(last.id) &&
+        stageGate(stage, evidence, now()).satisfied && !earned.includes(certification)
+      ) {
+        earned.push(certification);
+        newest = certification;
+      }
+    }
+    state.certifications[studentId] = earned;
+    return newest ? stageDisplayTiers[stageCertificationIds.indexOf(newest)] : null;
+  }
+  function snapshot(attempt: Attempt, state?: Store) {
     return {
       attemptId: attempt.id,
       revision: attempt.revision,
@@ -359,7 +437,7 @@ export function createApiServer(
       kind: attempt.kind ?? "path",
       configVersion: "v1-local",
       shippedSlots: attempt.slot,
-      skippedOrders: 0,
+      skippedOrders: attempt.skippedOrders ?? 0,
       correctedSlots: correctedSlots(attempt),
       currentHintStep:
         attempt.completed && !attempt.transferOrder
@@ -368,17 +446,17 @@ export function createApiServer(
       acknowledgedCommandIds: attempt.receipts
         .map((receipt) => receipt.commandId)
         .slice(-20),
-      achievedTier: "Trainee",
+      achievedTier: state ? tierFor(state, attempt.studentId) : "Trainee",
       activeOrder:
-        attempt.completed && !attempt.transferOrder ? null : orderFor(attempt),
+        attempt.completed && !attempt.transferOrder ? null : publicOrder(orderFor(attempt)),
     };
   }
-  function mapFor(attempts: Attempt[]) {
-    const completed = new Set(
-      attempts
-        .filter((attempt) => attempt.completed)
-        .map((attempt) => attempt.levelId),
-    );
+  function publicOrder(order: Order) {
+    const { seed: _seed, witness: _witness, minimumAnswer: _minimumAnswer, ...visible } = order as Order & { seed?: number; witness?: unknown; minimumAnswer?: unknown };
+    return visible;
+  }
+  function mapFor(attempts: Attempt[], certifications: string[] = []) {
+    const completed = completedPathLevels(attempts);
     const highest = Math.max(
       0,
       ...LEVELS.filter((level) => completed.has(level.id)).map(
@@ -391,7 +469,8 @@ export function createApiServer(
       (level.stage === 1 ||
         level.ordinal !==
           LEVELS.find((item) => item.stage === level.stage)?.ordinal ||
-        stageGate(level.stage - 1, evidence).satisfied);
+        (certifications.includes(stageCertificationIds[level.stage - 2]) ||
+          stageGate(level.stage - 1, evidence).satisfied));
     const zones = [...new Set(LEVELS.map((level) => level.zone))].map(
       (zone) => ({
         id: zone.toLowerCase(),
@@ -405,17 +484,7 @@ export function createApiServer(
             : eligible(level)
               ? "unlocked"
               : "locked",
-          stars: Math.max(
-            0,
-            ...attempts
-              .filter(
-                (attempt) =>
-                  attempt.completed &&
-                  attempt.levelId === level.id &&
-                  attempt.kind !== "practice",
-              )
-              .map((attempt) => (attempt.transferStar ? 3 : 2)),
-          ),
+          stars: bestStars(attempts, level.id),
           prerequisiteSummary: eligible(level)
             ? "Ready to practice"
             : level.ordinal <= highest + 1
@@ -427,6 +496,8 @@ export function createApiServer(
     return {
       configVersion: "v1-local",
       zones,
+      achievedTier: certifications.length ? (() => { const stage = Math.max(-1, ...certifications.map((item) => stageCertificationIds.indexOf(item))); return stage < 0 ? certifications.at(-1) ?? "Trainee" : stageDisplayTiers[stage]; })() : "Trainee",
+      certifications: certifications.map((value) => { const index = stageCertificationIds.indexOf(value); return index >= 0 ? stageDisplayTiers[index] : value; }),
       profileRevision: completed.size,
       highestUnlockedLevelId: LEVELS.filter(eligible).at(-1)?.id ?? "level-1",
       lastCompletedEfficiency: (() => {
@@ -450,10 +521,10 @@ export function createApiServer(
       },
     };
   }
-  function result(attempt: Attempt) {
+  function result(attempt: Attempt, allAttempts: Attempt[] = [attempt]) {
     const firstPerOrder = new Map<string, ResponseRecord>();
     for (const record of attempt.responses)
-      if (!firstPerOrder.has(record.order.id))
+      if (!record.order.id.endsWith("-transfer") && !firstPerOrder.has(record.order.id))
         firstPerOrder.set(record.order.id, record);
     let currentStreak = 0;
     let bestStreak = 0;
@@ -463,12 +534,21 @@ export function createApiServer(
     }
     const skillStatuses = [
       ...new Set(attempt.evidence.map((item) => item.skillId)),
-    ].map((skillId) => summarizeMastery(skillId, attempt.evidence));
+    ].map((skillId) => summarizeMastery(skillId, allAttempts.flatMap((item) => item.evidence)));
+    const next = LEVELS.find(
+      (level) => level.ordinal === Number(attempt.levelId.slice(6)) + 1,
+    );
+    const nextUnlocked =
+      next &&
+      (next.stage === levelById(attempt.levelId)?.stage ||
+        allAttempts.some((item) => item.awardedTier === stageDisplayTiers[next.stage - 2]) ||
+        stageGate(next.stage - 1, allAttempts.flatMap((item) => item.evidence))
+          .satisfied);
     return {
       attemptId: attempt.id,
       completed: true,
       shipped: 5,
-      submittedOrders: attempt.responses.length,
+      submittedOrders: firstPerOrder.size,
       firstObjectiveCorrect: [...firstPerOrder.values()].filter(
         (item) => item.validation.objectiveMet,
       ).length,
@@ -479,26 +559,27 @@ export function createApiServer(
       bestStreak,
       skillStatuses,
       correctedSlots: correctedSlots(attempt),
-      skippedOrders: 0,
-      efficiency: Math.max(0, 100 - 6 * correctedSlots(attempt)),
-      mainStars: 2,
-      transferStar: attempt.transferStar ?? false,
-      bestLevelStars: attempt.transferStar ? 3 : 2,
-      newlyUnlockedLevelIds: [
-        `level-${Math.min(30, Number(attempt.levelId.slice(6)) + 1)}`,
-      ],
-      newlyEarnedTier: null,
+      skippedOrders: attempt.skippedOrders ?? 0,
+      efficiency: Math.max(0, 100 - 6 * correctedSlots(attempt) - 4 * Math.min(5, attempt.skippedOrders ?? 0)),
+      mainStars: attempt.kind === "practice" ? 0 : 2,
+      transferStar: attempt.kind === "practice" ? false : (attempt.transferStar ?? false),
+      bestLevelStars: attempt.kind === "practice" ? 0 : bestStars(allAttempts, attempt.levelId),
+      newlyUnlockedLevelIds:
+        attempt.kind !== "path" || !nextUnlocked ? [] : [next.id],
+      newlyEarnedTier: attempt.awardedTier ?? null,
       policyVersion: "v1-local",
     };
   }
   function nextDifficulty(attempt: Attempt): "easy" | "medium" | "hard" {
+    const practiceSkill = attempt.practiceSchedule?.[attempt.slot] ?? attempt.practiceSkill;
     const nextOrder =
-      attempt.kind === "practice" && attempt.practiceSkill
+      attempt.kind === "practice" && practiceSkill
         ? generatePracticeOrder(
-            attempt.practiceSkill,
+            practiceSkill,
             attempt.seed,
             attempt.slot,
             "easy",
+            Number(attempt.levelId.slice(6)),
           )
         : generateLevelOrder(
             attempt.levelId,
@@ -512,17 +593,19 @@ export function createApiServer(
     );
   }
   function orderFor(attempt: Attempt) {
+    const practiceSkill = attempt.practiceSchedule?.[attempt.slot] ?? attempt.practiceSkill;
     return (
       attempt.transferOrder ??
       attempt.activeOrder ??
       issuedOrder(
         attempt.id,
-        attempt.kind === "practice" && attempt.practiceSkill
+        attempt.kind === "practice" && practiceSkill
           ? generatePracticeOrder(
-              attempt.practiceSkill,
+              practiceSkill,
               attempt.seed,
               attempt.slot,
               nextDifficulty(attempt),
+              Number(attempt.levelId.slice(6)),
             )
           : generateLevelOrder(
               attempt.levelId,
@@ -530,11 +613,47 @@ export function createApiServer(
               attempt.slot,
               nextDifficulty(attempt),
             ),
+        attempt.slot,
+        attempt.replacementIndex ?? 0,
+        attempt.seed,
       )
     );
   }
-  function issuedOrder(attemptId: string, generated: Order): Order {
-    return { ...generated, id: `${attemptId}.${generated.id}` };
+  function recentSignatures(state: Store, studentId: string) {
+    return state.attempts
+      .filter((item) => item.studentId === studentId)
+      .flatMap((item) => item.issuedOrders ?? [])
+      .map(({ spec }) => orderSignature(spec))
+      .slice(-10);
+  }
+  function generatedForAttempt(attempt: Attempt, state: Store, slot: number, seed: number, band: "easy" | "medium" | "hard") {
+    const skill = attempt.practiceSchedule?.[slot] ?? attempt.practiceSkill;
+    return attempt.kind === "practice" && skill
+      ? generatePracticeOrder(skill, seed, slot, band, Number(attempt.levelId.slice(6)), recentSignatures(state, attempt.studentId))
+      : generateLevelOrder(attempt.levelId, seed, slot, band, recentSignatures(state, attempt.studentId));
+  }
+  function retainIssuedOrder(attempt: Attempt, spec: Order, slot: number, replacement: number, role: "main" | "transfer" = "main") {
+    attempt.issuedOrders ??= [];
+    if (!attempt.issuedOrders.some((entry) => entry.spec.id === spec.id))
+      attempt.issuedOrders.push({ spec, slot: Math.min(slot, 4), replacement, role, status: "active" });
+  }
+  function issuedOrder(
+    attemptId: string, generated: Order, slot: number, replacement: number,
+    seed: number, role: "main" | "transfer" = "main",
+  ): Order {
+    return {
+      ...generated,
+      id: `${attemptId}.${generated.id}${role === "transfer" ? "-transfer" : ""}`,
+      attemptId,
+      slotIndex: slot,
+      replacementIndex: replacement,
+      role,
+      seed,
+      configVersion: "v1-local",
+      engineVersion: "xorshift32-v1",
+      forbidden: DENOMINATIONS.filter((place) => !generated.allowed.includes(place)),
+      skillIds: generated.primarySkill ? [generated.primarySkill] : [],
+    };
   }
   function highestHint(attempt: Attempt, orderId: string): HintStep | "none" {
     const steps: HintStep[] = ["H1", "H2", "H3"];
@@ -772,6 +891,7 @@ export function createApiServer(
             (await store()).attempts.filter(
               (attempt) => attempt.studentId === actor.id,
             ),
+            (await store()).certifications?.[actor.id] ?? [],
           ),
         );
       if (
@@ -783,20 +903,19 @@ export function createApiServer(
         const attempts = state.attempts.filter(
           (attempt) => attempt.studentId === actor.id,
         );
-        const map = mapFor(attempts);
+        const map = mapFor(attempts, state.certifications?.[actor.id] ?? []);
         return send(response, 200, {
           studentAlias:
             directory().students.find((student) => student.id === actor.id)
               ?.alias ?? "Student",
           gameKey: "place-value-factory",
           highestUnlockedLevelId: map.highestUnlockedLevelId,
-          achievedTier: "Trainee",
-          totalStars: attempts
-            .filter((attempt) => attempt.completed)
-            .reduce(
-              (total, attempt) => total + (attempt.transferStar ? 3 : 2),
-              0,
-            ),
+          achievedTier: tierFor(state, actor.id),
+          certifications: state.certifications?.[actor.id] ?? [],
+          totalStars: LEVELS.reduce(
+            (total, level) => total + bestStars(attempts, level.id),
+            0,
+          ),
           maxStars: 90,
           settings: {
             sound: false,
@@ -825,17 +944,19 @@ export function createApiServer(
             ...evidence.map((record) => record.skillId),
           ]),
         ].sort();
+        const completedLevels = completedPathLevels(attempts);
         const highestCompleted = Math.max(
           0,
-          ...attempts
-            .filter((attempt) => attempt.completed)
-            .map((attempt) => Number(attempt.levelId.slice(6))),
+          ...LEVELS.filter((level) => completedLevels.has(level.id)).map(
+            (level) => level.ordinal,
+          ),
         );
         const nextLevel = LEVELS.find(
           (level) => level.ordinal === highestCompleted + 1,
         );
-        const gateSkills =
-          nextLevel && nextLevel.stage > 1
+        const gateSkills = highestCompleted === 30
+          ? STAGE_GATE_SKILLS[6]
+          : nextLevel && nextLevel.stage > 1
             ? STAGE_GATE_SKILLS[nextLevel.stage - 1]
             : STAGE_GATE_SKILLS[1];
         return send(response, 200, {
@@ -843,9 +964,9 @@ export function createApiServer(
             summarizeMastery(skillId, evidence),
           ),
           nextPracticeSkillId: nextPracticeSkill(gateSkills, evidence),
-          completedLevelIds: attempts
-            .filter((attempt) => attempt.completed)
-            .map((attempt) => attempt.levelId),
+          completedLevelIds: LEVELS.filter((level) =>
+            completedLevels.has(level.id),
+          ).map((level) => level.id),
         });
       }
       if (
@@ -918,10 +1039,8 @@ export function createApiServer(
         const requestedLevel = levelById(
           typeof body.levelId === "string" ? body.levelId : "level-1",
         );
-        const completed = new Set(
-          state.attempts
-            .filter((item) => item.studentId === actor.id && item.completed)
-            .map((item) => item.levelId),
+        const completed = completedPathLevels(
+          state.attempts.filter((item) => item.studentId === actor.id),
         );
         const highest = Math.max(
           0,
@@ -936,13 +1055,19 @@ export function createApiServer(
           requestedLevel &&
           LEVELS.find((item) => item.stage === requestedLevel.stage)?.id ===
             requestedLevel.id;
+        const stageAccessAllowed = requestedLevel?.stage === 1 || !requestedLevel ||
+          hasStageCertification(state, actor.id, requestedLevel.stage - 1) ||
+          stageGate(requestedLevel.stage - 1, evidence, now()).satisfied ||
+          Boolean(state.levelAccessOverrides?.some((override) =>
+            override.studentId === actor.id &&
+            override.levelId === requestedLevel.id &&
+            override.enabled,
+          ));
         if (
           !requestedLevel ||
           (!isPractice &&
             (requestedLevel.ordinal > highest + 1 ||
-              (firstOfStage &&
-                requestedLevel.stage > 1 &&
-                !stageGate(requestedLevel.stage - 1, evidence).satisfied)))
+              (firstOfStage && !stageAccessAllowed)))
         )
           return send(
             response,
@@ -962,48 +1087,70 @@ export function createApiServer(
               completed.size,
             ),
           );
-        if (attempt) return send(response, 200, snapshot(attempt));
-        const now = new Date();
-        const seed = 71 + requestedLevel.ordinal;
-        const gateSkills =
-          requestedLevel.stage > 1
-            ? STAGE_GATE_SKILLS[requestedLevel.stage - 1]
-            : STAGE_GATE_SKILLS[1];
-        const practiceSkill = isPractice
-          ? (nextPracticeSkill(gateSkills, evidence) ?? gateSkills[0])
+        if (attempt) return send(response, 200, snapshot(attempt, state));
+        const issuedAt = now();
+        const usedSeeds = new Set(
+          state.attempts
+            .filter((item) => item.studentId === actor.id)
+            .map((item) => item.seed),
+        );
+        let seed = randomBytes(4).readUInt32BE(0);
+        while (seed === 0 || usedSeeds.has(seed))
+          seed = randomBytes(4).readUInt32BE(0);
+        const gateStage = highest >= 30 ? 6 : highest < 4 ? 1 : Math.min(6, (levelById(`level-${highest + 1}`)?.stage ?? 6) - 1);
+        const gateSkills = STAGE_GATE_SKILLS[gateStage] ?? STAGE_GATE_SKILLS[1];
+        const practiceSchedule = isPractice
+          ? schedulePracticeSkills(gateSkills, evidence, gateSkills, now())
           : undefined;
+        const practiceSkill = practiceSchedule?.[0] ?? (isPractice ? nextPracticeSkill(gateSkills, evidence, now()) ?? gateSkills[0] : undefined);
+        const attemptLevel = requestedLevel;
         const attemptId = randomUUID();
         attempt = {
           id: attemptId,
           studentId: actor.id,
-          levelId: requestedLevel.id,
+          levelId: attemptLevel.id,
           seed,
           slot: 0,
           replacementIndex: 0,
+          skippedOrders: 0,
           activeOrder: issuedOrder(
             attemptId,
             isPractice && practiceSkill
-              ? generatePracticeOrder(practiceSkill, seed, 0, "easy")
-              : generateLevelOrder(requestedLevel.id, seed, 0, "easy"),
+              ? generatePracticeOrder(
+                  practiceSkill,
+                  seed,
+                  0,
+                  "easy",
+                  Math.min(30, Math.max(1, highest + 1)),
+                  recentSignatures(state, actor.id),
+                )
+              : generateLevelOrder(requestedLevel.id, seed, 0, "easy", recentSignatures(state, actor.id)),
+            0, 0, seed,
           ),
           responses: [],
           completed: false,
           status: "active",
-          createdAt: now.toISOString(),
+          createdAt: issuedAt.toISOString(),
           revision: 0,
           leaseEpoch: 1,
           writerTabId: command.tabId,
-          leaseExpiresAt: new Date(
-            now.getTime() + leaseDurationMs,
-          ).toISOString(),
+          leaseExpiresAt: new Date(issuedAt.getTime() + leaseDurationMs).toISOString(),
           receipts: [],
           evidence: [],
           supportEvents: [],
-          kind: isPractice ? "practice" : "path",
+          kind: isPractice
+            ? "practice"
+            : completed.has(requestedLevel.id)
+              ? "replay"
+              : "path",
           practiceSkill,
+          practiceSchedule,
+          issuedOrders: [],
         };
+        if (attempt.activeOrder)
+          retainIssuedOrder(attempt, attempt.activeOrder, 0, 0);
         state.attempts.push(attempt);
-        const startedSnapshot = snapshot(attempt);
+        const startedSnapshot = snapshot(attempt, state);
         attempt.receipts.push({
           actorId: actor.id,
           commandId: command.commandId,
@@ -1073,13 +1220,11 @@ export function createApiServer(
         if (!activeLease(attempt)) attempt.leaseEpoch += 1;
         attempt.status = stateChange[2] === "pause" ? "paused" : "active";
         attempt.writerTabId = command.tabId;
-        attempt.leaseExpiresAt = new Date(
-          Date.now() + leaseDurationMs,
-        ).toISOString();
+        attempt.leaseExpiresAt = new Date(now().getTime() + leaseDurationMs).toISOString();
         attempt.revision += 1;
         const bodyOut = {
           commandId: command.commandId,
-          snapshot: snapshot(attempt),
+          snapshot: snapshot(attempt, state),
         };
         attempt.receipts.push({
           actorId: actor.id,
@@ -1153,9 +1298,7 @@ export function createApiServer(
             409,
             responseError("LEASE_LOST", "Another tab is editing this attempt."),
           );
-        attempt.leaseExpiresAt = new Date(
-          Date.now() + leaseDurationMs,
-        ).toISOString();
+        attempt.leaseExpiresAt = new Date(now().getTime() + leaseDurationMs).toISOString();
         const bodyOut = {
           commandId: command.commandId,
           leaseEpoch: attempt.leaseEpoch,
@@ -1225,13 +1368,11 @@ export function createApiServer(
           );
         attempt.leaseEpoch += 1;
         attempt.writerTabId = command.tabId;
-        attempt.leaseExpiresAt = new Date(
-          Date.now() + leaseDurationMs,
-        ).toISOString();
+        attempt.leaseExpiresAt = new Date(now().getTime() + leaseDurationMs).toISOString();
         attempt.revision += 1;
         const bodyOut = {
           commandId: command.commandId,
-          snapshot: snapshot(attempt),
+          snapshot: snapshot(attempt, state),
         };
         attempt.receipts.push({
           actorId: actor.id,
@@ -1334,13 +1475,13 @@ export function createApiServer(
           attempt.supportEvents.push({
             orderId: order.id,
             step,
-            at: new Date().toISOString(),
+            at: now().toISOString(),
           });
           attempt.revision += 1;
         }
         const bodyOut = {
           commandId: command.commandId,
-          snapshot: snapshot(attempt),
+          snapshot: snapshot(attempt, state),
           hint: hintFor(order, step),
         };
         attempt.receipts.push({
@@ -1435,29 +1576,23 @@ export function createApiServer(
           independentFirst: false,
           attemptId: attempt.id,
           signature: `${order.target}:${order.allowed.join(",")}:${order.mode ?? ""}`,
-          committedAt: new Date().toISOString(),
+          committedAt: now().toISOString(),
         });
         attempt.replacementIndex = (attempt.replacementIndex ?? 0) + 1;
-        const replacementSeed = attempt.seed + attempt.replacementIndex * 997;
-        attempt.activeOrder =
-          attempt.kind === "practice" && attempt.practiceSkill
-            ? generatePracticeOrder(
-                attempt.practiceSkill,
-                replacementSeed,
-                attempt.slot,
-                "easy",
-              )
-            : generateLevelOrder(
-                attempt.levelId,
-                replacementSeed,
-                attempt.slot,
-                "easy",
-              );
-        attempt.activeOrder = issuedOrder(attempt.id, attempt.activeOrder);
+        attempt.skippedOrders = (attempt.skippedOrders ?? 0) + 1;
+        const replacementSeed = ((attempt.seed + attempt.replacementIndex * 997) >>> 0) || 1;
+        attempt.activeOrder = issuedOrder(
+          attempt.id,
+          generatedForAttempt(attempt, state, attempt.slot, replacementSeed, "easy"),
+          attempt.slot,
+          attempt.replacementIndex,
+          replacementSeed,
+        );
+        retainIssuedOrder(attempt, attempt.activeOrder, attempt.slot, attempt.replacementIndex);
         attempt.revision += 1;
         const bodyOut = {
           commandId: command.commandId,
-          snapshot: snapshot(attempt),
+          snapshot: snapshot(attempt, state),
         };
         attempt.receipts.push({
           actorId: actor.id,
@@ -1488,7 +1623,7 @@ export function createApiServer(
         const attempt = state.attempts.find(
           (item) => item.id === transfer[1] && item.studentId === actor.id,
         );
-        if (!attempt || !attempt.completed)
+        if (!attempt || !attempt.completed || attempt.kind === "practice")
           return send(
             response,
             409,
@@ -1527,28 +1662,26 @@ export function createApiServer(
         if (attempt.transferOrder)
           return send(response, 200, {
             commandId: command.commandId,
-            snapshot: snapshot(attempt),
+            snapshot: snapshot(attempt, state),
           });
         const base = generateLevelOrder(
           attempt.levelId,
-          attempt.seed + 10_007,
+          ((attempt.seed + 10_007) >>> 0) || 1,
           4,
           "easy",
         );
-        attempt.transferOrder = {
-          ...base,
-          id: `${attempt.id}.${base.id}-transfer`,
-          sourceRepresentation: undefined,
-        };
+        attempt.transferOrder = issuedOrder(
+          attempt.id, base, 4, (attempt.replacementIndex ?? 0) + 1,
+          ((attempt.seed + 10_007) >>> 0) || 1, "transfer",
+        );
+        retainIssuedOrder(attempt, attempt.transferOrder, 4, (attempt.replacementIndex ?? 0) + 1, "transfer");
         attempt.writerTabId = command.tabId;
         attempt.leaseEpoch += 1;
-        attempt.leaseExpiresAt = new Date(
-          Date.now() + leaseDurationMs,
-        ).toISOString();
+        attempt.leaseExpiresAt = new Date(now().getTime() + leaseDurationMs).toISOString();
         attempt.revision += 1;
         const bodyOut = {
           commandId: command.commandId,
-          snapshot: snapshot(attempt),
+          snapshot: snapshot(attempt, state),
         };
         attempt.receipts.push({
           actorId: actor.id,
@@ -1576,14 +1709,14 @@ export function createApiServer(
           );
         if (request.method === "GET" && url.pathname.endsWith("/results"))
           return attempt.completed
-            ? send(response, 200, result(attempt))
+            ? send(response, 200, result(attempt, state.attempts.filter((item) => item.studentId === actor.id)))
             : send(
                 response,
                 409,
                 responseError("NOT_COMPLETE", "This attempt is not complete."),
               );
         if (request.method === "GET")
-          return send(response, 200, snapshot(attempt));
+          return send(response, 200, snapshot(attempt, state));
         if (request.method === "POST" && match[2]) {
           const body = await json(request);
           const command = commandFrom(body);
@@ -1639,9 +1772,7 @@ export function createApiServer(
             attempt.leaseEpoch += 1;
             attempt.writerTabId = command.tabId;
           }
-          attempt.leaseExpiresAt = new Date(
-            Date.now() + leaseDurationMs,
-          ).toISOString();
+          attempt.leaseExpiresAt = new Date(now().getTime() + leaseDurationMs).toISOString();
           const order = orderFor(attempt);
           const isTransfer =
             attempt.completed && Boolean(attempt.transferOrder);
@@ -1660,6 +1791,19 @@ export function createApiServer(
             body.representationA,
             body.representationB ?? null,
           );
+          const responseFields = new Set([
+            "commandId", "expectedRevision", "leaseEpoch", "tabId",
+            "representationA", "representationB", "activeMs",
+          ]);
+          if (
+            !validation.schemaValid ||
+            Object.keys(body).some((key) => !responseFields.has(key)) ||
+            (body.activeMs !== undefined &&
+              (!isNonNegativeInteger(body.activeMs) || body.activeMs > 86400000))
+          )
+            return send(response, 422, responseError(
+              "INVALID_INPUT", "Use six whole, nonnegative crate quantities and supported response fields.",
+            ));
           attempt.responses.push({
             commandId: command.commandId,
             activeMs: isNonNegativeInteger(body.activeMs)
@@ -1669,7 +1813,7 @@ export function createApiServer(
             representationA: body.representationA,
             representationB: body.representationB ?? null,
             validation,
-            at: new Date().toISOString(),
+            at: now().toISOString(),
           });
           if (validation.shipmentAccepted) {
             const responsesForOrder = attempt.responses.filter(
@@ -1691,7 +1835,7 @@ export function createApiServer(
               independentFirst: isIndependentFirst(facts),
               attemptId: attempt.id,
               signature: `${order.target}:${order.allowed.join(",")}:${order.mode ?? ""}`,
-              committedAt: new Date().toISOString(),
+              committedAt: now().toISOString(),
             });
             if (isTransfer) {
               attempt.transferStar = true;
@@ -1700,35 +1844,26 @@ export function createApiServer(
               attempt.slot += 1;
               if (attempt.slot === 5) attempt.completed = true;
               else {
-                attempt.activeOrder =
-                  attempt.kind === "practice" && attempt.practiceSkill
-                    ? generatePracticeOrder(
-                        attempt.practiceSkill,
-                        attempt.seed,
-                        attempt.slot,
-                        nextDifficulty(attempt),
-                      )
-                    : generateLevelOrder(
-                        attempt.levelId,
-                        attempt.seed,
-                        attempt.slot,
-                        nextDifficulty(attempt),
-                      );
                 attempt.activeOrder = issuedOrder(
                   attempt.id,
-                  attempt.activeOrder,
+                  generatedForAttempt(attempt, state, attempt.slot, attempt.seed, nextDifficulty(attempt)),
+                  attempt.slot,
+                  attempt.replacementIndex ?? 0,
+                  attempt.seed,
                 );
+                retainIssuedOrder(attempt, attempt.activeOrder, attempt.slot, attempt.replacementIndex ?? 0);
               }
             }
+            attempt.awardedTier = awardCertifications(state, actor.id) ?? attempt.awardedTier;
           }
           attempt.revision += 1;
           const bodyOut = {
             commandId: command.commandId,
-            committedAt: new Date().toISOString(),
+            committedAt: now().toISOString(),
             validation,
-            snapshot: snapshot(attempt),
+            snapshot: snapshot(attempt, state),
             ...(attempt.completed && !attempt.transferOrder
-              ? { result: result(attempt) }
+              ? { result: result(attempt, state.attempts.filter((item) => item.studentId === actor.id)) }
               : {}),
           };
           attempt.receipts.push({
@@ -1868,118 +2003,69 @@ export function createApiServer(
       const classReport = url.pathname.match(
         /^\/api\/v1\/teacher\/classes\/([^/]+)\/games\/place-value-factory\/report$/,
       );
-      if (classReport && request.method === "GET" && actor.role === "teacher") {
-        const classId = classReport[1];
-        if (!ownsClass(actor, classId))
-          return send(
-            response,
-            404,
-            responseError("NOT_FOUND", "Class not found."),
-          );
+      const studentReport = url.pathname.match(
+        /^\/api\/v1\/teacher\/students\/([^/]+)\/games\/place-value-factory\/report$/,
+      );
+      if ((classReport || studentReport) && request.method === "GET" && actor.role === "teacher") {
+        const directoryState = directory();
+        const selectedStudent = studentReport
+          ? directoryState.students.find((item) => item.id === studentReport[1])
+          : null;
+        const classId = classReport?.[1] ?? selectedStudent?.classId;
+        const classroom = directoryState.classes.find((item) => item.id === classId);
+        if (!classId || !classroom || !ownsClass(actor, classId) || (studentReport && !selectedStudent))
+          return send(response, 404, responseError("NOT_FOUND", "Report not found."));
+        const reportNow = now();
+        let window: { from: Date; to: Date };
+        try {
+          window = reportWindow(url.searchParams, classroom.timezone, reportNow);
+        } catch {
+          return send(response, 422, responseError("INVALID_INPUT", "Use an increasing ISO date range."));
+        }
+        const transferParam = url.searchParams.get("includeTransfer");
+        if (transferParam !== null && transferParam !== "true" && transferParam !== "false")
+          return send(response, 422, responseError("INVALID_INPUT", "Invalid transfer filter."));
+        const includeTransfer = transferParam === "true";
+        const limitValue = Number(url.searchParams.get("limit") ?? 100);
+        const cursor = url.searchParams.get("cursor");
+        if (!Number.isInteger(limitValue) || limitValue < 1 || limitValue > 100 ||
+            (cursor !== null && !directoryState.students.some((item) => item.id === cursor && item.classId === classId)))
+          return send(response, 422, responseError("INVALID_INPUT", "Invalid report pagination."));
         const state = await store();
-        const now = new Date();
-        const defaultFrom = new Date(now);
-        defaultFrom.setUTCDate(defaultFrom.getUTCDate() - 6);
-        defaultFrom.setUTCHours(0, 0, 0, 0);
-        const from = url.searchParams.has("from")
-          ? new Date(url.searchParams.get("from") ?? "")
-          : defaultFrom;
-        const to = url.searchParams.has("to")
-          ? new Date(url.searchParams.get("to") ?? "")
-          : new Date(now.getTime() + 1);
-        if (
-          Number.isNaN(from.getTime()) ||
-          Number.isNaN(to.getTime()) ||
-          from >= to
-        )
-          return send(
-            response,
-            422,
-            responseError("INVALID_INPUT", "Use an increasing ISO date range."),
-          );
-        const classStudents = directory().students.filter(
-          (student) => student.classId === classId,
-        );
+        const roster = (selectedStudent ? [selectedStudent] : directoryState.students.filter((item) => item.classId === classId))
+          .sort((a, b) => a.id.localeCompare(b.id));
+        const page = cursor ? roster.filter((item) => item.id > cursor) : roster;
+        const students = page.slice(0, limitValue).map((student) => {
+          const attempts = state.attempts.filter((attempt) => attempt.studentId === student.id);
+          const completed = completedPathLevels(attempts);
+          const highest = Math.max(0, ...[...completed].map((id) => Number(id.slice(6))));
+          const nextLevel = Math.min(30, highest + 1);
+          const nextStage = levelById(`level-${nextLevel}`)?.stage ?? 6;
+          const evidence = attempts.flatMap((attempt) => attempt.evidence);
+          return buildStudentReport({
+            student,
+            attempts,
+            ...window,
+            now: reportNow,
+            includeTransfer,
+            currentLevelId: `level-${nextLevel}`,
+            achievedTier: tierFor(state, student.id),
+            certifications: state.certifications?.[student.id] ?? [],
+            primaryPracticeSkillId: nextPracticeSkill(STAGE_GATE_SKILLS[nextStage] ?? [], evidence, reportNow),
+          });
+        });
+        const common = {
+          timezone: classroom.timezone,
+          from: window.from.toISOString(),
+          to: window.to.toISOString(),
+          asOf: reportNow.toISOString(),
+        };
+        if (studentReport) return send(response, 200, { ...common, ...students[0] });
         return send(response, 200, {
           classId,
-          timezone: directory().classes.find((item) => item.id === classId)
-            ?.timezone,
-          from: from.toISOString(),
-          to: to.toISOString(),
-          asOf: now.toISOString(),
-          students: classStudents.map((student) => {
-            const attempts = state.attempts.filter(
-              (attempt) => attempt.studentId === student.id,
-            );
-            const responses = attempts.flatMap((attempt) => attempt.responses);
-            const firstPerOrder = new Map<string, ResponseRecord>();
-            for (const item of responses)
-              if (!firstPerOrder.has(item.order.id))
-                firstPerOrder.set(item.order.id, item);
-            const submitted = [...firstPerOrder.values()].filter((item) => {
-              const committedAt = new Date(item.at);
-              return committedAt >= from && committedAt < to;
-            });
-            const submittedIds = new Set(
-              submitted.map((item) => item.order.id),
-            );
-            const firstWrong = submitted.filter(
-              (item) => !item.validation.objectiveMet,
-            );
-            const evidence = attempts.flatMap((attempt) => attempt.evidence);
-            const completed = attempts.filter((attempt) => attempt.completed);
-            const lastActivity =
-              responses
-                .map((item) => item.at)
-                .sort()
-                .at(-1) ?? null;
-            return {
-              studentId: student.id,
-              alias: student.alias,
-              currentLevelId: completed.length
-                ? `level-${Math.min(30, Math.max(...completed.map((item) => Number(item.levelId.slice(6)))) + 1)}`
-                : "level-1",
-              submittedN: submitted.length,
-              firstObjectiveCorrectN: submitted.filter(
-                (item) => item.validation.objectiveMet,
-              ).length,
-              firstValueCorrectN: submitted.filter(
-                (item) => item.validation.valueMatches,
-              ).length,
-              eventuallyCorrectN: submitted.filter((item) =>
-                responses.some(
-                  (candidate) =>
-                    candidate.order.id === item.order.id &&
-                    candidate.validation.shipmentAccepted,
-                ),
-              ).length,
-              firstWrongN: firstWrong.length,
-              correctionSuccessN: firstWrong.filter((item) =>
-                responses.some(
-                  (candidate) =>
-                    candidate.order.id === item.order.id &&
-                    candidate.validation.shipmentAccepted,
-                ),
-              ).length,
-              primaryPracticeSkillId: nextPracticeSkill(
-                STAGE_GATE_SKILLS[1],
-                evidence,
-              ),
-              lastActivityAt: lastActivity,
-              skills: [...new Set(evidence.map((item) => item.skillId))]
-                .sort()
-                .map((skillId) => summarizeMastery(skillId, evidence)),
-              evidence: responses
-                .filter((item) => submittedIds.has(item.order.id))
-                .map((item) => ({
-                  orderId: item.order.id,
-                  target: item.order.target,
-                  vector: item.representationA,
-                  accepted: item.validation.shipmentAccepted,
-                })),
-            };
-          }),
-          nextCursor: null,
+          ...common,
+          students,
+          nextCursor: page.length > limitValue ? students.at(-1)?.studentId ?? null : null,
         });
       }
       return send(
