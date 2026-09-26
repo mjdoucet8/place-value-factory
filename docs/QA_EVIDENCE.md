@@ -1,5 +1,11 @@
 # Local QA evidence
 
+## 26 September 2026 — V1 local release-candidate verification
+
+All checks below used fictional data. `npx tsc --noEmit`, `npm run build`, and `npm test` passed (71 regular tests; 8 dedicated PostgreSQL/load cases intentionally skipped by that command). `npm run test:postgres` passed seven initial real-PostgreSQL cases and three post-restart cases (two restart-inapplicable cases skipped); operations exercised encrypted/wrong-key backup, distinct empty-database restore, restored HTTP report, archive, CLI preview/execute deletion and retention, backup-expiry markers and dependent-record isolation. `npm run test:e2e` passed 19 Chromium journeys, including keyboard shipment, login error association, 200% CSS zoom, contrast samples and queued recovery. `npx playwright test -c playwright.pilot.config.ts` passed four secure pilot journeys after archive/revocation and width changes. The final `npm run test:load` run after migration 010 passed a 90-student/30-concurrent private PostgreSQL workload with p95 start/answer/retry/report 343/450/405/67 ms, 87 req/s and zero errors. A separate local Chromium input-to-display check measured p95 5.1 ms across 30 quantity updates. `npm audit --omit=dev --audit-level=high` found zero production dependency vulnerabilities. See `docs/V1_CURRENT_ACCEPTANCE.md`, `docs/OPERATIONS.md`, and `docs/qa/` for exact scope and limits.
+
+Classroom readiness remains unproven: owner visual approval, school identity/hosting/privacy/retention and backup policy, representative physical devices, assistive technology and school-network trials remain external gates. The local contrast/zoom checks and visual inspection do not prove WCAG conformance or Chromebook performance. Historical sections below retain their original evidence level.
+
 ## 26 September 2026 — RC-07 mathematics and progression checkpoint
 
 The current committed RC-07 implementation was revalidated on 26 September 2026. These are local fictional-data checks and do not claim classroom readiness.

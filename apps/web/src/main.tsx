@@ -112,7 +112,6 @@ function App() {
     __PVF_DEVELOPMENT__ ? "teacher" : "",
   );
   const [showPin, setShowPin] = useState(false);
-  const shiftTabUsed = useRef(false);
   const reconciled = useRef(new Set<string>());
   const restoredHelp = useRef("");
   const helpTrigger = useRef<HTMLButtonElement>(null);

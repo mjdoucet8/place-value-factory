@@ -32,6 +32,7 @@ export function LoginScreen(props: Props) {
           Class code
           <input
             autoComplete="organization"
+            aria-describedby={props.notice ? "login-error" : undefined}
             value={props.classCode}
             onChange={(event) => props.onClassCode(event.target.value)}
           />
@@ -40,6 +41,7 @@ export function LoginScreen(props: Props) {
           Username
           <input
             autoComplete="username"
+            aria-describedby={props.notice ? "login-error" : undefined}
             value={props.username}
             onChange={(event) => props.onUsername(event.target.value)}
           />
@@ -48,6 +50,7 @@ export function LoginScreen(props: Props) {
           Six-digit PIN
           <input
             inputMode="numeric"
+            aria-describedby={props.notice ? "login-error" : undefined}
             autoComplete="current-password"
             type={props.showPin ? "text" : "password"}
             pattern="[0-9]{6}"
@@ -73,6 +76,7 @@ export function LoginScreen(props: Props) {
             Teacher username
             <input
               autoComplete="username"
+              aria-describedby={props.notice ? "login-error" : undefined}
               value={props.teacherUsername}
               onChange={(event) => props.onTeacherUsername(event.target.value)}
             />
@@ -81,6 +85,7 @@ export function LoginScreen(props: Props) {
             Teacher password
             <input
               type="password"
+              aria-describedby={props.notice ? "login-error" : undefined}
               autoComplete="current-password"
               value={props.teacherPassword}
               onChange={(event) => props.onTeacherPassword(event.target.value)}
@@ -89,7 +94,7 @@ export function LoginScreen(props: Props) {
           <button type="submit">Teacher login</button>
         </form>
       </details>
-      {props.notice && <p role="alert">{props.notice}</p>}
+      {props.notice && <p id="login-error" role="alert">{props.notice}</p>}
     </main>
   );
 }

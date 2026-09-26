@@ -1,7 +1,7 @@
 {
   "name": "place-value-factory",
   "version": "1.0.0",
-  "description": "**Specification only; no game application is implemented in this package.**",
+  "description": "Place Value Factory V1 local fictional-data application",
   "main": "index.js",
   "directories": {
     "test": "tests"
@@ -9,6 +9,7 @@
   "scripts": {
     "test": "vitest run",
     "test:postgres": "node scripts/test-postgres.mjs",
+    "test:load": "node scripts/test-postgres.mjs load",
     "pilot:local": "node scripts/pilot.mjs",
     "test:e2e": "playwright test",
     "test:watch": "vitest",

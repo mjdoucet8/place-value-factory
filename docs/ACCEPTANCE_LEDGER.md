@@ -1,5 +1,9 @@
 # V1 acceptance ledger
 
+## 26 September 2026 V1 local-candidate update
+
+The table below is the original register and its old `implementable` labels are historical. `docs/V1_CURRENT_ACCEPTANCE.md` is the current scope matrix. OPS-01..02 now have fictional-data encrypted backup/restore, class archive, retention/deletion, backup-expiry and restored-report evidence in `tests/integration/operations-real.test.ts`. SEC-01..03 have the secure PostgreSQL isolation/session/CSRF/config/throttle/cleanup tests and production dependency audit; PERF-01 has a 90-student/30-concurrent measurement in `docs/qa/CLASSROOM_LOAD_2026-09-26.md`. RECOVERY-01..07 and the locally available ACCESS-01..07 checks are mapped in `docs/qa/RECOVERY_ACCESS_AUDIT_2026-09-26.md`. RC-07 math/progression/report evidence remains under the next heading. Passing local checks do not close owner, school-policy, physical-device, assistive-technology or school-network gates.
+
 ## 26 September 2026 RC-07 checkpoint
 
 Local fictional-data evidence now covers ORDER-01..05, VALIDATE-01..05 and ADAPT-01..06 through the enumerated 150-slot/three-band blueprint test, independent witnesses, the dynamic-programming minimum oracle, deterministic fallback validation, and earned practice at every stage gate including Stage 6 after level 30. REWARD-01..03 and the RC-07 portion of RECOVERY-01..07 have real PostgreSQL duplicate/rollback/restart, transfer and browser reply-loss checks. REPORT-01..04 have unit reconstruction fixtures, HTTP class/student report checks, class-local DST filters, transfer exclusion, secure cross-class 404s and a pilot teacher evidence view. The isolated PostgreSQL journey verifies 30 completed levels, six durable certifications and Factory Master without seeded mastery; it also verifies nonminimal restricted acceptance and an advanced objective correction.

@@ -9,6 +9,7 @@ const socket = join(directory, "socket");
 await mkdir(socket, { mode: 0o700 });
 const binary = process.env.PVF_POSTGRES_BIN ?? "/usr/lib/postgresql/16/bin";
 const data = join(directory, "data");
+const loadOnly = process.argv[2] === "load";
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, { stdio: "inherit", ...options });
   if (result.error) throw result.error;
@@ -38,13 +39,12 @@ try {
   started = true;
   run(
     "npx",
-    [
-      "vitest",
-      "run",
+    ["vitest", "run", ...(loadOnly ? ["tests/integration/load-real.test.ts"] : [
       "tests/integration/postgres-real.test.ts",
       "tests/integration/rc07-progression-real.test.ts",
       "tests/integration/security-real.test.ts",
-    ],
+      "tests/integration/operations-real.test.ts",
+    ])],
     {
       env: {
         ...process.env,
@@ -54,8 +54,9 @@ try {
       },
     },
   );
-  run(join(binary, "pg_ctl"), ["-D", data, "-m", "fast", "-w", "restart"]);
-  run(
+  if (!loadOnly) {
+    run(join(binary, "pg_ctl"), ["-D", data, "-m", "fast", "-w", "restart"]);
+    run(
     "npx",
     [
       "vitest",
@@ -72,7 +73,8 @@ try {
         PGDATABASE: "postgres",
       },
     },
-  );
+    );
+  }
 } finally {
   if (started)
     run(join(binary, "pg_ctl"), ["-D", data, "-m", "fast", "-w", "stop"]);

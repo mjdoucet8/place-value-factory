@@ -119,7 +119,7 @@ export class LocalIdentity {
     );
     const classAction =
       method === "PATCH"
-        ? path.match(/^\/api\/v1\/teacher\/classes\/([^/]+)\/access$/)
+        ? path.match(/^\/api\/v1\/teacher\/classes\/([^/]+)\/(access|archive)$/)
         : null;
     if (
       !classCreate &&
@@ -140,27 +140,31 @@ export class LocalIdentity {
       );
     const client = this.client();
     let student:
-      | { id: string; alias: string; username: string; class_id: string }
+      | { id: string; alias: string; username: string; class_id: string; archived_at: Date | null }
       | undefined;
     if (studentAction) {
       student = (
         await client.query(
-          "SELECT s.* FROM pvf_student s JOIN pvf_class c ON c.id=s.class_id WHERE s.id=$1 AND c.teacher_id=$2 FOR UPDATE OF s,c",
+          "SELECT s.*,c.archived_at FROM pvf_student s JOIN pvf_class c ON c.id=s.class_id WHERE s.id=$1 AND c.teacher_id=$2 FOR UPDATE OF s,c",
           [studentAction[1], actor.id],
         )
       ).rows[0];
       if (!student)
         throw new AccessError(404, "NOT_FOUND", "Student not found.");
+      if (student.archived_at)
+        throw new AccessError(403, "ACCESS_DISABLED", "This class is archived.");
     }
     if (studentCreate || classAction) {
       const classId = studentCreate ? studentCreate[1] : classAction![1];
       const owned = (
         await client.query(
-          "SELECT id,enabled FROM pvf_class WHERE id=$1 AND teacher_id=$2 FOR UPDATE",
+          "SELECT id,enabled,archived_at FROM pvf_class WHERE id=$1 AND teacher_id=$2 FOR UPDATE",
           [classId, actor.id],
         )
       ).rows[0];
       if (!owned) throw new AccessError(404, "NOT_FOUND", "Class not found.");
+      if (owned.archived_at && classAction?.[2] !== "archive")
+        throw new AccessError(403, "ACCESS_DISABLED", "This class is archived.");
       if (studentCreate && !owned.enabled)
         throw new AccessError(
           403,
@@ -198,7 +202,7 @@ export class LocalIdentity {
           "IDEMPOTENCY_CONFLICT",
           "This command was already used for different work.",
         );
-      if (prior.secret_ciphertext && !prior.secret_live)
+      if (prior.secret_expires_at && !prior.secret_live)
         throw new AccessError(
           409,
           "RESET_COMPLETED_PIN_NOT_REDISPLAYABLE",
@@ -304,6 +308,21 @@ export class LocalIdentity {
         student!.id,
       ]);
       result = {};
+    } else if (classAction?.[2] === "archive") {
+      const classId = classAction[1];
+      const archived = await client.query(
+        "UPDATE pvf_class SET archived_at=COALESCE(archived_at,now()),enabled=FALSE WHERE id=$1 RETURNING archived_at",
+        [classId],
+      );
+      await client.query(
+        "DELETE FROM pvf_session WHERE actor_id IN (SELECT id FROM pvf_student WHERE class_id=$1)",
+        [classId],
+      );
+      await client.query(
+        "INSERT INTO pvf_operations_audit(action,target_hash,actor_hash) VALUES('class_archive',$1,$2)",
+        [digest(classId), digest(actor.id)],
+      );
+      result = { id: classId, enabled: false, archivedAt: archived.rows[0].archived_at };
     } else {
       if (typeof body.enabled !== "boolean")
         throw new AccessError(
@@ -380,24 +399,44 @@ export class LocalIdentity {
     role: "student" | "teacher",
     body: Record<string, unknown>,
     previousToken: string,
+    networkAddress: string,
   ) {
     const username = normalize(body.username);
     const classCode = normalize(body.classCode);
     const password = role === "student" ? body.pin : body.password;
+    const client = this.client();
+    const bucket = digest(`${role}:${classCode}:${username}`);
+    const networkBucket = digest(`network:${networkAddress}`);
+    await client.query(
+      "INSERT INTO pvf_login_limit(bucket) VALUES($1) ON CONFLICT DO NOTHING",
+      [networkBucket],
+    );
+    const network = (
+      await client.query(
+        "SELECT failures,window_start < now()-interval '10 minutes' AS expired FROM pvf_login_limit WHERE bucket=$1 FOR UPDATE",
+        [networkBucket],
+      )
+    ).rows[0];
+    if (network.expired)
+      await client.query(
+        "UPDATE pvf_login_limit SET failures=0,window_start=now(),blocked_until=NULL WHERE bucket=$1",
+        [networkBucket],
+      );
+    else if (network.failures >= 300)
+      throw new AccessError(429, "TRY_LATER", "Please wait before trying again.");
     if (
       !/^[a-z0-9._-]{1,40}$/.test(username) ||
       typeof password !== "string" ||
       password.length > 128 ||
       (role === "student" &&
         (!/^\d{6}$/.test(password) || !/^[a-z0-9]{4,16}$/.test(classCode)))
-    )
-      throw new AccessError(
-        401,
-        "INVALID_CREDENTIALS",
-        "Those login details did not match.",
+    ) {
+      await client.query(
+        "UPDATE pvf_login_limit SET failures=failures+1 WHERE bucket=$1",
+        [networkBucket],
       );
-    const client = this.client();
-    const bucket = digest(`${role}:${classCode}:${username}`);
+      throw new AccessError(401, "INVALID_CREDENTIALS", "Those login details did not match.");
+    }
     await client.query(
       "INSERT INTO pvf_login_limit(bucket) VALUES($1) ON CONFLICT DO NOTHING",
       [bucket],
@@ -426,7 +465,7 @@ export class LocalIdentity {
             [username],
           )
         : await client.query(
-            "SELECT i.id,i.credential_hash,i.enabled AND c.enabled AS enabled,s.class_id FROM pvf_identity i JOIN pvf_student s ON s.id=i.id JOIN pvf_class c ON c.id=s.class_id WHERE i.role='student' AND s.username=$1 AND c.code=$2",
+            "SELECT i.id,i.credential_hash,i.enabled AND c.enabled AND c.archived_at IS NULL AS enabled,s.class_id FROM pvf_identity i JOIN pvf_student s ON s.id=i.id JOIN pvf_class c ON c.id=s.class_id WHERE i.role='student' AND s.username=$1 AND c.code=$2",
             [username, classCode],
           );
     const account = found.rows[0];
@@ -437,6 +476,10 @@ export class LocalIdentity {
       account?.credential_hash ?? dummy,
     );
     if (!account?.enabled || !valid) {
+      await client.query(
+        "UPDATE pvf_login_limit SET failures=failures+1 WHERE bucket=$1",
+        [networkBucket],
+      );
       await client.query(
         "UPDATE pvf_login_limit SET failures=failures+1,blocked_until=CASE WHEN failures+1>=5 THEN now()+interval '10 minutes' ELSE now() + make_interval(secs => power(2,failures)::int) END WHERE bucket=$1",
         [bucket],
@@ -475,7 +518,7 @@ export class LocalIdentity {
     const client = this.client();
     const row = (
       await client.query(
-        `SELECT i.id,i.role,i.enabled,s.csrf_token,st.class_id,c.enabled AS class_enabled
+        `SELECT i.id,i.role,i.enabled,s.csrf_token,st.class_id,c.enabled AS class_enabled,c.archived_at
       FROM pvf_session s JOIN pvf_identity i ON i.id=s.actor_id
       LEFT JOIN pvf_student st ON st.id=i.id LEFT JOIN pvf_class c ON c.id=st.class_id
       WHERE s.token_hash=$1 AND s.expires_at>now() AND s.last_seen_at>now()-interval '30 minutes'`,
@@ -483,14 +526,14 @@ export class LocalIdentity {
       )
     ).rows[0];
     if (!row) return null;
-    if (!row.enabled || (row.role === "student" && !row.class_enabled))
+    if (!row.enabled || (row.role === "student" && (!row.class_enabled || row.archived_at)))
       throw new AccessError(
         403,
         "ACCESS_DISABLED",
         "Access is disabled. Ask your teacher for help.",
       );
     await client.query(
-      "UPDATE pvf_session SET last_seen_at=now() WHERE token_hash=$1",
+      "UPDATE pvf_session SET last_seen_at=now() WHERE token_hash=$1 AND last_seen_at<now()-interval '1 minute'",
       [digest(token)],
     );
     return {
@@ -511,7 +554,7 @@ export class LocalIdentity {
     const client = this.client();
     const classes = (
       await client.query(
-        'SELECT id,teacher_id AS "teacherId",name,timezone,code,enabled FROM pvf_class',
+        'SELECT id,teacher_id AS "teacherId",name,timezone,code,enabled,archived_at AS "archivedAt" FROM pvf_class',
       )
     ).rows;
     const students = (

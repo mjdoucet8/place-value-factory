@@ -368,6 +368,8 @@ describe.skipIf(!socket)("real PostgreSQL isolated cluster", () => {
           "006_replay_and_skips.sql",
           "007_certifications.sql",
           "008_rc07_integrity.sql",
+          "009_operations.sql",
+          "010_backup_expiry.sql",
         ]);
         expect(
           (await pool.query("SELECT student_id,spec FROM pvf_order")).rows,
@@ -443,6 +445,8 @@ describe.skipIf(!socket)("real PostgreSQL isolated cluster", () => {
         "006_replay_and_skips.sql",
         "007_certifications.sql",
         "008_rc07_integrity.sql",
+        "009_operations.sql",
+        "010_backup_expiry.sql",
       ]);
       expect(await migrateDatabase(isolated)).toEqual([]);
       const attemptId = randomUUID();

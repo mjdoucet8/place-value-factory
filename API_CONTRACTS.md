@@ -170,6 +170,7 @@ All teacher routes are outside the game prefix where shown. Class ownership/memb
 | POST /teacher/students/:id/reset-pin | {commandId} | 200 {oneTimePin}; invalidate prior sessions |
 | PATCH /teacher/students/:id/access | {commandId,enabled} | 200 student access; revocation immediate |
 | PATCH /teacher/classes/:id/access | {commandId,enabled} | 200 class access; disable all student game writes |
+| PATCH /teacher/classes/:id/archive | {commandId} | 200 {id,enabled:false,archivedAt}; permanently blocks new student activity in V1, preserves teacher reports |
 | POST /teacher/students/:id/level-access | {commandId,levelId,enabled,reasonCode} | 200 override; audit, no fabricated mastery/certification |
 | GET /teacher/classes/:id/games/place-value-factory/report | from,to ISO date; cursor; limit≤100; includeTransfer=false | class report described below |
 | GET /teacher/students/:id/games/place-value-factory/report | same date filters | individual report and SkillSummary[] |
@@ -208,3 +209,7 @@ Persistent certifications identify completed stage gates (`stage-1` through `sta
 Report details add nullable accuracy fractions, `evidenceLabel`, `pendingN`, `supportCounts`, `misconceptionCounts`, `trends`, `representativeOrderIds`, and exact first/final response history. Class and individual reports use the same reconstruction; no submitted orders means null fractions and “No evidence”. `includeTransfer=true` includes optional transfer in the requested report; default excludes it. Date-only `from`/`to` use class-local midnight with an exclusive end. Current skill statuses remain based on full committed learning history; trend and response counts use the selected report window. Candidate flags are deterministic observations, not diagnoses.
 
 Current HTTP shape is additive to v1.0: class rows and the individual report include `certifications`, `firstObjectiveAccuracy`, `firstValueAccuracy`, `eventualAccuracy`, `correctionAccuracy`, `pendingN`, `supportCounts`, `misconceptionCounts`, `trends`, `representativeOrderIds`, and `evidence[]`. Each evidence row carries the stored order target and first/final response records, including original crate vectors and validation flags. Date filters are optional and default to the last seven class-local days; `includeTransfer` accepts only `true` or `false`. Student access to teacher reports is denied, and a teacher outside the class receives 404. Migration 008 stores practice schedules and override integrity without rewriting historical order specs.
+
+## V1 operations addition
+
+`GET /teacher/classes` includes nullable `archivedAt`. The archive mutation uses the same teacher ownership, session, origin, CSRF and idempotency requirements as other roster mutations. Archive revokes student sessions and cannot be undone by the access toggle. Migration 009 adds the timestamp and a non-PII operations audit; migration 010 adds a configured backup-expiry marker on deletion. Student deletion and retention run only through a guarded local operations command, not a browser endpoint; school policy and operational roles remain pending. Existing client response fields are unchanged.

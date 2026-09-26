@@ -1,4 +1,4 @@
-import { randomBytes, randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import type { AddressInfo } from "node:net";
 import { Pool } from "pg";
 import { describe, it, expect } from "vitest";
@@ -28,6 +28,8 @@ describe.skipIf(!socket || process.env.PVF_TEST_PG_RESTART === "1")(
         key = randomBytes(32);
       const identity = new LocalIdentity(() => store.connection(), key),
         passwords = [randomUUID(), randomUUID()];
+      expect(() => createApiServer("/unused/invalid.json", { database: pool, identity: { origin: "http://classroom.test", receiptKey: key.toString("hex") } })).toThrow(/HTTPS/);
+      expect(() => createApiServer("/unused/invalid.json", { database: pool, identity: { origin: "https://classroom.test", receiptKey: "bad" } })).toThrow(/encryption key/);
       await store.transaction(async () => {
         await identity.provisionTeacher("teacher-one", passwords[0]);
         await identity.provisionTeacher("teacher-two", passwords[1]);
@@ -95,6 +97,9 @@ describe.skipIf(!socket || process.env.PVF_TEST_PG_RESTART === "1")(
             username: "teacher-two",
             password: passwords[1],
           });
+        await pool.query("UPDATE pvf_session SET last_seen_at=now()-interval '2 minutes' WHERE token_hash=$1", [createHash("sha256").update(t1.cookie.slice("pvf_session=".length)).digest("hex")]);
+        const concurrentReads = await Promise.all(Array.from({ length: 10 }, () => request("/teacher/classes", undefined, t1)));
+        expect(concurrentReads.every((result) => result.status === 200)).toBe(true);
         const classCommand = {
           commandId: "class-one",
           name: "Fictional One",
@@ -351,6 +356,23 @@ describe.skipIf(!socket || process.env.PVF_TEST_PG_RESTART === "1")(
             })
           ).status,
         ).toBe(429);
+        const networkBucket = createHash("sha256").update("network:127.0.0.1").digest("hex");
+        await pool.query("UPDATE pvf_login_limit SET failures=299,window_start=now() WHERE bucket=$1", [networkBucket]);
+        expect((await request("/auth/teacher/session", {
+          username: "another-unknown", password: "incorrect-password",
+        })).status).toBe(401);
+        expect((await request("/auth/teacher/session", {
+          username: "teacher-one", password: passwords[0],
+        })).status).toBe(429);
+        await pool.query("UPDATE pvf_login_limit SET window_start=now()-interval '11 minutes' WHERE bucket=$1", [networkBucket]);
+        expect((await request("/auth/teacher/session", {
+          username: "teacher-one", password: passwords[0],
+        })).status).toBe(200);
+        await pool.query("UPDATE pvf_login_limit SET failures=299,window_start=now() WHERE bucket=$1", [networkBucket]);
+        expect((await request("/auth/teacher/session", { username: "", password: "x" })).status).toBe(401);
+        expect((await request("/auth/teacher/session", {
+          username: "teacher-one", password: passwords[0],
+        })).status).toBe(429);
         await pool.query(
           "UPDATE pvf_session SET expires_at=now()-interval '1 second'",
         );

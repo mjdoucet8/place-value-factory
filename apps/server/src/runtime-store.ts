@@ -3,29 +3,49 @@ import { randomUUID } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
 import type { Attempt, Store } from "./index.js";
 
-type Context = { client: PoolClient; state?: Store; dirty: boolean };
+type Context = {
+  client: PoolClient;
+  state?: Store;
+  dirty: boolean;
+  originalAttempts?: Map<string, string>;
+  originalProfiles?: Map<string, string>;
+};
 const iso = (value: Date | string) =>
   value instanceof Date ? value.toISOString() : value;
 
 /** Normalized SQL unit of work. Responses are released only after commit.
- * The initial runtime serializes requests across processes with a transaction
- * advisory lock; profile-scoped optimization must preserve this atomic boundary.
+ * Mutations serialize across processes; GETs use a repeatable-read snapshot
+ * so report reads need not wait for the global mutation lock.
  */
 export class PostgresRuntimeStore {
   private context = new AsyncLocalStorage<Context>();
   constructor(private pool: Pool) {}
 
-  async transaction<T>(operation: () => Promise<T>): Promise<T> {
+  async transaction<T>(operation: () => Promise<T>, snapshotOnly = false): Promise<T> {
+    if (!snapshotOnly) return this.transactionOnce(operation, false);
+    for (let retry = 0; ; retry++) {
+      try {
+        return await this.transactionOnce(operation, true);
+      } catch (error) {
+        if ((error as { code?: string }).code !== "40001" || retry >= 2) throw error;
+      }
+    }
+  }
+
+  private async transactionOnce<T>(operation: () => Promise<T>, snapshotOnly: boolean): Promise<T> {
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN");
+      if (snapshotOnly)
+        await client.query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
       await client.query("SET LOCAL lock_timeout='5s'");
       await client.query("SET LOCAL statement_timeout='10s'");
-      await client.query("SELECT pg_advisory_xact_lock(736482902)");
+      if (!snapshotOnly)
+        await client.query("SELECT pg_advisory_xact_lock(736482902)");
       const context: Context = { client, dirty: false };
       const result = await this.context.run(context, operation);
       if (context.dirty && context.state)
-        await this.persist(client, context.state);
+        await this.persist(client, context.state, context);
       await client.query("COMMIT");
       return result;
     } catch (error) {
@@ -154,6 +174,16 @@ export class PostgresRuntimeStore {
           })),
       })),
     };
+    context.originalAttempts = new Map(
+      context.state.attempts.map((attempt) => [attempt.id, JSON.stringify(attempt)]),
+    );
+    context.originalProfiles = new Map(
+      profiles.map((row) => [row.student_id, JSON.stringify([
+        row.settings,
+        row.access_enabled,
+        row.certifications,
+      ])]),
+    );
     return context.state;
   }
 
@@ -174,13 +204,21 @@ export class PostgresRuntimeStore {
     return this.requiredContext().client;
   }
 
-  private async persist(client: PoolClient, state: Store) {
+  private async persist(client: PoolClient, state: Store, context: Context) {
+    // Only persist changed entities. Rewriting every attempt on each command
+    // held the mutation lock long enough to miss the 30-user API target.
     const studentIds = new Set([
       ...state.attempts.map((a) => a.studentId),
       ...Object.keys(state.settings ?? {}),
       ...Object.keys(state.studentAccess ?? {}),
     ]);
     for (const id of studentIds) {
+      const currentProfile = JSON.stringify([
+        state.settings?.[id] ?? {},
+        state.studentAccess?.[id] !== false,
+        state.certifications?.[id] ?? [],
+      ]);
+      if (context.originalProfiles?.get(id) === currentProfile) continue;
       await client.query(
         `INSERT INTO pvf_game_profile(student_id,settings,access_enabled,certifications) VALUES($1,$2::jsonb,$3,$4::jsonb)
         ON CONFLICT(student_id) DO UPDATE SET settings=EXCLUDED.settings,access_enabled=EXCLUDED.access_enabled,certifications=EXCLUDED.certifications,updated_at=now()`,
@@ -192,8 +230,10 @@ export class PostgresRuntimeStore {
         ],
       );
     }
-    for (const attempt of state.attempts)
+    for (const attempt of state.attempts) {
+      if (context.originalAttempts?.get(attempt.id) === JSON.stringify(attempt)) continue;
       await this.persistAttempt(client, attempt);
+    }
   }
 
   private async persistAttempt(client: PoolClient, attempt: Attempt) {

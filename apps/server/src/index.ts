@@ -742,6 +742,7 @@ export function createApiServer(
           url.pathname.includes("/teacher/") ? "teacher" : "student",
           await json(request),
           sessionToken(request),
+          request.socket.remoteAddress ?? "unknown",
         );
         return send(
           response,
@@ -2187,12 +2188,14 @@ export function createApiServer(
     if (!sqlStore) return handle(request, response);
     pendingReplies.set(response, null);
     try {
-      await sqlStore.transaction(async () =>
-        identity
-          ? directories.run(await identity.directory(), () =>
-              handle(request, response),
-            )
-          : handle(request, response),
+      await sqlStore.transaction(
+        async () =>
+          identity
+            ? directories.run(await identity.directory(), () =>
+                handle(request, response),
+              )
+            : handle(request, response),
+        request.method === "GET" || request.method === "HEAD",
       );
       const reply = pendingReplies.get(response);
       pendingReplies.delete(response);

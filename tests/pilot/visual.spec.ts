@@ -55,6 +55,7 @@ test("captures reviewed major compositions at four viewport sizes", async ({
   await page.emulateMedia({ reducedMotion: "reduce" });
   for (const [name, width, height] of [
     ["desktop", 1366, 768],
+    ["laptop", 1280, 720],
     ["landscape", 1024, 768],
     ["portrait", 768, 1024],
     ["narrow", 390, 844],

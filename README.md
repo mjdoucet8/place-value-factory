@@ -4,11 +4,7 @@ This repository contains a locally runnable, fictional-data implementation of th
 
 Start with AGENTS.md and the technical specification in `Place_Value_Factory_Codex_Handoff/Math_Factory/docs/`. Root PROJECT_STATUS.md, TASK_LOG.md, DECISIONS.md and API_CONTRACTS.md coordinate implementation. `docs/COMPLETION_CHECKLIST.md` records the verified local scope and remaining limits.
 
-Extract the ZIP and put the contents of Math_Factory/ in the intended project root. If that repository already contains these files, review and merge rather than overwriting work. Open Codex from that root and ask it to read AGENTS.md and the specification, inspect all four images, claim PA-01, and begin the dependency-ordered roadmap with the pure math engine and independent tests.
-
-Five named agents are development roles. One session can perform them sequentially. The document does not require five terminals or introduce five runtime AI services.
-
-No install/start commands exist until the application is scaffolded. The foundation task must add actual dependency, migration, seed, test and run commands here, verify them, and use fictional student accounts. Do not claim a working application from these documents alone.
+Five named agents are development roles. One session can perform them sequentially; they are not runtime AI services. The local application is implemented, but school deployment and real-student use remain unapproved.
 
 ## Local development (fictional data only)
 
@@ -20,6 +16,8 @@ npm test
 npx tsc --noEmit
 npm run build
 npm run test:e2e
+npm run test:postgres
+npm run test:load
 npm run dev
 ```
 
@@ -37,7 +35,7 @@ Fictional student: `FACTORY5` / `ava` / `123456`; teacher: `teacher` / `factory-
 
 For an isolated, fictional-data secure local pilot, run `npm run pilot:local` (installed PostgreSQL 16 binaries required). Open the printed loopback URL and use the teacher credentials from the printed private `pilot-private.json` path. Create a class and issue fictional student access. Stop with Ctrl+C; use the printed `npm run pilot:local -- /tmp/pvf-pilot-...` command to resume the same database. Nothing is reset and no existing database is used. The private file includes a PIN-receipt encryption key: do not commit or publish it. This is a development preview, not production hosting or approval for real students.
 
-Repeat its browser journey with `PVF_PILOT_CREDENTIALS=/tmp/pvf-pilot-.../pilot-private.json npx playwright test -c playwright.pilot.config.ts`. It adds fictional classes/students to that isolated pilot and verifies session-backed play/reporting/revocation. Complete visual acceptance, recovery and operational release checks remain in progress.
+Repeat its browser journey with `PVF_PILOT_CREDENTIALS=/tmp/pvf-pilot-.../pilot-private.json npx playwright test -c playwright.pilot.config.ts`. It adds fictional classes/students to that isolated pilot and verifies session-backed play, reporting, queued-work revocation and archive. For guarded encrypted backup/restore, retention/deletion and expired-secret cleanup, follow `docs/OPERATIONS.md`. For measured local load, see `docs/qa/CLASSROOM_LOAD_2026-09-26.md`.
 
 Forward migrations are in `db/migrations/`. For a new, authorized fictional-data PostgreSQL 15+ database, set `DATABASE_URL` and run `npm run db:migrate --workspace=@place-value-factory/server`, then `npm run dev`. PostgreSQL failures never fall back to JSON. Without it, the development-only JSON adapter remains available. Existing JSON data is not automatically imported or rewritten. Secure mode requires `PVF_AUTH=local`, `PVF_ORIGIN` and a private 64-hex-character `PVF_RECEIPT_KEY` in addition to PostgreSQL; the launcher supplies these. Pilot/production startup rejects the development identity adapter. Do not use real student data.
 

@@ -44,6 +44,7 @@ export function MachineEditor({
             <div className="quantity-controls">
               <button
                 aria-label={`Remove one ${place.name} crate`}
+                tabIndex={-1}
                 disabled={saving || !order.allowed.includes(place.value)}
                 onClick={() =>
                   setQuantities((values) =>
@@ -57,6 +58,7 @@ export function MachineEditor({
               </button>
               <input
                 id={`quantity-${index}`}
+                aria-label={`${place.name} crate quantity`}
                 inputMode="numeric"
                 type="number"
                 min="0"
@@ -79,6 +81,7 @@ export function MachineEditor({
               />
               <button
                 aria-label={`Add one ${place.name} crate`}
+                tabIndex={-1}
                 disabled={saving || !order.allowed.includes(place.value)}
                 onClick={() =>
                   setQuantities((values) =>

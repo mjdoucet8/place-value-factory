@@ -2,6 +2,10 @@
 
 Objective: complete the original product/design handoff for owner review and a controlled fictional-data classroom pilot. Preserve the full expanded owner request in the thread. No implementable V1 gap can be reclassified as external merely because it is difficult. Historical handoffs are claims requiring verification.
 
+## Current local V1 candidate — 26 September 2026
+
+The dependency queue below is historical. RC-07 plus `f410558` supply verified mathematics, earned six-stage progression, immutable evidence and teacher reporting. The local V1 candidate adds encrypted, guarded backup/restore and configured deletion/retention/archive; session/network hardening; measured 90-student/30-concurrent API load; queued-work revocation recovery; and local accessibility checks. `docs/V1_CURRENT_ACCEPTANCE.md` maps the current evidence, `docs/OPERATIONS.md` describes safe operation, and `docs/qa/` records load and recovery/accessibility measurements. The full local integration suite passed before the checkpoint commit. School policy and physical classroom trials remain external gates; no deployment is claimed.
+
 ## Dependency queue
 
 1. Establish repeatable isolated real PostgreSQL tests without system-cluster access. Verify repository transactions, duplicate races, rollback and restart.

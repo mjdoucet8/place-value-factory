@@ -161,12 +161,34 @@ test("teacher issues access, student ships, and teacher reviews and revokes it",
   await expect(page.getByRole("columnheader", { name: "First answer" })).toBeVisible();
   await expect(page.getByRole("columnheader", { name: "Final answer" })).toBeVisible();
   await page.screenshot({ path: "test-results/pilot-teacher-evidence.png", fullPage: true });
+  await student.getByRole("button", { name: "Back to map" }).click();
+  await student.getByRole("button", { name: /Replay mission/ }).first().click();
+  await student.getByRole("button", { name: /Replay level/ }).click();
+  await student.route("**/responses", (route) => route.abort("connectionfailed"));
+  let pendingTarget = Number((await student.locator(".current-order strong").innerText()).replaceAll(",", ""));
+  for (const [index, value] of [100000, 10000, 1000, 100, 10, 1].entries()) {
+    const amount = Math.floor(pendingTarget / value);
+    pendingTarget %= value;
+    await student.locator(`#quantity-${index}`).fill(String(amount));
+  }
+  await student.getByRole("button", { name: "Ship order" }).click();
+  await expect(student.getByRole("button", { name: "Try saving again" })).toBeVisible();
   await page
     .getByRole("button", { name: "Revoke access for Pilot Learner" })
     .click();
   await expect(
     page.getByText("Access revoked. Previous sessions have ended."),
   ).toBeVisible();
+  await student.unroute("**/responses");
+  await student.getByRole("button", { name: "Try saving again" }).click();
+  await expect(student.getByText(/Your work is waiting to save/)).toBeVisible();
+  await page.reload();
+  await page.getByLabel("Class", { exact: true }).selectOption({ label: className });
+  await expect(page.getByText("5 submitted orders · 5 accepted shipments")).toBeVisible();
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: `Archive ${className}` }).click();
+  await expect(page.getByText(/Class archived\. Student sessions have ended/)).toBeVisible();
+  await expect(page.getByText("5 submitted orders · 5 accepted shipments")).toBeVisible();
   await student.reload();
   await expect(
     student.getByRole("button", { name: "Student login" }),

@@ -9,6 +9,7 @@ type Classroom = {
   code?: string;
   classCode?: string;
   enabled?: boolean;
+  archivedAt?: string | null;
 };
 type Student = {
   id: string;
@@ -172,6 +173,7 @@ export function TeacherWorkspace() {
                 {selected.classCode ?? selected.code ?? "FACTORY5"}
               </strong>
             </p>
+            {selected.archivedAt ? <p role="status">Archived class. Student activity is closed; saved reports remain available.</p> : null}
             <form
               onSubmit={(event) => {
                 event.preventDefault();
@@ -209,7 +211,7 @@ export function TeacherWorkspace() {
                   maxLength={40}
                 />
               </label>
-              <button disabled={busy || selected.enabled === false}>
+              <button disabled={busy || selected.enabled === false || Boolean(selected.archivedAt)}>
                 Issue student access
               </button>
             </form>
@@ -232,7 +234,7 @@ export function TeacherWorkspace() {
                   </span>
                   <div className="actions">
                     <button
-                      disabled={busy}
+                      disabled={busy || Boolean(selected.archivedAt)}
                       onClick={() =>
                         void run(async () => {
                           const reset = await mutate(
@@ -252,7 +254,7 @@ export function TeacherWorkspace() {
                       Reset PIN for {student.alias}
                     </button>
                     <button
-                      disabled={busy}
+                      disabled={busy || Boolean(selected.archivedAt)}
                       onClick={() =>
                         void run(async () => {
                           await mutate(
@@ -277,7 +279,7 @@ export function TeacherWorkspace() {
               ))}
             </ul>
             <button
-              disabled={busy}
+              disabled={busy || Boolean(selected.archivedAt)}
               onClick={() =>
                 void run(async () => {
                   const enabled = selected.enabled === false;
@@ -299,8 +301,26 @@ export function TeacherWorkspace() {
                 })
               }
             >
-              {selected.enabled === false ? "Enable" : "Disable"} class access
+              {selected.archivedAt ? "Archived class access" : `${selected.enabled === false ? "Enable" : "Disable"} class access`}
             </button>
+            {!selected.archivedAt ? (
+              <button
+                className="secondary"
+                disabled={busy}
+                onClick={() => {
+                  if (!window.confirm(`Archive ${selected.name}? Students will lose access, and saved reports will remain available.`)) return;
+                  void run(async () => {
+                    const archived = await mutate(`/teacher/classes/${classId}/archive`, {}, "PATCH");
+                    setClasses((current) => current.map((item) => item.id === classId ? { ...item, enabled: false, archivedAt: archived.archivedAt } : item));
+                    setIssued(null);
+                    setNotice("Class archived. Student sessions have ended; saved reports remain available.");
+                    await refresh(classId);
+                  });
+                }}
+              >
+                Archive {selected.name}
+              </button>
+            ) : null}
           </>
         ) : null}
       </section>

@@ -2,6 +2,19 @@
 
 Living source-of-truth audit, started 21 September 2026. A checked item means the implementation and its stated evidence exist locally; it does not claim school deployment or classroom readiness.
 
+## Current correction, 26 September 2026 — V1 local candidate
+
+The earlier RC-07 and 23 September sections below remain historical. Current local evidence is in `docs/V1_CURRENT_ACCEPTANCE.md`, `docs/OPERATIONS.md`, `docs/qa/CLASSROOM_LOAD_2026-09-26.md`, `docs/qa/RECOVERY_ACCESS_AUDIT_2026-09-26.md`, and the latest V1 `TASK_LOG.md` entries.
+
+- [x] RC-07 mathematical generation, validation, evidence, stage progression, rewards and teacher report behavior retained through a real PostgreSQL 30-level/restart suite.
+- [x] Fictional operational rehearsal: encrypted backup, authenticated separate-database restore, wrong-key rejection, restored teacher report, class archive, deletion and configured retention with dependent-record/class-isolation checks and backup-expiry marker.
+- [x] Local secure identity: session expiry/revocation, CSRF/origin, class isolation, account/network throttling, expired-secret cleanup and unsafe-configuration rejection.
+- [x] Bounded local load: 90 students/30 concurrent, p95 API below 500 ms in the recorded run, exactly-once retries and accurate class reports. Local Chromium input-to-display target checked separately.
+- [x] Locally available recovery and accessibility browser checks, including queued revocation, zoom/reflow, keyboard/focus, core contrast and reduced motion.
+- [ ] Owner visual approval; school identity/hosting/privacy and retention/backup policy decisions; representative physical-device, manual assistive-technology and school-network trials. These are release gates outside the local fictional-data candidate.
+
+Final full-suite evidence is recorded in the latest V1 task handoff. Do not interpret any checked local item as school deployment or WCAG conformance.
+
 ## Current correction, 26 September 2026 — RC-07 checkpoint
 
 The earlier 23 September summary and table below are historical and are superseded for the RC-07 math, progression, and reporting scope by the evidence recorded in `docs/ACCEPTANCE_LEDGER.md`, `docs/RC07_BLUEPRINT_LEDGER.md`, `docs/QA_EVIDENCE.md`, and the 26 September `TASK_LOG.md` entries. The current local checkpoint covers ORDER-01..05, VALIDATE-01..05, ADAPT-01..06, REWARD-01..03, EFF-01..02, and the scoped mathematical/progression/report/recovery/data criteria named in the RC-07 brief. It is not a claim that all V1 acceptance is complete.

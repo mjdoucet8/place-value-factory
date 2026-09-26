@@ -1,4 +1,4 @@
-import type { Dispatch, RefObject, SetStateAction } from "react";
+import { useRef, type Dispatch, type RefObject, type SetStateAction } from "react";
 import { BusyFactoryScenery, Mascot } from "../components/FactoryArt.js";
 import {
   MachineEditor,
@@ -37,6 +37,13 @@ type Props = {
 };
 
 export function GameScreen(props: Props) {
+  const shiftTabUsed = useRef(false);
+  const moveQuantityFocus = (direction: -1 | 1) => {
+    const quantities = Array.from(document.querySelectorAll<HTMLInputElement>('.machines input[id^="quantity-"]:not([disabled])'));
+    const index = quantities.indexOf(document.activeElement as HTMLInputElement);
+    if (index < 0 || !quantities.length) return;
+    quantities[(index + direction + quantities.length) % quantities.length].focus();
+  };
   if (props.attempt.status === "paused")
     return (
       <main className="results">
@@ -71,7 +78,26 @@ export function GameScreen(props: Props) {
               ? `Use only: ${order.allowed.map((value: number) => value.toLocaleString()).join(", ")}.`
               : "Build this target with the open machines.";
   return (
-    <main className="game-screen" data-busy={busyEnabled}>
+    <main
+      className="game-screen"
+      data-busy={busyEnabled}
+      onKeyDownCapture={(event) => {
+        if (!(event.target instanceof HTMLInputElement) || !/^quantity-[0-5]$/.test(event.target.id)) return;
+        if (event.key === "Enter") {
+          event.preventDefault();
+          if (!locked) props.onShip();
+        } else if (event.key === "Tab" && event.shiftKey) {
+          event.preventDefault();
+          shiftTabUsed.current = true;
+          moveQuantityFocus(-1);
+        }
+      }}
+      onKeyUpCapture={(event) => {
+        if (event.key !== "Shift") return;
+        if (shiftTabUsed.current) shiftTabUsed.current = false;
+        else if (event.target instanceof HTMLInputElement && /^quantity-[0-5]$/.test(event.target.id)) moveQuantityFocus(1);
+      }}
+    >
       <BusyFactoryScenery enabled={busyEnabled} />
       <header>
         <h1>
