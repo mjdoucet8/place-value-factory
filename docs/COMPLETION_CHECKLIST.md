@@ -2,6 +2,16 @@
 
 Living source-of-truth audit, started 21 September 2026. A checked item means the implementation and its stated evidence exist locally; it does not claim school deployment or classroom readiness.
 
+## Current pilot-readiness correction — 26 September 2026
+
+- [x] Local visual/keyboard review expanded to 24 gallery states plus login/teacher; contrast defect fixed and owner review captures prepared. Native zoom, spoken screen reader and physical devices remain outstanding trials.
+- [x] Fictional pilot rehearsed path and practice orders, interrupted-save recovery, teacher evidence, revocation and archive.
+- [x] Disposable operations rehearsal covers guarded backup expiry and independent deletion replay after restoring an older backup; deployment decisions and operator guides are prepared.
+- [ ] **PERF-01 remains a local blocker:** the 90-student historical sustained test verifies counts, receipts, reports and rewards but the full-detail class report p95 is 1,042 ms against 500 ms. See `docs/qa/CLASSROOM_LOAD_2026-09-26.md`.
+- [ ] After PERF-01 passes: owner art approval; school identity/hosting/privacy/retention/backup custody decisions; actual native zoom, screen-reader, physical-device and network trials.
+
+The checked bounded-load item in the older local-candidate section below refers only to its short fresh-data workload and is superseded for this milestone by the open historical gate above.
+
 ## Current correction, 26 September 2026 — V1 local candidate
 
 The earlier RC-07 and 23 September sections below remain historical. Current local evidence is in `docs/V1_CURRENT_ACCEPTANCE.md`, `docs/OPERATIONS.md`, `docs/qa/CLASSROOM_LOAD_2026-09-26.md`, `docs/qa/RECOVERY_ACCESS_AUDIT_2026-09-26.md`, and the latest V1 `TASK_LOG.md` entries.

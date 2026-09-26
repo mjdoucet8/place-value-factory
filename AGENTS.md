@@ -6,7 +6,7 @@ Version 1.0 | 20 September 2026 | Specification-only handoff
 
 These five agents are development roles, not runtime game agents. One Codex session may perform all roles sequentially. Separate terminals are not required. If the environment supports authorized parallel workers, use bounded tasks with explicit ownership; this file does not imply that any workers are already running.
 
-Owner requirements govern. Read docs/Place_Value_Factory_V1_Product_Technical_Specification.md, this file, PROJECT_STATUS.md, TASK_LOG.md, DECISIONS.md and API_CONTRACTS.md before claiming work. Inspect the relevant full PNG in design/ before UI work. Audit existing code and instructions before scaffolding; never replace an existing application or platform identity system without understanding it.
+Owner requirements govern. Read Place_Value_Factory_Codex_Handoff/Math_Factory/docs/Place_Value_Factory_V1_Product_Technical_Specification.md, this file, PROJECT_STATUS.md, TASK_LOG.md, DECISIONS.md and API_CONTRACTS.md before claiming work. Inspect the relevant full PNG in Place_Value_Factory_Codex_Handoff/Math_Factory/design/ before UI work. Audit existing code and instructions before scaffolding; never replace an existing application or platform identity system without understanding it.
 
 ## Roles and primary file ownership
 

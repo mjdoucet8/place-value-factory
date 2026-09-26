@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { createReadStream, createWriteStream } from "node:fs";
 import { appendFile, open, stat, unlink } from "node:fs/promises";
@@ -20,6 +20,7 @@ if (!/^[a-f0-9]{64}$/i.test(keyHex ?? ""))
 const key = Buffer.from(keyHex, "hex");
 const sourceUrl = process.env.PVF_BACKUP_SOURCE_URL;
 const targetUrl = process.env.PVF_RESTORE_TARGET_URL;
+const ledgerPath = process.env.PVF_DELETION_LEDGER;
 const magic = Buffer.from("PVFENC1");
 const headerSize = magic.length + 12;
 
@@ -32,6 +33,11 @@ function pgEnvironment(connectionString) {
   delete env.PVF_BACKUP_KEY;
   delete env.PVF_BACKUP_SOURCE_URL;
   delete env.PVF_RESTORE_TARGET_URL;
+  delete env.PVF_DELETION_LEDGER;
+  delete env.PVF_DELETION_LEDGER_KEY;
+  delete env.PVF_RECEIPT_KEY;
+  delete env.PVF_OPERATIONS_DATABASE_URL;
+  delete env.DATABASE_URL;
   return {
     ...env,
     PGHOST: url.searchParams.get("host") ?? url.hostname,
@@ -50,6 +56,20 @@ function command(name, commandArgs, env) {
     child.once("close", (code) => code === 0 ? resolve() : reject(new Error(`${name} failed: ${stderr.trim() || code}`)));
   });
   return { child, finished };
+}
+function ledgerCommand(name, targetUrl, targetName) {
+  const env = { ...process.env, PVF_OPERATIONS_DATABASE_URL: targetUrl };
+  delete env.PVF_BACKUP_KEY;
+  delete env.PVF_BACKUP_SOURCE_URL;
+  delete env.PVF_RESTORE_TARGET_URL;
+  const result = spawnSync("npx", ["--no-install", "tsx", "scripts/operations.ts", name, ...(name === "deletion-replay" ? ["--execute", `--confirm-db=${targetName}`] : [])], {
+    cwd: process.cwd(),
+    env,
+    encoding: "utf8",
+  });
+  if (result.error || result.status !== 0)
+    throw new Error(`Deletion ledger ${name} failed; restored target must remain isolated: ${result.stderr?.trim() || result.error?.message || result.status}`);
+  return JSON.parse(result.stdout);
 }
 async function dbName(url) {
   const pool = new Pool({ connectionString: url });
@@ -95,6 +115,10 @@ if (action === "backup") {
   }
 } else {
   if (!args.has("--execute")) throw new Error("Restore requires --execute.");
+  if (Boolean(ledgerPath) === args.has("--confirm-no-deletion-ledger"))
+    throw new Error("Restore requires either PVF_DELETION_LEDGER with its key or --confirm-no-deletion-ledger for a verified zero-request rehearsal.");
+  if (ledgerPath && (!Number.isSafeInteger(Number(process.env.PVF_BACKUP_RETENTION_DAYS)) || Number(process.env.PVF_BACKUP_RETENTION_DAYS) < 1))
+    throw new Error("Restoring with a deletion ledger requires an approved PVF_BACKUP_RETENTION_DAYS value.");
   const targetName = await dbName(targetUrl);
   if (option("confirm-target-db") !== targetName)
     throw new Error(`Restore requires --confirm-target-db=${targetName}.`);
@@ -107,6 +131,7 @@ if (action === "backup") {
     decryptStream(payload),
     new Writable({ write(_chunk, _encoding, callback) { callback(); } }),
   );
+  if (ledgerPath) ledgerCommand("deletion-ledger-check", targetUrl, targetName);
   const pool = new Pool({ connectionString: targetUrl });
   try {
     const objects = await pool.query(
@@ -119,6 +144,7 @@ if (action === "backup") {
     pipeline(createReadStream(archive, { start: headerSize, end: payload.end }), decryptStream(payload), child.stdin),
     finished,
   ]);
+  const deletionReplay = ledgerPath ? ledgerCommand("deletion-replay", targetUrl, targetName) : { skipped: "operator-confirmed zero deletion requests" };
   const verify = new Pool({ connectionString: targetUrl });
   try {
     const counts = (await verify.query(
@@ -130,6 +156,6 @@ if (action === "backup") {
        (SELECT count(*)::int FROM pvf_skill_evidence) AS evidence,
        (SELECT count(*)::int FROM pvf_command_receipt) AS receipts`,
     )).rows[0];
-    console.log(JSON.stringify({ action, database: targetName, archive, counts, encrypted: true }));
+    console.log(JSON.stringify({ action, database: targetName, archive, counts, encrypted: true, deletionReplay }));
   } finally { await verify.end(); }
 }

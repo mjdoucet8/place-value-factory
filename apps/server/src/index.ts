@@ -202,6 +202,8 @@ export function createApiServer(
   } = {},
 ): Server {
   const now = options.now ?? (() => new Date());
+  if (process.env.NODE_ENV === "production" || process.env.PVF_MODE === "production")
+    throw new Error("Production startup requires the school identity adapter; only fictional pilot mode is implemented.");
   if (
     (process.env.NODE_ENV === "production" ||
       process.env.PVF_MODE === "pilot") &&
@@ -238,6 +240,7 @@ export function createApiServer(
   const directories = new AsyncLocalStorage<
     Awaited<ReturnType<LocalIdentity["directory"]>>
   >();
+  const actorScope = new AsyncLocalStorage<{ id: string; role: "student" | "teacher"; path: string }>();
   const directory = () =>
     directories.getStore() ?? {
       students: developmentStudents,
@@ -250,8 +253,19 @@ export function createApiServer(
     extraHeaders: Record<string, string>;
   };
   const pendingReplies = new WeakMap<ServerResponse, Reply | null>();
-  async function store(): Promise<Store> {
-    if (sqlStore) return sqlStore.load();
+  async function store(startCommandId?: string): Promise<Store> {
+    if (sqlStore) {
+      const actor = actorScope.getStore();
+      const classIds = actor?.role === "teacher"
+        ? new Set(identity
+          ? directory().classes.filter((item) => item.teacherId === actor.id).map((item) => item.id)
+          : directory().teachers.find((item) => item.id === actor.id)?.classIds ?? [])
+        : null;
+      const studentIds = actor?.role === "student"
+        ? [actor.id]
+        : classIds ? directory().students.filter((item) => classIds.has(item.classId)).map((item) => item.id) : undefined;
+      return sqlStore.load(studentIds, actor?.role === "teacher" && /\/report$|\/evidence$/.test(actor.path), startCommandId);
+    }
     try {
       const parsed = JSON.parse(await readFile(dataPath, "utf8")) as Store;
       return {
@@ -267,8 +281,8 @@ export function createApiServer(
       throw error;
     }
   }
-  async function save(value: Store) {
-    if (sqlStore) return sqlStore.save(value);
+  async function save(value: Store, changedAttemptId?: string) {
+    if (sqlStore) return sqlStore.save(value, changedAttemptId);
     await mkdir(dirname(dataPath), { recursive: true });
     await writeFile(dataPath, JSON.stringify(value, null, 2));
   }
@@ -872,6 +886,7 @@ export function createApiServer(
           401,
           responseError("SESSION_EXPIRED", "Please sign in."),
         );
+      actorScope.enterWith({ id: actor.id, role: actor.role, path: url.pathname });
       if (
         url.pathname.startsWith("/api/v1/teacher/") &&
         actor.role !== "teacher"
@@ -1036,7 +1051,7 @@ export function createApiServer(
               "A command ID, profile revision, tab ID, and matching Idempotency-Key are required.",
             ),
           );
-        const state = await store();
+        const state = await store(command.commandId);
         let attempt = state.attempts.find(
           (item) => item.studentId === actor.id && !item.completed,
         );
@@ -1224,7 +1239,7 @@ export function createApiServer(
           status: 201,
           body: startedSnapshot,
         });
-        await save(state);
+        await save(state, attempt.id);
         return send(response, 201, startedSnapshot);
       }
       const stateChange = url.pathname.match(
@@ -1299,7 +1314,7 @@ export function createApiServer(
           status: 200,
           body: bodyOut,
         });
-        await save(state);
+        await save(state, attempt.id);
         return send(response, 200, bodyOut);
       }
       const heartbeat = url.pathname.match(
@@ -1377,7 +1392,7 @@ export function createApiServer(
           status: 200,
           body: bodyOut,
         });
-        await save(state);
+        await save(state, attempt.id);
         return send(response, 200, bodyOut);
       }
       const takeover = url.pathname.match(
@@ -1447,7 +1462,7 @@ export function createApiServer(
           status: 200,
           body: bodyOut,
         });
-        await save(state);
+        await save(state, attempt.id);
         return send(response, 200, bodyOut);
       }
       const hints = url.pathname.match(
@@ -1557,7 +1572,7 @@ export function createApiServer(
           status: 200,
           body: bodyOut,
         });
-        await save(state);
+        await save(state, attempt.id);
         return send(response, 200, bodyOut);
       }
       const skip = url.pathname.match(
@@ -1667,7 +1682,7 @@ export function createApiServer(
           status: 200,
           body: bodyOut,
         });
-        await save(state);
+        await save(state, attempt.id);
         return send(response, 200, bodyOut);
       }
       const transfer = url.pathname.match(
@@ -1756,7 +1771,7 @@ export function createApiServer(
           status: 200,
           body: bodyOut,
         });
-        await save(state);
+        await save(state, attempt.id);
         return send(response, 200, bodyOut);
       }
       const match = url.pathname.match(
@@ -1964,7 +1979,7 @@ export function createApiServer(
             status: 200,
             body: bodyOut,
           });
-          await save(state);
+          await save(state, attempt.id);
           return send(response, 200, bodyOut);
         }
       }
@@ -2188,6 +2203,22 @@ export function createApiServer(
     if (!sqlStore) return handle(request, response);
     pendingReplies.set(response, null);
     try {
+      const mutation = !["GET", "HEAD", "OPTIONS"].includes(request.method ?? "");
+      let studentLockId: string | undefined;
+      if (mutation && identity) {
+        const token = sessionToken(request);
+        if (/^[A-Za-z0-9_-]{43}$/.test(token)) {
+          const row = (await database!.query(
+            "SELECT i.id,i.role FROM pvf_session s JOIN pvf_identity i ON i.id=s.actor_id WHERE s.token_hash=$1",
+            [createHash("sha256").update(token).digest("hex")],
+          )).rows[0];
+          if (row?.role === "student") studentLockId = row.id;
+        }
+      } else if (mutation) {
+        const actor = request.headers["x-session"];
+        if (typeof actor === "string" && developmentStudents.some((student) => student.id === actor))
+          studentLockId = actor;
+      }
       await sqlStore.transaction(
         async () =>
           identity
@@ -2196,6 +2227,7 @@ export function createApiServer(
               )
             : handle(request, response),
         request.method === "GET" || request.method === "HEAD",
+        studentLockId,
       );
       const reply = pendingReplies.get(response);
       pendingReplies.delete(response);

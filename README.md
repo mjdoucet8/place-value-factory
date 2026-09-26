@@ -18,12 +18,15 @@ npm run build
 npm run test:e2e
 npm run test:postgres
 npm run test:load
+npm run test:sustained
 npm run dev
 ```
 
 `npm run dev` starts the API at http://127.0.0.1:3101 and the web app at http://127.0.0.1:5181. The test suite includes deterministic math/oracle tests, fictional API journey/restart tests, idempotency/lease/help/skip/transfer coverage, and a pg-mem repository transaction test.
 
 The browser stores one pending answer or help request per student attempt in IndexedDB before sending it. A refresh or restored connection retries the same command ID. The screen distinguishes work waiting on the device from server-confirmed progress and offers a retry button. If IndexedDB is unavailable, direct play still works with an explicit warning that a refresh may lose an unconfirmed request. `npm run test:e2e` creates a new disposable fictional store in `/tmp`; its test-only control resets only that newly created store between browser cases. The suite does not clear `apps/server/db/local-development.json`.
+
+`npm run test:sustained` currently exits nonzero on the predeclared full-detail teacher-report p95 target (last retained run: 1,042 ms versus 500 ms). It still verifies the final fictional counts, cross-process duplicate receipts, class isolation and rewards before asserting latency. See `docs/qa/CLASSROOM_LOAD_2026-09-26.md`; the short fresh-data `test:load` pass does not close this pilot-readiness blocker.
 
 ### Pre-art visual development
 
@@ -41,4 +44,4 @@ Forward migrations are in `db/migrations/`. For a new, authorized fictional-data
 
 Run `npm run test:postgres` for isolated real-database verification. It uses installed PostgreSQL 16 binaries (`PVF_POSTGRES_BIN` can select another binary directory), creates a new user-owned cluster under `/tmp/pvf-postgres-test-*`, permits peer-authenticated connections only on its private Unix socket, and disables TCP. It never reads `DATABASE_URL`, resets existing databases or requires sudo. Tests cover rollback, concurrent duplicate receipts and a real database process restart. The cluster is stopped afterward; temporary files are retained for diagnostics. `npm test` deliberately skips this dedicated real-database test unless the harness supplies its private socket.
 
-For the secure fictional browser pilot, start `npm run pilot:local` in one terminal, then run `PVF_PILOT_CREDENTIALS=/tmp/pvf-pilot-.../pilot-private.json npx playwright test --config=playwright.pilot.config.ts` in another, using the exact private path printed by the launcher. Stop the pilot with Ctrl+C. The RC-07 database harness completes all 30 path levels and practices missing stage skills through HTTP submissions; the browser pilot checks access provision, five shipments, teacher question/answer evidence and revocation.
+For the secure fictional browser pilot, start `npm run pilot:local` in one terminal, then run `PVF_PILOT_CREDENTIALS=/tmp/pvf-pilot-.../pilot-private.json npx playwright test --config=playwright.pilot.config.ts` in another, using the exact private path printed by the launcher. Stop the pilot with Ctrl+C. Starting a new launcher without an argument makes a fresh isolated pilot; the old directory is preserved. See `docs/PILOT_OPERATOR_GUIDE.md`, `docs/PILOT_VISUAL_REVIEW.md` and `docs/DEPLOYMENT_READINESS.md` for the rehearsal, owner review and remaining deployment decisions. The RC-07 database harness completes all 30 path levels and practices missing stage skills through HTTP submissions; the browser pilot covers provision, gameplay, practice, interrupted save, teacher evidence, revocation and archive.

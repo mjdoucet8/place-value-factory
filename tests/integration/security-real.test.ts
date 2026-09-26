@@ -30,6 +30,14 @@ describe.skipIf(!socket || process.env.PVF_TEST_PG_RESTART === "1")(
         passwords = [randomUUID(), randomUUID()];
       expect(() => createApiServer("/unused/invalid.json", { database: pool, identity: { origin: "http://classroom.test", receiptKey: key.toString("hex") } })).toThrow(/HTTPS/);
       expect(() => createApiServer("/unused/invalid.json", { database: pool, identity: { origin: "https://classroom.test", receiptKey: "bad" } })).toThrow(/encryption key/);
+      const previousMode = process.env.PVF_MODE;
+      try {
+        process.env.PVF_MODE = "production";
+        expect(() => createApiServer("/unused/production.json", { database: pool, identity: { origin: "https://classroom.test", receiptKey: key.toString("hex") } })).toThrow(/school identity adapter/);
+      } finally {
+        if (previousMode === undefined) delete process.env.PVF_MODE;
+        else process.env.PVF_MODE = previousMode;
+      }
       await store.transaction(async () => {
         await identity.provisionTeacher("teacher-one", passwords[0]);
         await identity.provisionTeacher("teacher-two", passwords[1]);

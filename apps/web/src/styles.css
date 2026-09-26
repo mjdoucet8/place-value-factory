@@ -192,7 +192,7 @@ summary:focus-visible {
 }
 .map-welcome {
   align-items: center;
-  background: rgb(255 255 255 / 91%);
+  background: #fff;
   border: 3px solid var(--cobalt);
   border-radius: var(--radius-md);
   display: flex;
@@ -320,6 +320,14 @@ button:disabled {
 .notice p {
   margin: 0;
 }
+.storage-warning {
+  background: var(--cream);
+  border: 3px solid var(--danger);
+  border-radius: var(--radius-md);
+  margin: var(--space-3) auto;
+  max-width: 760px;
+  padding: var(--space-2) var(--space-3);
+}
 .resume-banner,
 .intro-card,
 .progress-summary,
@@ -430,6 +438,10 @@ header nav {
 .table-region {
   max-width: 100%;
   overflow: auto;
+}
+.table-hint { display: none; }
+@media (max-width: 699px) {
+  .table-hint { display: block; font-size: 0.9rem; }
 }
 .teacher-management {
   background: var(--surface);
@@ -675,7 +687,7 @@ header nav {
   margin: 0 auto 22px;
 }
 .results-heading {
-  background: rgb(255 250 240 / 95%);
+  background: var(--cream);
   border: 4px solid #eda323;
   border-radius: 28px;
   padding: 18px;
@@ -1411,7 +1423,7 @@ td {
   padding: 0;
   border: 3px solid #97e9ff;
   border-radius: 50%;
-  background: linear-gradient(#169ce9, #17449d);
+  background: linear-gradient(#0870b7, #17449d);
   box-shadow: 0 4px 0 #15335e;
   font-size: 1.15rem;
 }

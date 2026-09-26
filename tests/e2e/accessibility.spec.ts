@@ -87,6 +87,56 @@ test("quantity keyboard navigation and Enter ship work on a saved mission", asyn
   await expect(page.getByText("Order 2 of 5")).toBeVisible();
 });
 
+test("student can finish five orders using keyboard controls and reach saved results", async ({ page }) => {
+  const reset = await fetch("http://127.0.0.1:3102/__reset", { method: "POST" });
+  expect(reset.status).toBe(204);
+  await page.goto("/");
+  await page.getByRole("button", { name: "Student login" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("heading", { name: "Factory Map" })).toBeVisible();
+  await page.getByRole("button", { name: /View mission/ }).first().focus();
+  await page.keyboard.press("Enter");
+  await page.getByRole("button", { name: /Start mission/ }).focus();
+  await page.keyboard.press("Enter");
+  for (let slot = 0; slot < 5; slot++) {
+    const target = Number((await page.locator(".current-order strong").innerText()).replaceAll(",", ""));
+    await page.getByRole("button", { name: "Help" }).focus();
+    const enabled = page.locator('.machines input[id^="quantity-"]:not([disabled])');
+    let reached = false;
+    for (let step = 0; step < 24; step++) {
+      await page.keyboard.press("Tab");
+      reached = await enabled.first().evaluate((node) => document.activeElement === node);
+      if (reached) break;
+    }
+    expect(reached, `order ${slot + 1} quantity reachable by Tab`).toBe(true);
+    let remainder = target;
+    for (let index = 0; index < await enabled.count(); index++) {
+      const input = enabled.nth(index);
+      await expect(input).toBeFocused();
+      const place = [100000, 10000, 1000, 100, 10, 1][Number((await input.getAttribute("id"))?.split("-")[1])];
+      const quantity = Math.floor(remainder / place);
+      remainder %= place;
+      await page.keyboard.press("Control+A");
+      await page.keyboard.type(String(quantity));
+      if (index < await enabled.count() - 1) {
+        let nextInput = false;
+        for (let tab = 0; tab < 8; tab++) {
+          await page.keyboard.press("Tab");
+          nextInput = await enabled.nth(index + 1).evaluate((node) => document.activeElement === node);
+          if (nextInput) break;
+        }
+        expect(nextInput, `order ${slot + 1} next quantity reachable by Tab`).toBe(true);
+      }
+    }
+    await page.keyboard.press("Enter");
+    if (slot < 4) await expect(page.getByText(`Order ${slot + 2} of 5`)).toBeVisible();
+  }
+  await expect(page.getByRole("heading", { name: "Level complete!" })).toBeVisible();
+  await page.getByRole("button", { name: "Back to map" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("heading", { name: "Factory Map" })).toBeVisible();
+});
+
 test("login failure is announced and associated with credential fields", async ({ page }) => {
   await page.goto("/");
   await page.getByLabel("Six-digit PIN").fill("000000");

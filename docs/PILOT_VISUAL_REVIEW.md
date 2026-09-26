@@ -1,0 +1,16 @@
+# Owner visual review pack — fictional pilot
+
+Compare these current semantic renders with the four original 1672×941 references in `Place_Value_Factory_Codex_Handoff/Math_Factory/design/`. The references establish the bright factory mood and one-order hierarchy; their example numbers, star fractions and locks are illustrative. Render captures use fictional gallery or teacher data with motion disabled.
+
+| Screen | Current render | What to inspect |
+| --- | --- | --- |
+| Map | [desktop](visual-evidence/pilot-map.png), [narrow](visual-evidence/pilot-map-narrow.png) | Five illustrated zones, 30 live nodes, readable locked states and list alternative; current position and stars are computed. |
+| Game | [calm desktop](visual-evidence/pilot-calm.png), [narrow](visual-evidence/pilot-calm-narrow.png), [help](visual-evidence/pilot-help.png) | One CURRENT ORDER, six labelled machines, visible Ship and live total; art remains behind controls; help dialog is readable. Busy art is optional and reduced motion hides moving scenery. |
+| Results | [desktop](visual-evidence/pilot-results.png), [narrow](visual-evidence/pilot-results-narrow.png) | Earned stars and fractions are live values; original celebration mood remains without hardcoded mockup statistics. |
+| Teacher | [desktop](visual-evidence/pilot-teacher.png), [320px](visual-evidence/pilot-teacher-narrow.png) | Class/roster controls, stored evidence and report access remain readable; one-time PIN is hidden in the capture. At narrow width, the focused answer table scrolls sideways and now has a visible cue. |
+
+The local Chromium audit traverses visible text in 24 gallery states plus login and teacher screens. It checks text against computed opaque colors or gradient stops, including buttons, disabled controls, map nodes, feedback, help and error states. The initial run found white node numbers at about 3.01:1 on the bright blue stop. The node stop was darkened, and the remaining text overlays received opaque surfaces. The final audit found no low-contrast text or text directly over artwork in those tested states. This does not measure baked-in decorative art lettering, all possible color/transparency combinations, or WCAG conformance. `tests/e2e/visual-audit.spec.ts` regenerates the audit and temporary review captures.
+
+The local keyboard and focus suite covers quantity navigation/Enter shipment, help focus restoration, teacher report focus and field-error association. CSS 200% zoom and 320–1366px reflow pass in Chromium. Both headless and headed automated Chrome ignored `Control+Equal` as a native browser zoom command, and the in-app browser surface was unavailable; **native 200% browser zoom still requires a manual review**. Orca is installed but this run did not claim an isolated spoken screen-reader trial on the owner's GNOME session. The selected school screen reader and actual device must be exercised using `docs/PILOT_OPERATOR_GUIDE.md`.
+
+Owner decision to record: approve or request changes to the factory palette, robot, amount of scenery, order/machine hierarchy, map route and celebration. For each requested change, cite a screen, viewport and observed issue; preserve live semantic text and controls when adjusting art. Aesthetic approval has not been given.

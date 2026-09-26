@@ -184,7 +184,7 @@ export function GameScreen(props: Props) {
         </div>
       )}
       {props.storageUnavailable && (
-        <p role="status">
+        <p className="storage-warning" role="status">
           Device storage is unavailable. Your current draft stays in this tab,
           but it cannot be restored after refresh or close.
         </p>

@@ -1,5 +1,9 @@
 # Full locally verifiable V1 release candidate
 
+## Pilot-readiness checkpoint — 26 September 2026
+
+The earlier local V1 candidate remains a verified historical checkpoint. The stricter pilot milestone now has visual/keyboard review, fictional path-plus-practice pilot, deletion-after-older-restore and guarded archive expiry evidence, plus a provider-independent deployment decision package. Its sustained historical-load gate **fails** because full-detail 30-student full-year class reports exceed the 500 ms API p95 target. The retained three-process run measured 1,042 ms report p95 while student paths, counts, receipts, isolation and rewards passed. Keep PERF-01 open; see `docs/qa/CLASSROOM_LOAD_2026-09-26.md` and the pending `PILOT-REPORT-PERF` decision. After a compatible performance fix and full rerun, proceed through the owner/school and physical-device/AT/network gates in `docs/DEPLOYMENT_READINESS.md`. No classroom deployment is approved.
+
 Objective: complete the original product/design handoff for owner review and a controlled fictional-data classroom pilot. Preserve the full expanded owner request in the thread. No implementable V1 gap can be reclassified as external merely because it is difficult. Historical handoffs are claims requiring verification.
 
 ## Current local V1 candidate — 26 September 2026

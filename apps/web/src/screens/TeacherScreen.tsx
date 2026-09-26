@@ -59,6 +59,7 @@ export function TeacherScreen({
               <summary>Skill progress ({student.skills?.length ?? 0})</summary>
               <ul>{student.skills?.map((skill: any) => <li key={skill.skillId}>{skill.skillId}: {skill.status}, {skill.sampleN} eligible orders{skill.score === null ? "" : `, ${Math.round(skill.score * 100)}%`}</li>)}</ul>
             </details>
+            <p className="table-hint">Scroll the answer table sideways to view every column.</p>
             <div className="table-region" role="region" aria-label={`Stored order evidence for ${student.alias}`} tabIndex={0}>
               <table>
                 <caption>Stored question and first/final answers for {student.alias}</caption>

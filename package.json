@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:postgres": "node scripts/test-postgres.mjs",
     "test:load": "node scripts/test-postgres.mjs load",
+    "test:sustained": "node scripts/test-postgres.mjs sustained",
     "pilot:local": "node scripts/pilot.mjs",
     "test:e2e": "playwright test",
     "test:watch": "vitest",

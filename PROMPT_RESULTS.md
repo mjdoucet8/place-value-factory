@@ -93,3 +93,9 @@ Overall result: Implemented and verified the local fictional-data RC-07 checkpoi
 Prompt: Complete operational readiness and the full locally verifiable V1 release candidate from the attached brief, building on RC-07; preserve user work, verify acceptance and make a local checkpoint commit.
 
 Overall result: Implemented guarded encrypted backup/restore, archive, deletion and retention; hardened local identity and improved PostgreSQL read/write throughput; completed fictional-data load, recovery and accessibility checks; reconciled current acceptance and operations guidance. Full local unit, PostgreSQL/restart, load, standard browser, secure pilot, typecheck and build runs passed. Existing development data and private files were excluded. Owner, school policy, physical device, assistive-technology and school-network gates remain external; no classroom deployment claim.
+
+## 2026-09-26 — Complete pilot-readiness milestone
+
+Prompt: Finish the attached pilot-readiness brief autonomously: reconcile the worktree, close local visual/accessibility and operations gaps, verify sustained historical load, rehearse a fictional pilot, prepare deployment decisions and commit a checkpoint without touching existing data or private files.
+
+Overall result: Implemented and verified broad visual/keyboard coverage, safe archive expiry and deletion-after-older-restore tooling, a path-plus-practice secure pilot, and a provider-independent deployment package. Regular, PostgreSQL/restart, short load, standard browser and secure-pilot suites pass. The stricter 90-student historical sustained test preserves all counts and rewards but fails the 500 ms full-detail teacher-report p95 target (1,042 ms); pilot-readiness completion remains blocked on PERF-01. No subagents, external deployment, real student data or owner approval were used. The checkpoint excludes the preexisting local database, private configuration, unrelated task-log sentence and server formatting.

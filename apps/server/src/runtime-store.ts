@@ -7,22 +7,25 @@ type Context = {
   client: PoolClient;
   state?: Store;
   dirty: boolean;
-  originalAttempts?: Map<string, string>;
+  snapshotOnly: boolean;
+  originalAttempts?: Map<string, Attempt>;
   originalProfiles?: Map<string, string>;
+  changedAttemptIds?: Set<string>;
 };
 const iso = (value: Date | string) =>
   value instanceof Date ? value.toISOString() : value;
 
 /** Normalized SQL unit of work. Responses are released only after commit.
- * Mutations serialize across processes; GETs use a repeatable-read snapshot
- * so report reads need not wait for the global mutation lock.
+ * Student mutations share a global gate and serialize per student. Teacher and
+ * operational mutations use the exclusive global gate so revocation cannot
+ * race an already authenticated student write. GETs use repeatable-read.
  */
 export class PostgresRuntimeStore {
   private context = new AsyncLocalStorage<Context>();
   constructor(private pool: Pool) {}
 
-  async transaction<T>(operation: () => Promise<T>, snapshotOnly = false): Promise<T> {
-    if (!snapshotOnly) return this.transactionOnce(operation, false);
+  async transaction<T>(operation: () => Promise<T>, snapshotOnly = false, studentLockId?: string): Promise<T> {
+    if (!snapshotOnly) return this.transactionOnce(operation, false, studentLockId);
     for (let retry = 0; ; retry++) {
       try {
         return await this.transactionOnce(operation, true);
@@ -32,7 +35,7 @@ export class PostgresRuntimeStore {
     }
   }
 
-  private async transactionOnce<T>(operation: () => Promise<T>, snapshotOnly: boolean): Promise<T> {
+  private async transactionOnce<T>(operation: () => Promise<T>, snapshotOnly: boolean, studentLockId?: string): Promise<T> {
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN");
@@ -40,9 +43,13 @@ export class PostgresRuntimeStore {
         await client.query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
       await client.query("SET LOCAL lock_timeout='5s'");
       await client.query("SET LOCAL statement_timeout='10s'");
-      if (!snapshotOnly)
-        await client.query("SELECT pg_advisory_xact_lock(736482902)");
-      const context: Context = { client, dirty: false };
+      if (!snapshotOnly) {
+        if (studentLockId) {
+          await client.query("SELECT pg_advisory_xact_lock_shared(736482902)");
+          await client.query("SELECT pg_advisory_xact_lock(736482903,hashtext($1))", [studentLockId]);
+        } else await client.query("SELECT pg_advisory_xact_lock(736482902)");
+      }
+      const context: Context = { client, dirty: false, snapshotOnly };
       const result = await this.context.run(context, operation);
       if (context.dirty && context.state)
         await this.persist(client, context.state, context);
@@ -56,42 +63,59 @@ export class PostgresRuntimeStore {
     }
   }
 
-  async load(): Promise<Store> {
+  async load(studentIds?: string[], reportOnly = false, startCommandId?: string): Promise<Store> {
     const context = this.requiredContext();
     if (context.state) return context.state;
     const client = context.client;
-    const profiles = (
-      await client.query(
-        "SELECT student_id,settings,access_enabled,certifications FROM pvf_game_profile",
-      )
-    ).rows;
-    const attempts = (
-      await client.query("SELECT * FROM pvf_attempt ORDER BY created_at,id")
-    ).rows;
-    const orders = (
-      await client.query("SELECT id,attempt_id,spec,slot_index,replacement_index,role,status FROM pvf_order")
-    ).rows;
+    const readRows = async (query: string, values: unknown[] = []) =>
+      (await client.query(query, values)).rows;
+    const scope = studentIds === undefined ? "" : " WHERE student_id=ANY($1::text[])";
+    const params = studentIds === undefined ? [] : [studentIds];
+    const profiles = await readRows(
+        `SELECT student_id,settings,access_enabled,certifications FROM pvf_game_profile${scope}`,
+        params,
+      );
+    const attempts = await readRows(`SELECT * FROM pvf_attempt${scope} ORDER BY created_at,id`, params);
+    const orders = await readRows("SELECT id,attempt_id,spec,slot_index,replacement_index,role,status FROM pvf_order WHERE attempt_id=ANY($1::uuid[]) ORDER BY attempt_id,slot_index,replacement_index,role", [attempts.map((row) => row.id)]);
     const byOrder = new Map(orders.map((row) => [row.id, row]));
-    const responses = (
-      await client.query(
-        "SELECT * FROM pvf_response ORDER BY committed_at,sequence",
-      )
-    ).rows;
-    const evidence = (
-      await client.query(
-        "SELECT * FROM pvf_skill_evidence ORDER BY committed_at,id",
-      )
-    ).rows;
-    const receipts = (
-      await client.query(
-        "SELECT * FROM pvf_command_receipt ORDER BY committed_at,command_id",
-      )
-    ).rows;
-    const supports = (
-      await client.query(
-        "SELECT * FROM pvf_support_event ORDER BY committed_at,step",
-      )
-    ).rows;
+    const activeAttemptIds = new Set(attempts.filter((row) => row.status !== "completed").map((row) => row.id));
+    const responseOrderIds = startCommandId
+      ? orders.filter((row) => activeAttemptIds.has(row.attempt_id)).map((row) => row.id)
+      : orders.map((row) => row.id);
+    const responses = await readRows(
+        "SELECT * FROM pvf_response WHERE order_id=ANY($1::text[]) ORDER BY committed_at,sequence",
+        [responseOrderIds],
+      );
+    const evidence = await readRows(
+        `SELECT * FROM pvf_skill_evidence${scope} ORDER BY committed_at,id`,
+        params,
+      );
+    const receipts = reportOnly ? [] : await readRows(
+        startCommandId
+          ? "SELECT * FROM pvf_command_receipt WHERE actor_id=ANY($1::text[]) AND command_id=$2 ORDER BY committed_at,command_id"
+          : `SELECT * FROM pvf_command_receipt${studentIds === undefined ? "" : " WHERE actor_id=ANY($1::text[])"} ORDER BY committed_at,command_id`,
+        startCommandId ? [studentIds, startCommandId] : params,
+      );
+    const supports = await readRows(
+        "SELECT * FROM pvf_support_event WHERE order_id=ANY($1::text[]) ORDER BY committed_at,step",
+        [responseOrderIds],
+      );
+    const grouped = <T>(items: T[], key: (item: T) => string | undefined) => {
+      const groups = new Map<string, T[]>();
+      for (const item of items) {
+        const id = key(item);
+        if (id === undefined) continue;
+        const list = groups.get(id) ?? [];
+        list.push(item);
+        groups.set(id, list);
+      }
+      return groups;
+    };
+    const ordersByAttempt = grouped(orders, (row) => row.attempt_id);
+    const responsesByAttempt = grouped(responses, (row) => byOrder.get(row.order_id)?.attempt_id);
+    const evidenceByAttempt = grouped(evidence, (row) => byOrder.get(row.order_id)?.attempt_id);
+    const receiptsByAttempt = grouped(receipts, (row) => row.attempt_id ?? undefined);
+    const supportsByAttempt = grouped(supports, (row) => byOrder.get(row.order_id)?.attempt_id);
     context.state = {
       settings: Object.fromEntries(
         profiles.map((row) => [row.student_id, row.settings]),
@@ -122,10 +146,9 @@ export class PostgresRuntimeStore {
         practiceSchedule: row.practice_schedule ?? undefined,
         awardedTier: row.awarded_tier ?? undefined,
         transferStar: row.transfer_star,
-        activeOrder: byOrder.get(row.active_order_id)?.spec,
-        transferOrder: byOrder.get(row.transfer_order_id)?.spec,
-        issuedOrders: orders
-          .filter((order) => order.attempt_id === row.id)
+        activeOrder: reportOnly ? undefined : byOrder.get(row.active_order_id)?.spec,
+        transferOrder: reportOnly ? undefined : byOrder.get(row.transfer_order_id)?.spec,
+        issuedOrders: reportOnly ? [] : (ordersByAttempt.get(row.id) ?? [])
           .map((order) => ({
             spec: order.spec,
             slot: order.slot_index,
@@ -133,8 +156,7 @@ export class PostgresRuntimeStore {
             role: order.role,
             status: order.status,
           })),
-        responses: responses
-          .filter((r) => byOrder.get(r.order_id)?.attempt_id === row.id)
+        responses: (responsesByAttempt.get(row.id) ?? [])
           .map((r) => ({
             commandId: r.command_id,
             activeMs: r.active_ms,
@@ -144,8 +166,7 @@ export class PostgresRuntimeStore {
             validation: r.validation,
             at: iso(r.committed_at),
           })),
-        evidence: evidence
-          .filter((e) => byOrder.get(e.order_id)?.attempt_id === row.id)
+        evidence: (evidenceByAttempt.get(row.id) ?? [])
           .map((e) => ({
             orderId: e.order_id,
             skillId: e.skill_id,
@@ -156,8 +177,7 @@ export class PostgresRuntimeStore {
             committedAt: iso(e.committed_at),
             eligible: e.eligible,
           })),
-        receipts: receipts
-          .filter((r) => r.attempt_id === row.id)
+        receipts: (receiptsByAttempt.get(row.id) ?? [])
           .map((r) => ({
             actorId: r.actor_id,
             commandId: r.command_id,
@@ -165,8 +185,7 @@ export class PostgresRuntimeStore {
             status: r.status,
             body: r.response,
           })),
-        supportEvents: supports
-          .filter((s) => byOrder.get(s.order_id)?.attempt_id === row.id)
+        supportEvents: (supportsByAttempt.get(row.id) ?? [])
           .map((s) => ({
             orderId: s.order_id,
             step: s.step,
@@ -174,23 +193,37 @@ export class PostgresRuntimeStore {
           })),
       })),
     };
-    context.originalAttempts = new Map(
-      context.state.attempts.map((attempt) => [attempt.id, JSON.stringify(attempt)]),
-    );
-    context.originalProfiles = new Map(
-      profiles.map((row) => [row.student_id, JSON.stringify([
-        row.settings,
-        row.access_enabled,
-        row.certifications,
-      ])]),
-    );
+    if (!context.snapshotOnly) {
+      context.originalAttempts = new Map(context.state.attempts.map((attempt) => [
+        attempt.id,
+        {
+          ...attempt,
+          issuedOrders: attempt.issuedOrders?.map((order) => ({ ...order })),
+          responses: [...attempt.responses],
+          evidence: [...attempt.evidence],
+          receipts: [...attempt.receipts],
+          supportEvents: [...attempt.supportEvents],
+        },
+      ]));
+      context.originalProfiles = new Map(
+        profiles.map((row) => [row.student_id, JSON.stringify([
+          row.settings,
+          row.access_enabled,
+          row.certifications,
+        ])]),
+      );
+    }
     return context.state;
   }
 
-  async save(state: Store) {
+  async save(state: Store, changedAttemptId?: string) {
     const context = this.requiredContext();
     context.state = state;
     context.dirty = true;
+    if (changedAttemptId) {
+      context.changedAttemptIds ??= new Set();
+      context.changedAttemptIds.add(changedAttemptId);
+    }
   }
 
   private requiredContext() {
@@ -231,12 +264,15 @@ export class PostgresRuntimeStore {
       );
     }
     for (const attempt of state.attempts) {
-      if (context.originalAttempts?.get(attempt.id) === JSON.stringify(attempt)) continue;
-      await this.persistAttempt(client, attempt);
+      const original = context.originalAttempts?.get(attempt.id);
+      if (context.changedAttemptIds) {
+        if (!context.changedAttemptIds.has(attempt.id)) continue;
+      } else if (original && JSON.stringify(original) === JSON.stringify(attempt)) continue;
+      await this.persistAttempt(client, attempt, original);
     }
   }
 
-  private async persistAttempt(client: PoolClient, attempt: Attempt) {
+  private async persistAttempt(client: PoolClient, attempt: Attempt, previous?: Attempt) {
     await client.query(
       `INSERT INTO pvf_attempt(id,student_id,level_id,seed,slot,status,revision,lease_epoch,writer_tab_id,lease_expires_at,created_at,kind,practice_skill,replacement_index,transfer_star,active_order_id,transfer_order_id,skipped_orders,awarded_tier,practice_schedule)
       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20::jsonb)
@@ -312,7 +348,9 @@ export class PostgresRuntimeStore {
       if (spec && (role === "transfer" || !attempt.completed))
         issued.get(spec.id)!.status = "active";
     }
+    const previousOrders = new Map(previous?.issuedOrders?.map((item) => [item.spec.id, item.status]) ?? []);
     for (const [id, order] of issued) {
+      if (previousOrders.get(id) === order.status) continue;
       await client.query(
         `INSERT INTO pvf_order(id,attempt_id,student_id,slot_index,replacement_index,role,status,spec,primary_skill,signature)
         VALUES($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10) ON CONFLICT(id) DO UPDATE SET status=EXCLUDED.status`,
@@ -330,10 +368,14 @@ export class PostgresRuntimeStore {
         ],
       );
     }
+    const previousSequences = new Map<string, number>();
+    for (const response of previous?.responses ?? [])
+      previousSequences.set(response.order.id, (previousSequences.get(response.order.id) ?? 0) + 1);
     const sequences = new Map<string, number>();
     for (const response of attempt.responses) {
       const sequence = sequences.get(response.order.id) ?? 0;
       sequences.set(response.order.id, sequence + 1);
+      if (sequence < (previousSequences.get(response.order.id) ?? 0)) continue;
       await client.query(
         `INSERT INTO pvf_response(id,order_id,command_id,sequence,representation_a,representation_b,validation,committed_at,active_ms)
         VALUES($1,$2,$3,$4,$5::jsonb,$6::jsonb,$7::jsonb,$8,$9) ON CONFLICT(order_id,sequence) DO NOTHING`,
@@ -350,9 +392,11 @@ export class PostgresRuntimeStore {
         ],
       );
     }
+    const previousEvidence = new Set(previous?.evidence.map((item) => item.orderId) ?? []);
     for (const evidence of attempt.evidence) {
       if (!evidence.orderId)
         throw new Error("Exact evidence order ownership required");
+      if (previousEvidence.has(evidence.orderId)) continue;
       await client.query(
         `INSERT INTO pvf_skill_evidence(id,student_id,order_id,skill_id,score,independent_first,signature,eligible,committed_at,policy_version)
         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,'v1-local') ON CONFLICT(order_id) DO NOTHING`,
@@ -369,12 +413,17 @@ export class PostgresRuntimeStore {
         ],
       );
     }
-    for (const support of attempt.supportEvents)
+    const previousSupport = new Set(previous?.supportEvents.map((item) => `${item.orderId}:${item.step}`) ?? []);
+    for (const support of attempt.supportEvents) {
+      if (previousSupport.has(`${support.orderId}:${support.step}`)) continue;
       await client.query(
         `INSERT INTO pvf_support_event(order_id,step,committed_at) VALUES($1,$2,$3) ON CONFLICT(order_id,step) DO NOTHING`,
         [support.orderId, support.step, support.at],
       );
-    for (const receipt of attempt.receipts)
+    }
+    const previousReceipts = new Set(previous?.receipts.map((item) => item.commandId) ?? []);
+    for (const receipt of attempt.receipts) {
+      if (previousReceipts.has(receipt.commandId)) continue;
       await client.query(
         `INSERT INTO pvf_command_receipt(actor_id,command_id,payload_hash,status,response,attempt_id)
       VALUES($1,$2,$3,$4,$5::jsonb,$6) ON CONFLICT(actor_id,command_id) DO NOTHING`,
@@ -387,5 +436,6 @@ export class PostgresRuntimeStore {
           attempt.id,
         ],
       );
+    }
   }
 }

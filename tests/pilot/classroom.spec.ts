@@ -162,6 +162,25 @@ test("teacher issues access, student ships, and teacher reviews and revokes it",
   await expect(page.getByRole("columnheader", { name: "Final answer" })).toBeVisible();
   await page.screenshot({ path: "test-results/pilot-teacher-evidence.png", fullPage: true });
   await student.getByRole("button", { name: "Back to map" }).click();
+  await expect(student.getByRole("button", { name: /View mission — Level 2/ })).toBeVisible();
+  await student.locator("summary").filter({ hasText: "Practice a skill" }).click();
+  await student.getByRole("button", { name: "Start practice" }).click();
+  for (let slot = 0; slot < 5; slot++) {
+    let remaining = Number((await student.locator(".current-order strong").innerText()).replaceAll(",", ""));
+    for (const [index, value] of [100000, 10000, 1000, 100, 10, 1].entries()) {
+      const amount = Math.floor(remaining / value);
+      remaining %= value;
+      await student.locator(`#quantity-${index}`).fill(String(amount));
+    }
+    await student.getByRole("button", { name: "Ship order", exact: true }).click();
+    if (slot < 4) await expect(student.getByText(`Order ${slot + 2} of 5`)).toBeVisible();
+  }
+  await expect(student.getByRole("heading", { name: "Great practicing!" })).toBeVisible();
+  await expect(student.getByText("Practice builds your skills. Your map stars stay the same.")).toBeVisible();
+  await page.reload();
+  await page.getByLabel("Class", { exact: true }).selectOption({ label: className });
+  await expect(page.getByText("10 submitted orders · 10 accepted shipments")).toBeVisible();
+  await student.getByRole("button", { name: "Back to map" }).click();
   await student.getByRole("button", { name: /Replay mission/ }).first().click();
   await student.getByRole("button", { name: /Replay level/ }).click();
   await student.route("**/responses", (route) => route.abort("connectionfailed"));
@@ -184,11 +203,11 @@ test("teacher issues access, student ships, and teacher reviews and revokes it",
   await expect(student.getByText(/Your work is waiting to save/)).toBeVisible();
   await page.reload();
   await page.getByLabel("Class", { exact: true }).selectOption({ label: className });
-  await expect(page.getByText("5 submitted orders · 5 accepted shipments")).toBeVisible();
+  await expect(page.getByText("10 submitted orders · 10 accepted shipments")).toBeVisible();
   page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: `Archive ${className}` }).click();
   await expect(page.getByText(/Class archived\. Student sessions have ended/)).toBeVisible();
-  await expect(page.getByText("5 submitted orders · 5 accepted shipments")).toBeVisible();
+  await expect(page.getByText("10 submitted orders · 10 accepted shipments")).toBeVisible();
   await student.reload();
   await expect(
     student.getByRole("button", { name: "Student login" }),

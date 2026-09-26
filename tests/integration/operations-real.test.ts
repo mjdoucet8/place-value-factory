@@ -1,6 +1,6 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { copyFile, mkdtemp, readFile, rm, stat, utimes } from "node:fs/promises";
 import { tmpdir, userInfo } from "node:os";
 import { join } from "node:path";
 import type { AddressInfo } from "node:net";
@@ -19,14 +19,18 @@ describe.skipIf(!socket || process.env.PVF_TEST_PG_RESTART === "1")("guarded ope
     const suffix = randomUUID().replaceAll("-", "");
     const source = `ops_${suffix}`;
     const target = `restored_${suffix}`;
+    const olderTarget = `restored_after_delete_${suffix}`;
     const admin = new Pool({ host: socket, database: "postgres" });
     await admin.query(`CREATE DATABASE ${source}`);
     await admin.query(`CREATE DATABASE ${target}`);
+    await admin.query(`CREATE DATABASE ${olderTarget}`);
     await admin.end();
     const pool = new Pool({ host: socket, database: source });
     const restored = new Pool({ host: socket, database: target });
     const directory = await mkdtemp(join(tmpdir(), "pvf-ops-"));
     const archive = join(directory, "fictional.backup");
+    const ledger = join(directory, "deletion-ledger.jsonl");
+    const ledgerKey = randomBytes(32).toString("hex");
     let server: ReturnType<typeof createApiServer> | undefined;
     try {
       await migrateDatabase(pool);
@@ -73,10 +77,28 @@ describe.skipIf(!socket || process.env.PVF_TEST_PG_RESTART === "1")("guarded ope
       const backup = spawnSync(process.execPath, [script, "backup", `--archive=${archive}`, `--confirm-source-db=${source}`], { cwd: process.cwd(), env: { ...process.env, PVF_BACKUP_SOURCE_URL: sourceUrl, PVF_BACKUP_KEY: backupKey }, encoding: "utf8" });
       expect(backup.status, backup.stderr).toBe(0);
       expect((await readFile(archive)).subarray(0, 7).toString()).toBe("PVFENC1");
-      const wrongKey = spawnSync(process.execPath, [script, "restore", `--archive=${archive}`, "--execute", `--confirm-target-db=${target}`], { cwd: process.cwd(), env: { ...process.env, PVF_BACKUP_SOURCE_URL: sourceUrl, PVF_RESTORE_TARGET_URL: targetUrl, PVF_BACKUP_KEY: randomBytes(32).toString("hex") }, encoding: "utf8" });
+      const expirable = join(directory, "fictional-expired.backup");
+      await copyFile(archive, expirable);
+      const old = new Date(Date.now() - 31 * 24 * 60 * 60 * 1000);
+      await utimes(expirable, old, old);
+      const inventoryEnv = { ...process.env, PVF_BACKUP_DIRECTORY: directory, PVF_BACKUP_RETENTION_DAYS: "30" };
+      const inventory = spawnSync(process.execPath, ["scripts/backup-inventory.mjs", "inventory"], { cwd: process.cwd(), env: inventoryEnv, encoding: "utf8" });
+      expect(inventory.status, inventory.stderr).toBe(0);
+      const listed = JSON.parse(inventory.stdout).archives;
+      expect(listed).toHaveLength(2);
+      const expired = listed.find((item: any) => item.name === "fictional-expired.backup");
+      expect(expired.expired).toBe(true);
+      const badExpiry = spawnSync(process.execPath, ["scripts/backup-inventory.mjs", "expire", "--name=fictional-expired.backup", "--execute", `--confirm-directory=${directory}`, "--confirm-sha256=wrong"], { cwd: process.cwd(), env: inventoryEnv, encoding: "utf8" });
+      expect(badExpiry.status).not.toBe(0);
+      expect((await stat(expirable)).isFile()).toBe(true);
+      const expiry = spawnSync(process.execPath, ["scripts/backup-inventory.mjs", "expire", "--name=fictional-expired.backup", "--execute", `--confirm-directory=${directory}`, `--confirm-sha256=${expired.sha256}`], { cwd: process.cwd(), env: inventoryEnv, encoding: "utf8" });
+      expect(expiry.status, expiry.stderr).toBe(0);
+      expect(JSON.parse(expiry.stdout).execute).toBe(true);
+      expect((await stat(archive)).isFile()).toBe(true);
+      const wrongKey = spawnSync(process.execPath, [script, "restore", `--archive=${archive}`, "--execute", `--confirm-target-db=${target}`, "--confirm-no-deletion-ledger"], { cwd: process.cwd(), env: { ...process.env, PVF_BACKUP_SOURCE_URL: sourceUrl, PVF_RESTORE_TARGET_URL: targetUrl, PVF_BACKUP_KEY: randomBytes(32).toString("hex") }, encoding: "utf8" });
       expect(wrongKey.status).not.toBe(0);
       expect((await restored.query("SELECT count(*)::int AS n FROM pg_class WHERE relnamespace='public'::regnamespace AND relkind='r'")).rows[0].n).toBe(0);
-      const restore = spawnSync(process.execPath, [script, "restore", `--archive=${archive}`, "--execute", `--confirm-target-db=${target}`], { cwd: process.cwd(), env: { ...process.env, PVF_BACKUP_SOURCE_URL: sourceUrl, PVF_RESTORE_TARGET_URL: targetUrl, PVF_BACKUP_KEY: backupKey }, encoding: "utf8" });
+      const restore = spawnSync(process.execPath, [script, "restore", `--archive=${archive}`, "--execute", `--confirm-target-db=${target}`, "--confirm-no-deletion-ledger"], { cwd: process.cwd(), env: { ...process.env, PVF_BACKUP_SOURCE_URL: sourceUrl, PVF_RESTORE_TARGET_URL: targetUrl, PVF_BACKUP_KEY: backupKey }, encoding: "utf8" });
       expect(restore.status, restore.stderr).toBe(0);
       const after = (await restored.query("SELECT (SELECT count(*)::int FROM pvf_attempt) attempts,(SELECT count(*)::int FROM pvf_order) orders,(SELECT count(*)::int FROM pvf_response) answers,(SELECT count(*)::int FROM pvf_skill_evidence) evidence,(SELECT count(*)::int FROM pvf_command_receipt) receipts")).rows[0];
       expect(after).toEqual(before);
@@ -112,7 +134,7 @@ describe.skipIf(!socket || process.env.PVF_TEST_PG_RESTART === "1")("guarded ope
       expect(preview.counts.attempts).toBe(1);
       expect(preview.counts.answers).toBe(5);
       const operationArgs = ["tsx", "scripts/operations.ts", "student-delete", `--class-id=${classOne.id}`, `--student-id=${first.student.id}`];
-      const operationEnv = { ...process.env, PVF_OPERATIONS_DATABASE_URL: sourceUrl };
+      const operationEnv = { ...process.env, PVF_OPERATIONS_DATABASE_URL: sourceUrl, PVF_DELETION_LEDGER: ledger, PVF_DELETION_LEDGER_KEY: ledgerKey };
       const previewRun = spawnSync("npx", operationArgs, { cwd: process.cwd(), env: operationEnv, encoding: "utf8" });
       expect(previewRun.status, previewRun.stderr).toBe(0);
       expect(previewRun.stdout).not.toContain(first.student.id);
@@ -130,6 +152,19 @@ describe.skipIf(!socket || process.env.PVF_TEST_PG_RESTART === "1")("guarded ope
       expect(retentionRun.status, retentionRun.stderr).toBe(0);
       expect((await pool.query("SELECT count(*)::int AS n FROM pvf_student WHERE id=$1", [extraId])).rows[0].n).toBe(0);
       expect((await pool.query("SELECT count(*)::int AS n FROM pvf_operations_audit WHERE action='retention_delete' AND backup_expiry_at>now()")).rows[0].n).toBe(1);
+      const ledgerBytes = await readFile(ledger, "utf8");
+      expect(ledgerBytes).not.toContain(first.student.id);
+      expect(ledgerBytes).not.toContain(extraId);
+      const olderUrl = `postgresql://${userInfo().username}@localhost/${olderTarget}?host=${encodeURIComponent(socket)}`;
+      const replayedRestore = spawnSync(process.execPath, [script, "restore", `--archive=${archive}`, "--execute", `--confirm-target-db=${olderTarget}`], { cwd: process.cwd(), env: { ...process.env, PVF_BACKUP_SOURCE_URL: sourceUrl, PVF_RESTORE_TARGET_URL: olderUrl, PVF_BACKUP_KEY: backupKey, PVF_DELETION_LEDGER: ledger, PVF_DELETION_LEDGER_KEY: ledgerKey, PVF_BACKUP_RETENTION_DAYS: "30" }, encoding: "utf8" });
+      expect(replayedRestore.status, replayedRestore.stderr).toBe(0);
+      expect(JSON.parse(replayedRestore.stdout).deletionReplay).toMatchObject({ deleted: 1, alreadyAbsent: 1 });
+      const older = new Pool({ host: socket, database: olderTarget });
+      try {
+        expect((await older.query("SELECT count(*)::int AS n FROM pvf_student WHERE id=$1", [first.student.id])).rows[0].n).toBe(0);
+        expect((await older.query("SELECT count(*)::int AS n FROM pvf_student WHERE id=$1", [second.student.id])).rows[0].n).toBe(1);
+        expect((await older.query("SELECT count(*)::int AS n FROM pvf_response")).rows[0].n).toBe(0);
+      } finally { await older.end(); }
       await pool.query("UPDATE pvf_operations_audit SET created_at=now()-interval '40 days'");
       const auditArgs = ["tsx", "scripts/operations.ts", "audit-retention"];
       const auditEnv = { ...operationEnv, PVF_AUDIT_RETENTION_DAYS: "30" };
@@ -155,5 +190,5 @@ describe.skipIf(!socket || process.env.PVF_TEST_PG_RESTART === "1")("guarded ope
       await restored.end();
       await rm(directory, { recursive: true, force: true });
     }
-  }, 60_000);
+  }, 120_000);
 });
