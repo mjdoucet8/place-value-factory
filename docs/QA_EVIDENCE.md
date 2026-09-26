@@ -1,5 +1,23 @@
 # Local QA evidence
 
+## 26 September 2026 — RC-07 mathematics and progression checkpoint
+
+The current committed RC-07 implementation was revalidated on 26 September 2026. These are local fictional-data checks and do not claim classroom readiness.
+
+- `npm test`: 71 passed; 8 cases skipped outside the real-PostgreSQL harness (including the new load test, which runs in the PostgreSQL harness).
+- `npx tsc --noEmit` and `npm run build`: passed with the scaffold runtime changes and current tests.
+- `npm run test:postgres`: 7 initial PostgreSQL cases passed; after an actual `pg_ctl` restart, 3 cases passed and 2 restart-inapplicable cases were skipped. This includes the 30-level progression/practice/gate journey and the guarded operations test.
+- `npm run test:e2e`: 13 Chromium journeys passed.
+- `PVF_PILOT_CREDENTIALS=<private temporary pilot file> npx playwright test -c playwright.pilot.config.ts`: 4 secure fictional-pilot Chromium journeys passed, including teacher evidence, revocation, responsive fixtures and 30 map nodes. The temporary pilot was stopped afterward.
+- `tests/unit/rc07-blueprints.test.ts`: 5 passed, including exact Stage 1–6 primary-skill attribution and Level 9 trailing/internal zero slots.
+- `tests/unit/math.test.ts`: 47 passed, including independent DP minimum oracle and scaffold trigger/countdown/recovery.
+- `tests/integration/idempotency.test.ts`: 12 passed, including malformed answer rejection and persisted cross-attempt scaffold issuance.
+- `git diff --check`: final result recorded in the latest task log entry.
+
+Scope evidence: `tests/unit/rc07-blueprints.test.ts` enumerates all 150 level/slot blueprints over bands and seeds and checks generated witnesses/fallback inventory; `tests/unit/math.test.ts` includes the independent minimum oracle. `tests/integration/rc07-progression-real.test.ts` verifies server-issued progression, practice, gates, restricted equivalence, advanced correction, certifications, reports, and persistence across a real PostgreSQL restart. `tests/unit/reporting.test.ts` covers report reconstruction and filters; integration and pilot browser tests cover authorized report/evidence views and reply loss. See the RC-07 handoff entries in `TASK_LOG.md` for exact evidence claims.
+
+Not run for classroom readiness: physical-device/school-network testing, manual screen-reader and native zoom review, non-Chromium browser coverage, owner aesthetic approval, and measured 90-student/30-concurrent load. Those remain separate V1 release gates.
+
 ## 23 September 2026 — current release-candidate evidence
 
 - RC-06: browser tests verified IndexedDB pending answer after disconnect before commit, duplicate receipt replay after commit, help-event restoration, online retry, cross-tab non-merge/review, and an explicit warning when IndexedDB is unavailable. The secure PostgreSQL pilot journey fault-injected first, intermediate, and final shipments and still reconciled five submitted orders in the teacher report. One isolated API test verified expired foreign writers are denied and same-tab resume increments the epoch. Final full-suite counts are recorded in the RC-06 task log after sequential execution.

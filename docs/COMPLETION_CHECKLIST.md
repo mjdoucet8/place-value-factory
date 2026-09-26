@@ -2,6 +2,14 @@
 
 Living source-of-truth audit, started 21 September 2026. A checked item means the implementation and its stated evidence exist locally; it does not claim school deployment or classroom readiness.
 
+## Current correction, 26 September 2026 — RC-07 checkpoint
+
+The earlier 23 September summary and table below are historical and are superseded for the RC-07 math, progression, and reporting scope by the evidence recorded in `docs/ACCEPTANCE_LEDGER.md`, `docs/RC07_BLUEPRINT_LEDGER.md`, `docs/QA_EVIDENCE.md`, and the 26 September `TASK_LOG.md` entries. The current local checkpoint covers ORDER-01..05, VALIDATE-01..05, ADAPT-01..06, REWARD-01..03, EFF-01..02, and the scoped mathematical/progression/report/recovery/data criteria named in the RC-07 brief. It is not a claim that all V1 acceptance is complete.
+
+The latest revalidation passed 71 unit/integration tests (seven database-dependent tests skipped by the non-DB command), type checking and production build; seven initial real-PostgreSQL cases and three restart-phase cases passed (two restart-inapplicable cases skipped); 13 standard Chromium journeys and four secure-pilot journeys passed. The PostgreSQL journey completes all 30 levels through committed responses, checks six persistent certifications, advanced objective correction, restricted equivalent acceptance, report evidence, immutable order recovery, and restart. New runtime scaffold activation/countdown/exit tests and server-issued initial easy-band verification also pass. Exact results are in `docs/QA_EVIDENCE.md` and the latest `TASK_LOG.md` update.
+
+Remaining V1 work includes retention/deletion/archive operations, measured classroom-scale load, broader session/network hardening, complete manual accessibility and recovery review, owner aesthetic approval, and school/device/network gates. These do not erase locally actionable RC-07 findings if any are found by the current revalidation.
+
 ## Current correction, 23 September 2026
 
 The older table below records historical partial evidence and contains superseded blockers. Real PostgreSQL HTTP persistence/restart/rollback and a secure fictional teacher/student class journey now pass. The visual factory/map/results correction has reviewed multi-width Chromium captures and automated all-fixture image/reflow coverage, while owner visual approval, native 200% zoom, physical devices and manual assistive-technology checks remain pending. RECOVERY remains partial after IndexedDB answer/help queue integration and real-PostgreSQL browser fault tests; remaining lease/conflict cases and full acceptance audit are still required. Stage-1 attribution/gates, detailed reports, retention and bounded load remain local implementation work. The acceptance ledger and current project status govern remaining work.

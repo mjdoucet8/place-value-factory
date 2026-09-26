@@ -17,6 +17,7 @@ import {
   practiceBlueprintFor,
   stageGate,
   summarizeMastery,
+  scaffoldForSkill,
   updateScaffold,
   validateRepresentation,
   witnessFor,
@@ -123,24 +124,45 @@ describe("minimum oracle", () => {
   });
   it("can practice every gate skill with five correctly attributed orders", () => {
     const skills = [
-      "pv.ones", "pv.tens", "pv.hundreds", "pv.thousands",
-      "pv.tenThousands", "pv.hundredThousands", "standard.decompose",
-      "standard.zero", "rename.100000_10000", "rename.10000_1000",
-      "rename.1000_100", "rename.100_10", "rename.10_1",
-      "rename.multi", "compose.allowed", "compose.forbidden",
-      "reason.minimum", "reason.exactTypes", "reason.multiple",
+      "pv.ones",
+      "pv.tens",
+      "pv.hundreds",
+      "pv.thousands",
+      "pv.tenThousands",
+      "pv.hundredThousands",
+      "standard.decompose",
+      "standard.zero",
+      "rename.100000_10000",
+      "rename.10000_1000",
+      "rename.1000_100",
+      "rename.100_10",
+      "rename.10_1",
+      "rename.multi",
+      "compose.allowed",
+      "compose.forbidden",
+      "reason.minimum",
+      "reason.exactTypes",
+      "reason.multiple",
     ];
     for (const skill of skills) {
       const blueprint = practiceBlueprintFor(skill, 30);
       for (let slot = 0; slot < 5; slot++) {
         const order = generatePracticeOrder(skill, 79, slot, "hard", 30);
         expect(order.primarySkill).toBe(skill);
-        expect(validateRepresentation(order, witnessFor(order), alternateWitnessFor(order)).shipmentAccepted).toBe(true);
+        expect(
+          validateRepresentation(
+            order,
+            witnessFor(order),
+            alternateWitnessFor(order),
+          ).shipmentAccepted,
+        ).toBe(true);
       }
       expect(blueprint.ordinal).toBeLessThanOrEqual(30);
     }
     expect(practiceBlueprintFor("standard.zero", 9).id).toBe("level-8");
-    expect(() => practiceBlueprintFor("reason.multiple", 25)).toThrow("CONFIG_INVALID");
+    expect(() => practiceBlueprintFor("reason.multiple", 25)).toThrow(
+      "CONFIG_INVALID",
+    );
   });
   it("keeps published stage-one skill IDs and exposes a read-only repack source", () => {
     const stageOneSkills = new Set<string>();
@@ -538,6 +560,111 @@ describe("mastery and adaptation policy", () => {
     state = updateScaffold(state, 1, true);
     expect(state.remainingEasyOrders).toBe(0);
     expect(adaptedDifficulty(secure, state)).toBe("hard");
+  });
+
+  it("reconstructs the three-order scaffold from committed resolved evidence", () => {
+    const base = scaffoldForSkill("pv.ones", [
+      {
+        skillId: "pv.tens",
+        score: 0.6,
+        independentFirst: false,
+        attemptId: "other",
+        signature: "x",
+        committedAt: "2026-01-01T00:00:00.000Z",
+      },
+      {
+        skillId: "pv.ones",
+        score: 0.6,
+        independentFirst: false,
+        attemptId: "a",
+        signature: "a",
+        committedAt: "2026-01-01T00:00:00.000Z",
+      },
+      {
+        skillId: "pv.ones",
+        score: 0,
+        independentFirst: false,
+        attemptId: "b",
+        signature: "b",
+        committedAt: "2026-01-02T00:00:00.000Z",
+      },
+    ]);
+    const secure = {
+      skillId: "pv.ones",
+      score: 1,
+      sampleN: 8,
+      independentFirstN: 8,
+      distinctAttemptN: 2,
+      status: "secure" as const,
+      needsRefresh: false,
+      practiceSuggested: false,
+      lastEvidenceAt: "2026-01-02T00:00:00.000Z",
+    };
+    expect(base).toMatchObject({ lowScoreStreak: 2, remainingEasyOrders: 3 });
+    expect(adaptedDifficulty(secure, base)).toBe("easy");
+    const afterOne = scaffoldForSkill("pv.ones", [
+      {
+        skillId: "pv.ones",
+        score: 0.6,
+        independentFirst: false,
+        attemptId: "a",
+        signature: "a",
+        committedAt: "2026-01-01T00:00:00.000Z",
+      },
+      {
+        skillId: "pv.ones",
+        score: 0,
+        independentFirst: false,
+        attemptId: "b",
+        signature: "b",
+        committedAt: "2026-01-02T00:00:00.000Z",
+      },
+      {
+        skillId: "pv.ones",
+        score: 0.6,
+        independentFirst: false,
+        attemptId: "c",
+        signature: "c",
+        committedAt: "2026-01-03T00:00:00.000Z",
+      },
+    ]);
+    expect(afterOne.remainingEasyOrders).toBe(2);
+    const afterRecovery = scaffoldForSkill("pv.ones", [
+      {
+        skillId: "pv.ones",
+        score: 0.6,
+        independentFirst: false,
+        attemptId: "a",
+        signature: "a",
+        committedAt: "2026-01-01T00:00:00.000Z",
+      },
+      {
+        skillId: "pv.ones",
+        score: 0,
+        independentFirst: false,
+        attemptId: "b",
+        signature: "b",
+        committedAt: "2026-01-02T00:00:00.000Z",
+      },
+      {
+        skillId: "pv.ones",
+        score: 1,
+        independentFirst: true,
+        attemptId: "c",
+        signature: "c",
+        committedAt: "2026-01-03T00:00:00.000Z",
+      },
+      {
+        skillId: "pv.ones",
+        score: 1,
+        independentFirst: true,
+        attemptId: "d",
+        signature: "d",
+        committedAt: "2026-01-04T00:00:00.000Z",
+      },
+    ]);
+    expect(afterRecovery.remainingEasyOrders).toBe(0);
+    expect(adaptedDifficulty(secure, afterRecovery)).toBe("hard");
   });
 
   it("keeps stage gates separate from completed paths and selects a positive practice target", () => {

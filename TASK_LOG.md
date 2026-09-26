@@ -640,3 +640,12 @@ Next owner / reviewer: PA checkpoint commit; later V1 release-candidate owners f
 
 Timestamp (UTC): 2026-09-26T19:22:00Z
 Additional closeout: place-value practice now validates its fallback inventory and relaxes recent-signature avoidance only after 100 candidates. Issued orders store attempt/slot/replacement/role/seed/version and forbidden/skill metadata; the restart journey compares an unanswered replay order with the immutable PostgreSQL spec and confirms the public snapshot omits the seed. Skip and subsequent practice issuance follow the saved per-slot schedule. The final post-change runs passed: `npm test` 69 passed (6 real-DB cases deliberately skipped by that command), `npm run test:postgres` 6 initial cases plus 3 restart-phase cases passed (2 restart-inapplicable skipped), `npm run test:e2e` 13 passed, isolated secure-pilot Playwright 4 passed, `npx tsc --noEmit` and `npm run build` passed. `git diff --check` passed before final staging; no classroom-device or school-network claim.
+
+
+## 2026-09-26 | RC-07 | RUNTIME REVALIDATION | PA
+
+Timestamp (UTC): 2026-09-26T20:01:58Z. Reviewed the committed RC-07 checkpoint after the cross-layer audit and closed remaining local runtime gaps: reconstructed per-skill scaffold state from committed student evidence and applied it to initial and subsequent issued orders; rejected malformed/extra answer fields before recording history; retained best stars across attempts; normalized transferred seeds; and added exact Level 9 slot and all-blueprint attribution assertions. The scaffold's two-order recovery counter now survives continued low evidence.
+
+Verification: `npm test` 71 passed, 8 cases skipped outside the real-PostgreSQL harness; `npx tsc --noEmit` passed; `npm run build` passed; `npm run test:postgres` passed 7 initial tests and 3 restart-phase tests (2 restart-inapplicable skips); `npm run test:e2e` 13 passed; isolated secure-pilot Playwright 4 passed. `git diff --check` passed for the staged changes. Local fictional-data evidence only; external school/device/accessibility gates remain.
+
+Review contributions: `math_audit` identified blueprint assertion gaps; `runtime_audit` audited the answer/progression/results/transfer paths; `pg_journey` supplied the real-PostgreSQL progression journey, which passed; `report_core` supplied report reconstruction and focused tests. PA integrated/fixed runtime findings and reconciled the acceptance and QA evidence. Handoff: PA integration; QA should rerun cross-layer acceptance after merge.

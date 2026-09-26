@@ -129,24 +129,41 @@ export function assertValidOrder(
     throw new Error("CONFIG_INVALID");
   if (
     spec.minimumRequired &&
-    (spec.exactTypes !== null || spec.distinctRepresentations !== 1 || spec.target === 0)
+    (spec.exactTypes !== null ||
+      spec.distinctRepresentations !== 1 ||
+      spec.target === 0)
   )
     throw new Error("CONFIG_INVALID");
   if (
     (spec.canonicalRequired &&
-      (spec.minimumRequired || spec.exactTypes !== null ||
+      (spec.minimumRequired ||
+        spec.exactTypes !== null ||
         spec.distinctRepresentations !== 1)) ||
     (spec.exactTypes !== null && spec.distinctRepresentations !== 1) ||
     (spec.mode !== undefined &&
-      !["standard", "single", "restricted", "forbidden", "minimum", "exactTypes", "twoWays", "repack", "mixed"].includes(spec.mode)) ||
+      ![
+        "standard",
+        "single",
+        "restricted",
+        "forbidden",
+        "minimum",
+        "exactTypes",
+        "twoWays",
+        "repack",
+        "mixed",
+      ].includes(spec.mode)) ||
     (spec.mode === "minimum" && !spec.minimumRequired) ||
     (spec.mode === "exactTypes" && spec.exactTypes === null) ||
     (spec.mode === "twoWays" && spec.distinctRepresentations !== 2) ||
     (spec.mode === "standard" && !spec.canonicalRequired) ||
-    (spec.mode === "single" && (spec.allowed.length !== 1 || spec.canonicalRequired))
+    (spec.mode === "single" &&
+      (spec.allowed.length !== 1 || spec.canonicalRequired))
   )
     throw new Error("CONFIG_INVALID");
-  if (spec.target === 0 && (spec.exactTypes !== null || spec.distinctRepresentations !== 1))
+  if (
+    spec.target === 0 &&
+    (spec.exactTypes !== null || spec.distinctRepresentations !== 1)
+  )
     throw new Error("CONFIG_INVALID");
   if (!isRepresentable(spec.target, allowed)) throw new Error("CONFIG_INVALID");
 }
@@ -244,8 +261,7 @@ export function validateRepresentation(
     distinctMet &&
     minimumMet;
   let feedbackCode: Validation["feedbackCode"] = "SHIPMENT_CORRECT";
-  if (!restrictionsMet)
-    feedbackCode = "MACHINE_UNAVAILABLE";
+  if (!restrictionsMet) feedbackCode = "MACHINE_UNAVAILABLE";
   else if (!valueMatches)
     feedbackCode = totals.some((total) => total < spec.target)
       ? "UNDERPRODUCTION"
@@ -319,7 +335,11 @@ export function generatePracticeOrder(
   recentSignatures: readonly string[] = [],
 ): OrderSpec {
   assertSeedAndSlot(seed, slotIndex);
-  if (!Number.isInteger(availableThrough) || availableThrough < 1 || availableThrough > 30)
+  if (
+    !Number.isInteger(availableThrough) ||
+    availableThrough < 1 ||
+    availableThrough > 30
+  )
     throw new Error("CONFIG_INVALID");
   if (!(difficultyBand in DIGIT_RANGES)) throw new Error("CONFIG_INVALID");
   const placeBySkill: Record<string, Denomination> = {
@@ -347,20 +367,41 @@ export function generatePracticeOrder(
       mode: "standard",
     });
     for (let attempt = 0; attempt < 100; attempt++) {
-      const candidateSeed = attempt === 0 ? seed : xorshift32((seed ^ Math.imul(attempt, 0x9e3779b9)) >>> 0 || 1);
+      const candidateSeed =
+        attempt === 0
+          ? seed
+          : xorshift32((seed ^ Math.imul(attempt, 0x9e3779b9)) >>> 0 || 1);
       const digit = low + (xorshift32(candidateSeed) % (high - low + 1));
       const order = practiceOrder(digit, String(candidateSeed));
-      if (validateRepresentation(order, canonicalRepresentation(order.target)).shipmentAccepted && !recent.has(orderSignature(order))) return order;
+      if (
+        validateRepresentation(order, canonicalRepresentation(order.target))
+          .shipmentAccepted &&
+        !recent.has(orderSignature(order))
+      )
+        return order;
     }
     const fallback = practiceOrder(low, `fallback-${difficultyBand}`);
-    if (validateRepresentation(fallback, canonicalRepresentation(fallback.target)).shipmentAccepted) return fallback;
+    if (
+      validateRepresentation(fallback, canonicalRepresentation(fallback.target))
+        .shipmentAccepted
+    )
+      return fallback;
     throw new Error("CONFIG_INVALID");
   }
   const level = practiceBlueprintFor(skillId, availableThrough);
-  return generateLevelOrder(level.id, seed, slotIndex, difficultyBand, recentSignatures);
+  return generateLevelOrder(
+    level.id,
+    seed,
+    slotIndex,
+    difficultyBand,
+    recentSignatures,
+  );
 }
 
-export function practiceBlueprintFor(skillId: string, availableThrough: number) {
+export function practiceBlueprintFor(
+  skillId: string,
+  availableThrough: number,
+) {
   const pureBlueprints: Record<string, readonly number[]> = {
     "pv.ones": [1, 3, 4],
     "pv.tens": [1, 3, 4],
@@ -690,26 +731,48 @@ export function generateLevelOrder(
 ): OrderSpec {
   assertSeedAndSlot(seed, slotIndex);
   if (!(difficultyBand in DIGIT_RANGES)) throw new Error("CONFIG_INVALID");
-  if (!Array.isArray(recentSignatures) || recentSignatures.some((s) => typeof s !== "string"))
+  if (
+    !Array.isArray(recentSignatures) ||
+    recentSignatures.some((s) => typeof s !== "string")
+  )
     throw new Error("CONFIG_INVALID");
   const recent = new Set(recentSignatures.slice(-10));
   // Construction is deterministic. Retry with deterministic seed draws if a
   // future blueprint edit produces an invalid witness or a recent signature.
   for (let attempt = 0; attempt < 100; attempt++) {
-    const candidateSeed = attempt === 0 ? seed : xorshift32((seed ^ Math.imul(attempt, 0x9e3779b9)) >>> 0 || 1);
-    const order = constructLevelOrder(levelId, candidateSeed, slotIndex, difficultyBand);
+    const candidateSeed =
+      attempt === 0
+        ? seed
+        : xorshift32((seed ^ Math.imul(attempt, 0x9e3779b9)) >>> 0 || 1);
+    const order = constructLevelOrder(
+      levelId,
+      candidateSeed,
+      slotIndex,
+      difficultyBand,
+    );
     if (validGeneratedOrder(order) && !recent.has(orderSignature(order)))
       return order;
   }
   // Signature avoidance relaxes only after all 100 candidates are exhausted.
-  const fallback = validatedFallbacks.get(`${levelId}:${slotIndex}:${difficultyBand}`);
+  const fallback = validatedFallbacks.get(
+    `${levelId}:${slotIndex}:${difficultyBand}`,
+  );
   if (fallback) return fallback;
   throw new Error("CONFIG_INVALID");
 }
 
 /** Stable student-history key for recent-order suppression. */
 export function orderSignature(order: OrderSpec): string {
-  return [order.target, [...order.allowed].sort((a, b) => b - a).join(","), order.mode ?? "", order.canonicalRequired ? "canonical" : "", order.minimumRequired ? "minimum" : "", order.exactTypes ?? "", order.distinctRepresentations, order.primarySkill ?? ""].join("|");
+  return [
+    order.target,
+    [...order.allowed].sort((a, b) => b - a).join(","),
+    order.mode ?? "",
+    order.canonicalRequired ? "canonical" : "",
+    order.minimumRequired ? "minimum" : "",
+    order.exactTypes ?? "",
+    order.distinctRepresentations,
+    order.primarySkill ?? "",
+  ].join("|");
 }
 
 /** Server/test witness helper; it is never sent to a learner as an answer. */
@@ -745,7 +808,11 @@ export function alternateWitnessFor(order: OrderSpec): Representation | null {
   for (let largerIndex = 0; largerIndex < DENOMINATIONS.length; largerIndex++) {
     const larger = DENOMINATIONS[largerIndex];
     if (first[largerIndex] < 1 || !order.allowed.includes(larger)) continue;
-    for (let smallerIndex = largerIndex + 1; smallerIndex < DENOMINATIONS.length; smallerIndex++) {
+    for (
+      let smallerIndex = largerIndex + 1;
+      smallerIndex < DENOMINATIONS.length;
+      smallerIndex++
+    ) {
       const smaller = DENOMINATIONS[smallerIndex];
       if (!order.allowed.includes(smaller) || larger % smaller !== 0) continue;
       const exchanged = [...first] as number[];
@@ -759,7 +826,11 @@ export function alternateWitnessFor(order: OrderSpec): Representation | null {
 
 function validGeneratedOrder(order: OrderSpec): boolean {
   try {
-    return validateRepresentation(order, witnessFor(order), alternateWitnessFor(order)).shipmentAccepted;
+    return validateRepresentation(
+      order,
+      witnessFor(order),
+      alternateWitnessFor(order),
+    ).shipmentAccepted;
   } catch {
     return false;
   }
@@ -768,25 +839,42 @@ function validGeneratedOrder(order: OrderSpec): boolean {
 // Validate the complete fallback inventory when the engine loads. A future
 // blueprint edit cannot silently issue a fallback with an invalid objective.
 const validatedFallbacks = new Map<string, OrderSpec>();
-for (const level of LEVELS) for (let slot = 0; slot < 5; slot++)
-  for (const band of ["easy", "medium", "hard"] as const) {
-    const order = constructLevelOrder(level.id, 0x6d2b79f5, slot, band);
-    if (!validGeneratedOrder(order)) throw new Error(`CONFIG_INVALID: fallback ${level.id}/${slot}/${band}`);
-    validatedFallbacks.set(`${level.id}:${slot}:${band}`, order);
-  }
+for (const level of LEVELS)
+  for (let slot = 0; slot < 5; slot++)
+    for (const band of ["easy", "medium", "hard"] as const) {
+      const order = constructLevelOrder(level.id, 0x6d2b79f5, slot, band);
+      if (!validGeneratedOrder(order))
+        throw new Error(`CONFIG_INVALID: fallback ${level.id}/${slot}/${band}`);
+      validatedFallbacks.set(`${level.id}:${slot}:${band}`, order);
+    }
 for (const [skillId, place] of [
-  ["pv.ones", 1], ["pv.tens", 10], ["pv.hundreds", 100],
-  ["pv.thousands", 1000], ["pv.tenThousands", 10000],
+  ["pv.ones", 1],
+  ["pv.tens", 10],
+  ["pv.hundreds", 100],
+  ["pv.thousands", 1000],
+  ["pv.tenThousands", 10000],
   ["pv.hundredThousands", 100000],
-] as const) for (const band of ["easy", "medium", "hard"] as const)
-  for (let slot = 0; slot < 5; slot++) {
-    const [low, high] = DIGIT_RANGES[band];
-    const baseline = generatePracticeOrder(skillId, 1, slot, band);
-    const recent = Array.from({ length: high - low + 1 }, (_, index) =>
-      orderSignature({ ...baseline, target: (low + index) * place }));
-    const fallback = generatePracticeOrder(skillId, 1, slot, band, 30, recent);
-    if (!validGeneratedOrder(fallback)) throw new Error(`CONFIG_INVALID: practice fallback ${skillId}/${slot}/${band}`);
-  }
+] as const)
+  for (const band of ["easy", "medium", "hard"] as const)
+    for (let slot = 0; slot < 5; slot++) {
+      const [low, high] = DIGIT_RANGES[band];
+      const baseline = generatePracticeOrder(skillId, 1, slot, band);
+      const recent = Array.from({ length: high - low + 1 }, (_, index) =>
+        orderSignature({ ...baseline, target: (low + index) * place }),
+      );
+      const fallback = generatePracticeOrder(
+        skillId,
+        1,
+        slot,
+        band,
+        30,
+        recent,
+      );
+      if (!validGeneratedOrder(fallback))
+        throw new Error(
+          `CONFIG_INVALID: practice fallback ${skillId}/${slot}/${band}`,
+        );
+    }
 
 export type HintStep = "none" | "H1" | "H2" | "H3";
 export type ResolutionFacts = {
@@ -947,7 +1035,7 @@ export function updateScaffold(
       remainingEasyOrders: 0,
       independentSuccesses: 0,
     };
-  if (lowScoreStreak >= 2)
+  if (lowScoreStreak >= 2 && state.remainingEasyOrders === 0)
     return { lowScoreStreak, remainingEasyOrders: 3, independentSuccesses: 0 };
   return {
     lowScoreStreak,
@@ -963,6 +1051,28 @@ export function adaptedDifficulty(
   return scaffold.remainingEasyOrders > 0
     ? "easy"
     : difficultyFor(mastery.status);
+}
+
+/** Reconstruct the bounded scaffold from committed resolved evidence for a skill. */
+export function scaffoldForSkill(
+  skillId: string,
+  records: readonly EvidenceRecord[],
+): ScaffoldState {
+  return records
+    .map((record, index) => ({ record, index }))
+    .filter(
+      ({ record }) => record.skillId === skillId && record.eligible !== false,
+    )
+    .sort(
+      (a, b) =>
+        Date.parse(a.record.committedAt) - Date.parse(b.record.committedAt) ||
+        a.index - b.index,
+    )
+    .reduce(
+      (state, { record }) =>
+        updateScaffold(state, record.score, record.independentFirst),
+      { lowScoreStreak: 0, remainingEasyOrders: 0, independentSuccesses: 0 },
+    );
 }
 
 export function stageGate(
@@ -999,8 +1109,14 @@ export function nextPracticeSkill(
     if (leftUnknown !== rightUnknown) return leftUnknown - rightUnknown;
     if ((left.score ?? 0) !== (right.score ?? 0))
       return (left.score ?? 0) - (right.score ?? 0);
-    const leftAt = left.lastEvidenceAt === null ? Number.NEGATIVE_INFINITY : Date.parse(left.lastEvidenceAt);
-    const rightAt = right.lastEvidenceAt === null ? Number.NEGATIVE_INFINITY : Date.parse(right.lastEvidenceAt);
+    const leftAt =
+      left.lastEvidenceAt === null
+        ? Number.NEGATIVE_INFINITY
+        : Date.parse(left.lastEvidenceAt);
+    const rightAt =
+      right.lastEvidenceAt === null
+        ? Number.NEGATIVE_INFINITY
+        : Date.parse(right.lastEvidenceAt);
     if (leftAt !== rightAt) return leftAt - rightAt;
     return left.skillId.localeCompare(right.skillId);
   });
@@ -1016,22 +1132,40 @@ export function schedulePracticeSkills(
 ): string[] {
   const eligible = [...new Set(eligibleSkillIds)];
   const required = requiredSkillIds.filter((skill) => eligible.includes(skill));
-  const focus = nextPracticeSkill(required.length ? required : eligible, evidence, now);
+  const focus = nextPracticeSkill(
+    required.length ? required : eligible,
+    evidence,
+    now,
+  );
   if (!focus) throw new Error("CONFIG_INVALID");
-  const summaries = eligible.map((skillId) => summarizeMastery(skillId, evidence, now));
+  const summaries = eligible.map((skillId) =>
+    summarizeMastery(skillId, evidence, now),
+  );
   const secure = summaries.filter((summary) => summary.status === "secure");
   secure.sort((a, b) => {
     const aStale = a.needsRefresh ? 0 : 1;
     const bStale = b.needsRefresh ? 0 : 1;
     if (aStale !== bStale) return aStale - bStale;
-    const aAt = a.lastEvidenceAt === null ? Number.NEGATIVE_INFINITY : Date.parse(a.lastEvidenceAt);
-    const bAt = b.lastEvidenceAt === null ? Number.NEGATIVE_INFINITY : Date.parse(b.lastEvidenceAt);
+    const aAt =
+      a.lastEvidenceAt === null
+        ? Number.NEGATIVE_INFINITY
+        : Date.parse(a.lastEvidenceAt);
+    const bAt =
+      b.lastEvidenceAt === null
+        ? Number.NEGATIVE_INFINITY
+        : Date.parse(b.lastEvidenceAt);
     return aAt - bAt || a.skillId.localeCompare(b.skillId);
   });
-  const review = secure[0]?.skillId ?? eligible
-    .filter((skill) => skill !== focus)
-    .map((skillId) => summarizeMastery(skillId, evidence, now))
-    .sort((a, b) => a.sampleN - b.sampleN || a.skillId.localeCompare(b.skillId))[0]?.skillId ?? focus;
-  const stretch = eligible.find((skill) => skill !== focus && skill !== review) ?? focus;
+  const review =
+    secure[0]?.skillId ??
+    eligible
+      .filter((skill) => skill !== focus)
+      .map((skillId) => summarizeMastery(skillId, evidence, now))
+      .sort(
+        (a, b) => a.sampleN - b.sampleN || a.skillId.localeCompare(b.skillId),
+      )[0]?.skillId ??
+    focus;
+  const stretch =
+    eligible.find((skill) => skill !== focus && skill !== review) ?? focus;
   return [focus, focus, review, focus, stretch];
 }
