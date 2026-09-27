@@ -1,5 +1,9 @@
 import { useRef, type Dispatch, type RefObject, type SetStateAction } from "react";
-import { BusyFactoryScenery, Mascot } from "../components/FactoryArt.js";
+import {
+  BusyFactoryScenery,
+  FactoryArt,
+  Mascot,
+} from "../components/FactoryArt.js";
 import {
   MachineEditor,
   RepresentationMonitor,
@@ -46,17 +50,22 @@ export function GameScreen(props: Props) {
   };
   if (props.attempt.status === "paused")
     return (
-      <main className="results">
-        <Mascot pose="welcome" className="state-mascot" />
-        <h1>Mission paused</h1>
-        <p>
-          Your draft is kept on this device and your saved order is ready to
-          resume.
-        </p>
-        <button onClick={props.onResume}>Resume mission</button>
-        <button className="secondary" onClick={props.onMap}>
-          Back to map
-        </button>
+      <main className="paused-screen">
+        <section className="paused-card">
+          <Mascot pose="welcome" className="paused-mascot" />
+          <h1>Mission paused</h1>
+          <div className="paused-actions">
+            <button onClick={props.onResume}>Resume mission</button>
+            <button className="secondary" onClick={props.onMap}>
+              Back to map
+            </button>
+          </div>
+        </section>
+        <div className="paused-factory-scene" aria-hidden="true">
+          <FactoryArt asset="prop-pipes-gauge" className="paused-pipes" />
+          <FactoryArt asset="prop-conveyor" className="paused-conveyor" />
+          <FactoryArt asset="prop-shipment" className="paused-shipment" />
+        </div>
       </main>
     );
   const order = props.attempt.activeOrder;

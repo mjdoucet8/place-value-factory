@@ -1533,7 +1533,115 @@ td {
   position: relative;
   z-index: 1;
 }
+.paused-screen {
+  align-content: start;
+  background:
+    linear-gradient(rgb(223 247 255 / 18%), rgb(223 247 255 / 30%)),
+    url("/assets/art-v2/factory-reference-stage.png") center / cover;
+  display: grid;
+  grid-template-rows: auto minmax(320px, 1fr);
+  max-width: 1672px;
+  overflow: hidden;
+  padding: 36px 24px 0;
+}
+.paused-card {
+  background: var(--cream);
+  border: 4px solid var(--cobalt);
+  border-radius: 28px;
+  box-shadow: 0 8px 0 #75d8ff, 0 18px 36px rgb(16 38 83 / 28%);
+  justify-self: center;
+  padding: 18px 30px 28px;
+  position: relative;
+  text-align: center;
+  width: min(560px, 100%);
+  z-index: 2;
+}
+.paused-card .paused-mascot {
+  float: none;
+  height: 126px;
+  margin: -8px auto -18px;
+  width: 126px;
+}
+.paused-card h1 {
+  margin: 8px 0 22px;
+}
+.paused-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+.paused-factory-scene {
+  align-self: end;
+  height: min(46vh, 430px);
+  justify-self: center;
+  max-width: 1050px;
+  min-height: 320px;
+  position: relative;
+  width: 100%;
+  z-index: 1;
+}
+.paused-factory-scene .factory-art {
+  filter: drop-shadow(0 14px 12px rgb(10 32 85 / 34%));
+  position: absolute;
+}
+.paused-pipes {
+  bottom: -32px;
+  height: min(32vw, 350px);
+  left: 0;
+  width: min(32vw, 350px);
+}
+.paused-conveyor {
+  bottom: -65px;
+  height: min(42vw, 470px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(55vw, 620px);
+}
+.paused-shipment {
+  bottom: -38px;
+  height: min(29vw, 320px);
+  right: 0;
+  width: min(29vw, 320px);
+}
 @media (max-width: 699px) {
+  .paused-screen {
+    grid-template-rows: auto minmax(240px, 1fr);
+    padding: 18px 12px 0;
+  }
+  .paused-card {
+    padding: 12px 16px 22px;
+  }
+  .paused-card .paused-mascot {
+    height: 100px;
+    width: 100px;
+  }
+  .paused-card h1 {
+    font-size: 2.25rem;
+    margin-bottom: 16px;
+  }
+  .paused-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .paused-factory-scene {
+    min-height: 240px;
+  }
+  .paused-pipes {
+    height: 180px;
+    left: -42px;
+    width: 180px;
+  }
+  .paused-conveyor {
+    bottom: -30px;
+    height: 250px;
+    width: 310px;
+  }
+  .paused-shipment {
+    height: 165px;
+    right: -38px;
+    width: 165px;
+  }
   .header-help {
     margin-left: 0;
   }

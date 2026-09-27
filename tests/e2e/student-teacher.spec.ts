@@ -105,7 +105,7 @@ test("keeps the handoff-faithful gallery baselines stable", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  for (const fixture of ["map", "calm", "results-three"]) {
+  for (const fixture of ["map", "calm", "paused", "results-three"]) {
     await page.goto(`/dev/place-value-factory/states?fixture=${fixture}`);
     await page.locator("img").evaluateAll((images) =>
       Promise.all(
