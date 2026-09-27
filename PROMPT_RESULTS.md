@@ -290,3 +290,9 @@ Result: Added one shared number formatter and applied it throughout gameplay, cr
 Prompt: Add an animation where shipped crates roll off the conveyor and new crates enter behind them, if appropriate for the MVP.
 
 Result: Added a short accepted-shipment transition that carries all six crate controls off to the right, runs the conveyor, and brings the next order's empty crates in from the left. Incorrect orders remain still, controls stay locked until the arriving row settles, final shipments animate out before results, and Reduce motion skips the movement and delay. TypeScript, production build, 79 regular tests and 23 browser tests pass, with one environment-specific browser-zoom test skipped. Deployed the animation to `https://math-factory-one.vercel.app` and verified the live stylesheet and API health.
+
+## 2026-09-27 — Add an incorrect-answer factory alert
+
+Prompt: Show a red flashing alert, like an emergency factory shutdown, when a student submits an incorrect answer.
+
+Result: Added two flashing red factory beacons, a pulsing red frame, and a high-contrast red feedback panel for incorrect shipments. The written correction is now announced as an alert, entered crate values stay available for correction, and Reduce motion turns off the flashing while retaining the visual warning. Inspected the rendered alert, then passed TypeScript, production build, 79 regular tests and 23 browser tests, with one environment-specific browser-zoom test skipped. Deployed to `https://math-factory-one.vercel.app` and verified the live alert styles and API health.

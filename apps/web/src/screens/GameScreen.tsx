@@ -20,6 +20,7 @@ type Props = {
   helpOpen: boolean;
   saving: boolean;
   shipmentMotion: "idle" | "departing" | "arriving";
+  factoryAlert: boolean;
   pending: boolean;
   pendingConflict: boolean;
   busy: boolean;
@@ -103,6 +104,7 @@ export function GameScreen(props: Props) {
     <main
       className="game-screen"
       data-busy={busyEnabled}
+      data-factory-alert={props.factoryAlert}
       onKeyDownCapture={(event) => {
         if (!(event.target instanceof HTMLInputElement) || !/^quantity-[0-5]$/.test(event.target.id)) return;
         if (event.key === "Enter") {
@@ -275,7 +277,7 @@ export function GameScreen(props: Props) {
         </section>
       )}
       {props.notice && (
-        <aside className="notice" role="status">
+        <aside className="notice" role={props.factoryAlert ? "alert" : "status"}>
           <Mascot
             pose={
               /saved|accepted|correct/i.test(props.notice)

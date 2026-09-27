@@ -125,6 +125,7 @@ export function StateGallery() {
           helpOpen={fixture.helpOpen ?? false}
           saving={fixture.saving ?? false}
           shipmentMotion="idle"
+          factoryAlert={state === "incorrect"}
           pending={false}
           pendingConflict={false}
           busy={fixture.pressure === "busy"}

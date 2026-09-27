@@ -52,6 +52,11 @@ test("student completes five saved orders, settings, and optional transfer; teac
   await page.locator("#quantity-0").fill("1");
   await page.getByRole("button", { name: "Ship order" }).click();
   await expect(page.getByText("That is too many crates.")).toBeVisible();
+  await expect(page.locator(".game-screen")).toHaveAttribute(
+    "data-factory-alert",
+    "true",
+  );
+  await expect(page.getByRole("alert")).toContainText("too many crates");
   await expect(page.locator("#quantity-0")).toHaveValue("1");
   for (let index = 0; index < 5; index++) {
     await fillCanonicalOrder(page);
@@ -420,6 +425,20 @@ test("renders deterministic advanced-mode visual fixtures", async ({
   );
   await page.goto("/dev/place-value-factory/states?fixture=progress");
   await expect(page.getByText("Still gathering evidence")).toBeVisible();
+  await page.goto("/dev/place-value-factory/states?fixture=incorrect");
+  await expect(page.locator(".game-screen")).toHaveAttribute(
+    "data-factory-alert",
+    "true",
+  );
+  await expect(page.getByRole("alert")).toContainText("more crates");
+  await expect(page.locator(".game-screen")).toHaveCSS(
+    "animation-name",
+    "factory-emergency-frame",
+  );
+  await page.evaluate(() => {
+    document.documentElement.dataset.motion = "reduced";
+  });
+  await expect(page.locator(".game-screen")).toHaveCSS("animation-name", "none");
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/dev/place-value-factory/states?fixture=calm");
   await expect(page.getByRole("button", { name: "Ship order" })).toBeVisible();

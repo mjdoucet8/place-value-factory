@@ -97,6 +97,8 @@ function App() {
   const [shipmentMotion, setShipmentMotion] = useState<
     "idle" | "departing" | "arriving"
   >("idle");
+  const [factoryAlert, setFactoryAlert] = useState(false);
+  const factoryAlertTimer = useRef<number | null>(null);
   const [pendingLocal, setPendingLocal] = useState(false);
   const [pendingConflict, setPendingConflict] = useState(false);
   const [storageUnavailable, setStorageUnavailable] = useState(false);
@@ -566,6 +568,9 @@ function App() {
   }
   const ship = async () => {
     if (saving || pendingLocal) return;
+    if (factoryAlertTimer.current !== null)
+      window.clearTimeout(factoryAlertTimer.current);
+    setFactoryAlert(false);
     setSaving(true);
     setNotice("Saving your shipment…");
     const commandId = crypto.randomUUID();
@@ -680,6 +685,11 @@ function App() {
         }
       } else {
         setAttempt(data.snapshot);
+        setFactoryAlert(true);
+        factoryAlertTimer.current = window.setTimeout(() => {
+          setFactoryAlert(false);
+          factoryAlertTimer.current = null;
+        }, 1900);
       }
     } catch (error) {
       setNotice(
@@ -1047,6 +1057,7 @@ function App() {
         helpOpen={helpOpen}
         saving={saving}
         shipmentMotion={shipmentMotion}
+        factoryAlert={factoryAlert}
         pending={pendingLocal}
         pendingConflict={pendingConflict}
         busy={settings.pressure === "busy"}
