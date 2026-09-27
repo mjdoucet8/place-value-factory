@@ -126,6 +126,24 @@ test("keeps the handoff-faithful gallery baselines stable", async ({
   }
 });
 
+test("resumes a paused mission after the page reloads", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Student login" }).click();
+  await startFirstMission(page);
+  await page.getByRole("button", { name: "Pause mission" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Factory Map" }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { name: "Mission paused" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Resume mission" }).click();
+  await expect(
+    page.getByText("CURRENT ORDER", { exact: true }),
+  ).toBeVisible();
+});
+
 test("keeps play usable when browser storage cannot save a draft", async ({
   page,
 }) => {

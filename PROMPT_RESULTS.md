@@ -272,3 +272,9 @@ Result: Removed the mission-introduction component, route, gallery fixture, styl
 Prompt: Remove the saved-draft explanation, center the paused heading and buttons, and fill the empty space with factory artwork.
 
 Result: Replaced the sparse paused panel with a centered, responsive card over the factory stage. Removed the device-storage sentence and added pipes, conveyor and shipment artwork across the lower scene. Added a paused-state visual baseline after inspection. TypeScript, production build, 78 regular tests and 22 browser tests pass, with one environment-specific browser-zoom test skipped. Deployed the redesign and verified its live bundle and API.
+
+## 2026-09-27 — Fix Resume mission after reload
+
+Prompt: The Resume mission button does not work on the mission-paused screen.
+
+Result: Fixed paused attempts restored in a new browser tab by safely claiming the attempt for the current tab before resuming it. The button now prevents duplicate submissions while resuming and displays actionable failures on the paused card. Added a browser regression test covering pause, reload and resume. TypeScript, production build, 78 regular tests and 23 browser tests pass, with one environment-specific browser-zoom test skipped. Deployed the fix and verified the full flow against production PostgreSQL with a temporary fictional student, then archived the temporary class.

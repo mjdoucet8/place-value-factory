@@ -1565,6 +1565,13 @@ td {
 .paused-card h1 {
   margin: 8px 0 22px;
 }
+.paused-notice {
+  background: #fff;
+  border: 2px solid var(--cobalt);
+  border-radius: 12px;
+  margin: -8px 0 18px;
+  padding: 10px 12px;
+}
 .paused-actions {
   display: flex;
   flex-wrap: wrap;

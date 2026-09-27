@@ -54,9 +54,20 @@ export function GameScreen(props: Props) {
         <section className="paused-card">
           <Mascot pose="welcome" className="paused-mascot" />
           <h1>Mission paused</h1>
+          {props.notice ? (
+            <p className="paused-notice" role="status">
+              {props.notice}
+            </p>
+          ) : null}
           <div className="paused-actions">
-            <button onClick={props.onResume}>Resume mission</button>
-            <button className="secondary" onClick={props.onMap}>
+            <button disabled={props.saving} onClick={props.onResume}>
+              {props.saving ? "Resuming…" : "Resume mission"}
+            </button>
+            <button
+              className="secondary"
+              disabled={props.saving}
+              onClick={props.onMap}
+            >
               Back to map
             </button>
           </div>

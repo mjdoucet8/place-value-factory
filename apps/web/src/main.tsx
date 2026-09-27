@@ -760,17 +760,39 @@ function App() {
     }
   };
   const changeAttemptState = async (action: "pause" | "resume") => {
-    const commandId = crypto.randomUUID();
+    setSaving(true);
     try {
+      let currentAttempt = attempt;
+      if (action === "resume" && currentAttempt.writerTabId !== tabId) {
+        const takeoverCommandId = crypto.randomUUID();
+        const takeover = await api(
+          `/games/place-value-factory/attempts/${currentAttempt.attemptId}/lease/takeover`,
+          {
+            method: "POST",
+            headers: {
+              "x-session": session,
+              "idempotency-key": takeoverCommandId,
+            },
+            body: JSON.stringify({
+              commandId: takeoverCommandId,
+              expectedRevision: currentAttempt.revision,
+              leaseEpoch: currentAttempt.leaseEpoch,
+              tabId,
+            }),
+          },
+        );
+        currentAttempt = takeover.snapshot;
+      }
+      const commandId = crypto.randomUUID();
       const data = await api(
-        `/games/place-value-factory/attempts/${attempt.attemptId}/${action}`,
+        `/games/place-value-factory/attempts/${currentAttempt.attemptId}/${action}`,
         {
           method: "POST",
           headers: { "x-session": session, "idempotency-key": commandId },
           body: JSON.stringify({
             commandId,
-            expectedRevision: attempt.revision,
-            leaseEpoch: attempt.leaseEpoch,
+            expectedRevision: currentAttempt.revision,
+            leaseEpoch: currentAttempt.leaseEpoch,
             tabId,
           }),
         },
@@ -779,9 +801,11 @@ function App() {
       if (action === "pause") {
         await loadMap();
         navigate("map");
-      }
+      } else setNotice("");
     } catch (error) {
       setNotice(`Could not ${action} — ${(error as Error).message}`);
+    } finally {
+      setSaving(false);
     }
   };
   const skipOrder = async () => {
