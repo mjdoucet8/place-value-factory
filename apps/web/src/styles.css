@@ -1779,3 +1779,18 @@ td {
   box-shadow: 0 7px 0 #10204b, 0 13px 10px #10265377;
 }
 .game-screen .production-line .crate-inventory { margin-top: 52px; }
+.game-screen .production-line .exchange-row {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  min-width: 1020px;
+  padding: 0 17px;
+}
+.game-screen .production-line .exchange-row .exchange {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 5px;
+  border-width: 2px;
+  font-size: .75rem;
+  padding: 5px;
+}

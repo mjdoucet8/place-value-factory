@@ -19,6 +19,16 @@ export function MachineEditor({
   setQuantities,
   setQuantitiesB,
 }: Props) {
+  const exchangeAt = (index: number) =>
+    setQuantities((values) =>
+      values.map((value, item) =>
+        item === index
+          ? value - 1
+          : item === index + 1
+            ? value + 10
+            : value,
+      ),
+    );
   return (
     <>
       <div className="production-line" role="region" aria-label="Factory conveyor and crate controls" tabIndex={0}>
@@ -98,34 +108,30 @@ export function MachineEditor({
                 ? quantities[index] > 0 ? `× ${quantities[index].toLocaleString()} crate${quantities[index] === 1 ? "" : "s"}` : "No crates yet"
                 : "Closed for this order"}
             </p>
-            {index < 5 && (
-              <button
-                className="exchange"
-                tabIndex={-1}
-                disabled={
-                  saving ||
-                  quantities[index] < 1 ||
-                  !order.allowed.includes(place.value) ||
-                  !order.allowed.includes(PLACES[index + 1].value)
-                }
-                onClick={() =>
-                  setQuantities((values) =>
-                    values.map((value, item) =>
-                      item === index
-                        ? value - 1
-                        : item === index + 1
-                          ? value + 10
-                          : value,
-                    ),
-                  )
-                }
-              >
-                Trade 1 for 10 smaller
-              </button>
-            )}
           </article>
         ))}
       </section>
+      <div className="exchange-row" aria-label="Crate trade actions">
+        {PLACES.map((place, index) =>
+          index < 5 ? (
+            <button
+              className="exchange"
+              key={place.value}
+              disabled={
+                saving ||
+                quantities[index] < 1 ||
+                !order.allowed.includes(place.value) ||
+                !order.allowed.includes(PLACES[index + 1].value)
+              }
+              onClick={() => exchangeAt(index)}
+            >
+              Trade 1 for 10 smaller
+            </button>
+          ) : (
+            <span aria-hidden="true" key={place.value} />
+          ),
+        )}
+      </div>
       </div>
       {order.distinctRepresentations === 2 && (
         <section

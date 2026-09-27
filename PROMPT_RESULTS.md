@@ -223,4 +223,4 @@ Result: The preview had been restarted without its API process. Started the exis
 
 Prompt: Make Tab move from one crate number box directly to the next instead of stopping at Trade 1 for 10 smaller.
 
-Result: Removed trade actions from the sequential keyboard order while preserving mouse/touch use and accessibility semantics. A focused browser test enables the intervening trade action and confirms Tab and Shift+Tab move directly between adjacent quantity fields.
+Result: Moved trade actions after the six machine cards in document order. Tab and Shift+Tab now move directly between adjacent quantity fields, then continue to enabled trade actions so every control remains keyboard accessible. A focused browser test enables the formerly intervening trade action and confirms the field-to-field sequence.
