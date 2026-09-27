@@ -1910,3 +1910,41 @@ td {
   font-size: .75rem;
   padding: 5px;
 }
+
+/* Accepted shipments carry the current crates out before the next row enters. */
+@keyframes shipment-crates-depart {
+  from { transform: translate3d(0, 0, 0) rotate(0); }
+  to { transform: translate3d(1150px, 0, 0) rotate(2deg); }
+}
+@keyframes shipment-crates-arrive {
+  from { transform: translate3d(-1150px, 0, 0) rotate(-2deg); }
+  to { transform: translate3d(0, 0, 0) rotate(0); }
+}
+@keyframes shipment-belt-roll {
+  to { background-position: 48px 0, 48px 0; }
+}
+.game-screen .production-line[data-shipment-motion="departing"] .editable-crate,
+.game-screen .production-line[data-shipment-motion="departing"] .crate-inventory {
+  animation: shipment-crates-depart .52s cubic-bezier(.45, 0, .85, .55) both;
+  pointer-events: none;
+  will-change: transform;
+}
+.game-screen .production-line[data-shipment-motion="arriving"] .editable-crate,
+.game-screen .production-line[data-shipment-motion="arriving"] .crate-inventory {
+  animation: shipment-crates-arrive .52s cubic-bezier(.15, .7, .25, 1) both;
+  pointer-events: none;
+  will-change: transform;
+}
+.game-screen .production-line[data-shipment-motion="departing"] .illustrated-machine:nth-child(2) :is(.editable-crate, .crate-inventory),
+.game-screen .production-line[data-shipment-motion="arriving"] .illustrated-machine:nth-child(2) :is(.editable-crate, .crate-inventory) { animation-delay: 20ms; }
+.game-screen .production-line[data-shipment-motion="departing"] .illustrated-machine:nth-child(3) :is(.editable-crate, .crate-inventory),
+.game-screen .production-line[data-shipment-motion="arriving"] .illustrated-machine:nth-child(3) :is(.editable-crate, .crate-inventory) { animation-delay: 40ms; }
+.game-screen .production-line[data-shipment-motion="departing"] .illustrated-machine:nth-child(4) :is(.editable-crate, .crate-inventory),
+.game-screen .production-line[data-shipment-motion="arriving"] .illustrated-machine:nth-child(4) :is(.editable-crate, .crate-inventory) { animation-delay: 60ms; }
+.game-screen .production-line[data-shipment-motion="departing"] .illustrated-machine:nth-child(5) :is(.editable-crate, .crate-inventory),
+.game-screen .production-line[data-shipment-motion="arriving"] .illustrated-machine:nth-child(5) :is(.editable-crate, .crate-inventory) { animation-delay: 80ms; }
+.game-screen .production-line[data-shipment-motion="departing"] .illustrated-machine:nth-child(6) :is(.editable-crate, .crate-inventory),
+.game-screen .production-line[data-shipment-motion="arriving"] .illustrated-machine:nth-child(6) :is(.editable-crate, .crate-inventory) { animation-delay: 100ms; }
+.game-screen .production-line[data-shipment-motion]:not([data-shipment-motion="idle"]) .machines::after {
+  animation: shipment-belt-roll .2s linear infinite;
+}

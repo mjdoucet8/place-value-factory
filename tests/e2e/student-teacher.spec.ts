@@ -56,8 +56,10 @@ test("student completes five saved orders, settings, and optional transfer; teac
   for (let index = 0; index < 5; index++) {
     await fillCanonicalOrder(page);
     await page.getByRole("button", { name: "Ship order" }).click();
-    if (index < 4)
+    if (index < 4) {
       await expect(page.getByText(`Order ${index + 2} of 5`)).toBeVisible();
+      await expect(page.getByRole("button", { name: "Ship order" })).toBeEnabled();
+    }
   }
   await expect(
     page.getByRole("heading", { name: "Level complete!" }),

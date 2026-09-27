@@ -89,7 +89,19 @@ test("quantity keyboard navigation and Enter ship work on a saved mission", asyn
     await page.locator(`#quantity-${index}`).fill(String(quantity));
   }
   await openQuantities.last().press("Enter");
+  await expect(page.locator(".production-line")).toHaveAttribute(
+    "data-shipment-motion",
+    "departing",
+  );
+  await expect(page.locator(".production-line")).toHaveAttribute(
+    "data-shipment-motion",
+    "arriving",
+  );
   await expect(page.getByText("Order 2 of 5")).toBeVisible();
+  await expect(page.locator(".production-line")).toHaveAttribute(
+    "data-shipment-motion",
+    "idle",
+  );
 });
 
 test("student can finish five orders using keyboard controls and reach saved results", async ({ page }) => {

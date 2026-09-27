@@ -124,6 +124,7 @@ export function StateGallery() {
           help="H1: Think about groups of ten."
           helpOpen={fixture.helpOpen ?? false}
           saving={fixture.saving ?? false}
+          shipmentMotion="idle"
           pending={false}
           pendingConflict={false}
           busy={fixture.pressure === "busy"}

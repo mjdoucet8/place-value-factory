@@ -94,6 +94,9 @@ function App() {
   const [progress, setProgress] = useState<any>();
   const [starting, setStarting] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [shipmentMotion, setShipmentMotion] = useState<
+    "idle" | "departing" | "arriving"
+  >("idle");
   const [pendingLocal, setPendingLocal] = useState(false);
   const [pendingConflict, setPendingConflict] = useState(false);
   const [storageUnavailable, setStorageUnavailable] = useState(false);
@@ -658,13 +661,25 @@ function App() {
           ? "Saved — shipment accepted."
           : feedback(data.validation.feedbackCode),
       );
-      setAttempt(data.snapshot);
-      if (data.result) {
-        setResultData(data.result);
-        navigate("results", { attempt: data.snapshot });
-      } else if (data.validation.shipmentAccepted) {
+      if (data.validation.shipmentAccepted) {
+        setShipmentMotion("departing");
+        if (!settings.reducedMotion)
+          await new Promise((resolve) => window.setTimeout(resolve, 650));
+        setAttempt(data.snapshot);
         setQuantities([0, 0, 0, 0, 0, 0]);
         setQuantitiesB([0, 0, 0, 0, 0, 0]);
+        if (data.result) {
+          setShipmentMotion("idle");
+          setResultData(data.result);
+          navigate("results", { attempt: data.snapshot });
+        } else {
+          setShipmentMotion("arriving");
+          if (!settings.reducedMotion)
+            await new Promise((resolve) => window.setTimeout(resolve, 650));
+          setShipmentMotion("idle");
+        }
+      } else {
+        setAttempt(data.snapshot);
       }
     } catch (error) {
       setNotice(
@@ -1031,6 +1046,7 @@ function App() {
         help={help}
         helpOpen={helpOpen}
         saving={saving}
+        shipmentMotion={shipmentMotion}
         pending={pendingLocal}
         pendingConflict={pendingConflict}
         busy={settings.pressure === "busy"}

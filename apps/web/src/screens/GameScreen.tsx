@@ -19,6 +19,7 @@ type Props = {
   help: string;
   helpOpen: boolean;
   saving: boolean;
+  shipmentMotion: "idle" | "departing" | "arriving";
   pending: boolean;
   pendingConflict: boolean;
   busy: boolean;
@@ -220,6 +221,7 @@ export function GameScreen(props: Props) {
         quantities={props.quantities}
         quantitiesB={props.quantitiesB}
         saving={locked}
+        shipmentMotion={props.shipmentMotion}
         setQuantities={props.setQuantities}
         setQuantitiesB={props.setQuantitiesB}
       />

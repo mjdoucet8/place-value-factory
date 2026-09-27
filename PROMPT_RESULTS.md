@@ -284,3 +284,9 @@ Result: Fixed paused attempts restored in a new browser tab by safely claiming t
 Prompt: Replace the comma between the thousands and hundreds places with a space for all numbers in the thousands across the website.
 
 Result: Added one shared number formatter and applied it throughout gameplay, crate and machine labels, map and progress summaries, results, and teacher reports. Values now display as `1 000`, `10 000`, `100 000`, and `420 000`. Updated number-reading assertions and the intentional calm visual baseline. TypeScript, production build, 79 regular tests and 23 browser tests pass, with one environment-specific browser-zoom test skipped. Deployed the change to `https://math-factory-one.vercel.app` and verified both the live formatter and API health.
+
+## 2026-09-27 — Animate accepted shipments
+
+Prompt: Add an animation where shipped crates roll off the conveyor and new crates enter behind them, if appropriate for the MVP.
+
+Result: Added a short accepted-shipment transition that carries all six crate controls off to the right, runs the conveyor, and brings the next order's empty crates in from the left. Incorrect orders remain still, controls stay locked until the arriving row settles, final shipments animate out before results, and Reduce motion skips the movement and delay. TypeScript, production build, 79 regular tests and 23 browser tests pass, with one environment-specific browser-zoom test skipped. Deployed the animation to `https://math-factory-one.vercel.app` and verified the live stylesheet and API health.

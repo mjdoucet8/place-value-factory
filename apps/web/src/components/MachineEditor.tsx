@@ -8,6 +8,7 @@ type Props = {
   quantities: number[];
   quantitiesB: number[];
   saving: boolean;
+  shipmentMotion: "idle" | "departing" | "arriving";
   setQuantities: Dispatch<SetStateAction<number[]>>;
   setQuantitiesB: Dispatch<SetStateAction<number[]>>;
 };
@@ -17,6 +18,7 @@ export function MachineEditor({
   quantities,
   quantitiesB,
   saving,
+  shipmentMotion,
   setQuantities,
   setQuantitiesB,
 }: Props) {
@@ -32,7 +34,13 @@ export function MachineEditor({
     );
   return (
     <>
-      <div className="production-line" role="region" aria-label="Factory conveyor and crate controls" tabIndex={0}>
+      <div
+        className="production-line"
+        data-shipment-motion={shipmentMotion}
+        role="region"
+        aria-label="Factory conveyor and crate controls"
+        tabIndex={0}
+      >
       <section
         className="machines"
         aria-label="Representation A place value machines"
