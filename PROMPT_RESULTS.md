@@ -212,3 +212,9 @@ Result: The screenshot exposed a global 48 px minimum height overriding the crat
 Prompt: Begin the four-step path with minimal interruption: secure end-to-end pilot, blocker fixes, release-candidate freeze and private staging deployment.
 
 Result: A fresh fictional PostgreSQL teacher/student pilot passed, including recovery, reporting, revocation and archive. Corrected two accessibility regressions exposed by the factory redesign and refreshed the intentional calm visual baseline. Final typecheck, build, regular, PostgreSQL/restart, standard browser and secure-pilot suites pass with documented environment/harness skips. Added a guarded single-container fictional staging package and verified its static server, health route and deployment validation. External upload could not proceed because the saved GitHub credential is invalid and no hosting/container CLI is connected; production remains fail-closed pending school identity. Existing development data and private files were preserved outside the checkpoint.
+
+## 2026-09-27 — Restore preview student login
+
+Prompt: Student login fails because the response body is empty JSON.
+
+Result: The preview had been restarted without its API process. Started the existing development API without resetting data and verified the fictional student login through the website proxy returns HTTP 200 and valid JSON. No application code or stored data changed.
