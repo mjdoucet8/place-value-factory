@@ -4,6 +4,7 @@ import {
   FactoryArt,
   Mascot,
 } from "../components/FactoryArt.js";
+import { formatNumber } from "../formatNumber.js";
 import {
   MachineEditor,
   RepresentationMonitor,
@@ -95,7 +96,7 @@ export function GameScreen(props: Props) {
           : order.canonicalRequired
             ? "Use normal place value: 0–9 crates of each size."
             : order.allowed.length < 6
-              ? `Use only: ${order.allowed.map((value: number) => value.toLocaleString()).join(", ")}.`
+              ? `Use only: ${order.allowed.map((value: number) => formatNumber(value)).join(", ")}.`
               : "Build this target with the open machines.";
   return (
     <main
@@ -145,7 +146,7 @@ export function GameScreen(props: Props) {
         </aside>
         <section className="current-order" aria-labelledby="order-heading">
           <p id="order-heading">CURRENT ORDER</p>
-          <strong>{order.target.toLocaleString()}</strong>
+          <strong>{formatNumber(order.target)}</strong>
           <p>{objective}</p>
         </section>
         <aside

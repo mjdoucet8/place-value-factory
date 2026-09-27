@@ -162,7 +162,7 @@ test("teacher issues access, student ships, and teacher reviews and revokes it",
   await student.getByRole("button", { name: "Progress" }).click();
   await student.getByRole("button", { name: /^Practice / }).click();
   for (let slot = 0; slot < 5; slot++) {
-    let remaining = Number((await student.locator(".current-order strong").innerText()).replaceAll(",", ""));
+    let remaining = Number((await student.locator(".current-order strong").innerText()).replace(/[ ,]/g, ""));
     for (const [index, value] of [100000, 10000, 1000, 100, 10, 1].entries()) {
       const amount = Math.floor(remaining / value);
       remaining %= value;
@@ -181,7 +181,7 @@ test("teacher issues access, student ships, and teacher reviews and revokes it",
   await student.getByRole("button", { name: /Replay mission/ }).first().click();
   await expect(student.getByText("CURRENT ORDER", { exact: true })).toBeVisible();
   await student.route("**/responses", (route) => route.abort("connectionfailed"));
-  let pendingTarget = Number((await student.locator(".current-order strong").innerText()).replaceAll(",", ""));
+  let pendingTarget = Number((await student.locator(".current-order strong").innerText()).replace(/[ ,]/g, ""));
   for (const [index, value] of [100000, 10000, 1000, 100, 10, 1].entries()) {
     const amount = Math.floor(pendingTarget / value);
     pendingTarget %= value;

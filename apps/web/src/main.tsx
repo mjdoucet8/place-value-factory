@@ -17,6 +17,7 @@ import { api, ApiError } from "./api.js";
 import { GameScreen } from "./screens/GameScreen.js";
 import { StateGallery } from "./screens/StateGallery.js";
 import { outbox, type PendingGameCommand } from "./outbox.js";
+import { formatNumber } from "./formatNumber.js";
 
 const places = PLACES;
 declare const __PVF_DEVELOPMENT__: boolean;
@@ -880,7 +881,7 @@ function App() {
       setPendingLocal(false);
       setAttempt(data.snapshot);
       setHelp(
-        `${step}: ${data.hint.params.message}${data.hint.workedExample ? ` Example: ${data.hint.workedExample.target.toLocaleString()}.` : ""}`,
+        `${step}: ${data.hint.params.message}${data.hint.workedExample ? ` Example: ${formatNumber(data.hint.workedExample.target)}.` : ""}`,
       );
     } catch (error) {
       setNotice(

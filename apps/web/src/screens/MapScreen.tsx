@@ -1,6 +1,7 @@
 import type { LevelSummary, SelectedLevel } from "../models.js";
 import { FactoryArt, Mascot } from "../components/FactoryArt.js";
 import { studentSkillLabel } from "../studentCopy.js";
+import { formatNumber } from "../formatNumber.js";
 import { useState } from "react";
 
 type Props = {
@@ -68,7 +69,7 @@ export function MapScreen(props: Props) {
           <h2 id="resume-heading">Mission ready to resume</h2>
           <p>
             Level {props.activeAttempt.levelId?.replace("level-", "")} ·
-            shipment {props.activeAttempt.shippedSlots + 1} of 5
+            shipment {formatNumber(props.activeAttempt.shippedSlots + 1)} of 5
           </p>
           <button onClick={props.onResume}>Resume saved mission</button>
         </section>
@@ -242,12 +243,12 @@ export function MapScreen(props: Props) {
           <dl>
             <div>
               <dt>Total stars</dt>
-              <dd>{stars} / 90</dd>
+              <dd>{formatNumber(stars)} / 90</dd>
             </div>
             <div>
               <dt>Levels completed</dt>
               <dd>
-                {levels.filter((level) => level.status === "completed").length}{" "}
+                {formatNumber(levels.filter((level) => level.status === "completed").length)}{" "}
                 / 30
               </dd>
             </div>
@@ -256,7 +257,7 @@ export function MapScreen(props: Props) {
               <dd>
                 {props.map?.lastCompletedEfficiency == null
                   ? "No completed level yet"
-                  : `${props.map.lastCompletedEfficiency}%`}
+                  : `${formatNumber(props.map.lastCompletedEfficiency)}%`}
               </dd>
             </div>
           </dl>

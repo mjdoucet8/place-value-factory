@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../api.js";
 import { TeacherScreen } from "./TeacherScreen.js";
+import { formatNumber } from "../formatNumber.js";
 
 type Classroom = {
   id: string;
@@ -289,7 +290,7 @@ export function TeacherWorkspace() {
               </div>
             ) : null}
             <details>
-              <summary>Manage student access ({students.length})</summary>
+              <summary>Manage student access ({formatNumber(students.length)})</summary>
               <ul className="roster-list">
                 {students.map((student) => (
                   <li key={student.id}>

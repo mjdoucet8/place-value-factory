@@ -1,4 +1,6 @@
 import { studentSkillLabel, studentSkillStatus } from "../studentCopy.js";
+import { FactoryArt, Mascot } from "../components/FactoryArt.js";
+import { formatNumber } from "../formatNumber.js";
 
 type Props = {
   result: any;
@@ -28,7 +30,7 @@ export function ResultsScreen({
           <p className="eyebrow">{practice ? "Practice complete" : "Mission complete"}</p>
           <h1>{practice ? "Great practicing!" : "Level complete!"}</h1>
           <p>
-            Great work! You packed {result?.shipped ?? 5} orders for this
+            Great work! You packed {formatNumber(result?.shipped ?? 5)} orders for this
             mission.
           </p>
           {!practice && (
@@ -52,24 +54,24 @@ export function ResultsScreen({
             <div>
               <dt>First try</dt>
               <dd>
-                {result?.firstObjectiveCorrect ?? 0}/
-                {result?.submittedOrders ?? result?.shipped ?? 5}
+                {formatNumber(result?.firstObjectiveCorrect ?? 0)}/
+                {formatNumber(result?.submittedOrders ?? result?.shipped ?? 5)}
               </dd>
             </div>
             <div>
               <dt>Orders solved</dt>
               <dd>
-                {result?.eventuallyCorrect ?? 0}/
-                {result?.submittedOrders ?? result?.shipped ?? 5}
+                {formatNumber(result?.eventuallyCorrect ?? 0)}/
+                {formatNumber(result?.submittedOrders ?? result?.shipped ?? 5)}
               </dd>
             </div>
             <div>
               <dt>Best streak</dt>
-              <dd>{result?.bestStreak ?? 0}</dd>
+              <dd>{formatNumber(result?.bestStreak ?? 0)}</dd>
             </div>
             <div>
               <dt>Factory score</dt>
-              <dd>{result?.efficiency ?? 100}%</dd>
+              <dd>{formatNumber(result?.efficiency ?? 100)}%</dd>
             </div>
           </dl>
         </section>
@@ -80,7 +82,7 @@ export function ResultsScreen({
               {result.skillStatuses.map((skill: any) => (
                 <li key={skill.skillId}>
                   {studentSkillLabel(skill.skillId)}:{" "}
-                  {studentSkillStatus(skill.status)} ({skill.sampleN}{" "}
+                  {studentSkillStatus(skill.status)} ({formatNumber(skill.sampleN)}{" "}
                   {skill.sampleN === 1 ? "order" : "orders"})
                 </li>
               ))}
@@ -114,4 +116,3 @@ export function ResultsScreen({
     </main>
   );
 }
-import { FactoryArt, Mascot } from "../components/FactoryArt.js";

@@ -9,7 +9,7 @@ test.beforeEach(async () => {
 
 async function fillCanonicalOrder(page: Page) {
   const target = Number(
-    (await page.locator(".current-order strong").innerText()).replace(/,/g, ""),
+    (await page.locator(".current-order strong").innerText()).replace(/[ ,]/g, ""),
   );
   let remainder = target;
   for (const [index, value] of [100000, 10000, 1000, 100, 10, 1].entries()) {

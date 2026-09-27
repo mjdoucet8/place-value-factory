@@ -1,4 +1,6 @@
 import { studentSkillLabel, studentSkillStatus } from "../studentCopy.js";
+import { Mascot } from "../components/FactoryArt.js";
+import { formatNumber } from "../formatNumber.js";
 type Props = { progress: any; onPractice: () => void; onBack: () => void };
 
 export function ProgressScreen({ progress, onPractice, onBack }: Props) {
@@ -14,7 +16,7 @@ export function ProgressScreen({ progress, onPractice, onBack }: Props) {
         <Mascot pose="instruct" className="summary-mascot" />
         <h2>Learning evidence</h2>
         <p>
-          {progress?.completedLevelIds?.length ?? 0} levels complete. Take the
+          {formatNumber(progress?.completedLevelIds?.length ?? 0)} levels complete. Take the
           time you need — careful thinking counts.
         </p>
         {progress?.nextPracticeSkillId && (
@@ -35,7 +37,7 @@ export function ProgressScreen({ progress, onPractice, onBack }: Props) {
             <p>
               {skill.sampleN === 0
                 ? "Still gathering evidence"
-                : `${skill.sampleN} practice orders · ${skill.independentFirstN} first-try solves`}
+                : `${formatNumber(skill.sampleN)} practice orders · ${formatNumber(skill.independentFirstN)} first-try solves`}
             </p>
           </article>
         ))}
@@ -43,4 +45,3 @@ export function ProgressScreen({ progress, onPractice, onBack }: Props) {
     </main>
   );
 }
-import { Mascot } from "../components/FactoryArt.js";

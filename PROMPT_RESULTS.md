@@ -278,3 +278,9 @@ Result: Replaced the sparse paused panel with a centered, responsive card over t
 Prompt: The Resume mission button does not work on the mission-paused screen.
 
 Result: Fixed paused attempts restored in a new browser tab by safely claiming the attempt for the current tab before resuming it. The button now prevents duplicate submissions while resuming and displays actionable failures on the paused card. Added a browser regression test covering pause, reload and resume. TypeScript, production build, 78 regular tests and 23 browser tests pass, with one environment-specific browser-zoom test skipped. Deployed the fix and verified the full flow against production PostgreSQL with a temporary fictional student, then archived the temporary class.
+
+## 2026-09-27 — Use spaces in thousands
+
+Prompt: Replace the comma between the thousands and hundreds places with a space for all numbers in the thousands across the website.
+
+Result: Added one shared number formatter and applied it throughout gameplay, crate and machine labels, map and progress summaries, results, and teacher reports. Values now display as `1 000`, `10 000`, `100 000`, and `420 000`. Updated number-reading assertions and the intentional calm visual baseline. TypeScript, production build, 79 regular tests and 23 browser tests pass, with one environment-specific browser-zoom test skipped. Deployed the change to `https://math-factory-one.vercel.app` and verified both the live formatter and API health.

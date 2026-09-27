@@ -1,6 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import { MachineArtwork, CrateShell } from "./MachineArtwork.js";
 import { PLACES } from "../models.js";
+import { formatNumber } from "../formatNumber.js";
 
 type Props = {
   order: any;
@@ -105,7 +106,7 @@ export function MachineEditor({
             </div>
             <p className="crate-inventory">
               {order.allowed.includes(place.value)
-                ? quantities[index] > 0 ? `× ${quantities[index].toLocaleString()} crate${quantities[index] === 1 ? "" : "s"}` : "No crates yet"
+                ? quantities[index] > 0 ? `× ${formatNumber(quantities[index])} crate${quantities[index] === 1 ? "" : "s"}` : "No crates yet"
                 : "Closed for this order"}
             </p>
           </article>
@@ -141,7 +142,7 @@ export function MachineEditor({
           <h2 id="representation-b-heading">Representation B</h2>
           <p>
             Pack the number a different way. Both packings must total{" "}
-            {order.target.toLocaleString()}.
+            {formatNumber(order.target)}.
           </p>
           <div>
             {PLACES.map((place, index) => (
@@ -200,14 +201,14 @@ export function RepresentationMonitor({
                   ? `PACKING ${representation === 0 ? "A" : "B"}`
                   : "YOUR PACKING"}
               </p>
-              <strong aria-label={`Total ${total.toLocaleString()}`}>
-                {total.toLocaleString()}
+              <strong aria-label={`Total ${formatNumber(total)}`}>
+                {formatNumber(total)}
               </strong>
               <p className="expression">
                 {values
                   .map((amount, index) =>
                     amount > 0
-                      ? `${amount} × ${PLACES[index].value.toLocaleString()}`
+                      ? `${formatNumber(amount)} × ${formatNumber(PLACES[index].value)}`
                       : null,
                   )
                   .filter(Boolean)

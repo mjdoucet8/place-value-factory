@@ -42,7 +42,7 @@ test("reviews all gallery fixtures, assets and reflow at desktop and narrow widt
       if (page.url().includes("fixture=calm")) {
         await page.locator("#quantity-0").fill("2");
         await expect(
-          page.getByLabel("Total 200,000", { exact: true }),
+          page.getByLabel("Total 200 000", { exact: true }),
         ).toBeVisible();
       }
     }

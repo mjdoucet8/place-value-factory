@@ -5,6 +5,7 @@ import type {
   ReportEvidence,
 } from "../../../../packages/contracts/src/index.js";
 import { api } from "../api.js";
+import { formatNumber } from "../formatNumber.js";
 
 type Filters = {
   from: string;
@@ -17,7 +18,11 @@ type Filters = {
 };
 
 function vector(value: unknown) {
-  return Array.isArray(value) ? value.join(", ") : "—";
+  return Array.isArray(value)
+    ? value
+        .map((item) => (typeof item === "number" ? formatNumber(item) : item))
+        .join(", ")
+    : "—";
 }
 
 export function TeacherScreen({
@@ -204,13 +209,15 @@ export function TeacherScreen({
                     <td>
                       {student.firstObjectiveAccuracy === null
                         ? "No evidence"
-                        : `${student.firstObjectiveCorrectN}/${student.submittedN} (${Math.round(student.firstObjectiveAccuracy * 100)}%)`}
+                        : `${formatNumber(student.firstObjectiveCorrectN)}/${formatNumber(student.submittedN)} (${formatNumber(Math.round(student.firstObjectiveAccuracy * 100))}%)`}
                     </td>
                     <td>
-                      {student.skills?.filter(
-                        (skill: any) => skill.status === "secure",
-                      ).length ?? 0}
-                      /{student.skills?.length ?? 0} secure
+                      {formatNumber(
+                        student.skills?.filter(
+                          (skill: any) => skill.status === "secure",
+                        ).length ?? 0,
+                      )}
+                      /{formatNumber(student.skills?.length ?? 0)} secure
                     </td>
                     <td>
                       {student.primaryPracticeSkillId ??
@@ -221,10 +228,10 @@ export function TeacherScreen({
                         ? new Date(student.lastActivityAt).toLocaleString()
                         : "No activity"}
                     </td>
-                    <td data-submitted>{student.submittedN}</td>
-                    <td>{student.eventuallyCorrectN}</td>
-                    <td>{student.correctionSuccessN}</td>
-                    <td>{student.pendingN}</td>
+                    <td data-submitted>{formatNumber(student.submittedN)}</td>
+                    <td>{formatNumber(student.eventuallyCorrectN)}</td>
+                    <td>{formatNumber(student.correctionSuccessN)}</td>
+                    <td>{formatNumber(student.pendingN)}</td>
                     <td>
                       <button
                         aria-expanded={selectedId === student.studentId}
@@ -274,23 +281,23 @@ export function TeacherScreen({
                 {student.evidenceLabel}
               </p>
               <p>
-                {student.submittedN} submitted orders ·{" "}
-                {student.eventuallyCorrectN} accepted shipments
+                {formatNumber(student.submittedN)} submitted orders ·{" "}
+                {formatNumber(student.eventuallyCorrectN)} accepted shipments
               </p>
               <p>
-                {student.firstObjectiveCorrectN} first objective successes ·{" "}
-                {student.correctionSuccessN} corrected · {student.pendingN}{" "}
+                {formatNumber(student.firstObjectiveCorrectN)} first objective successes ·{" "}
+                {formatNumber(student.correctionSuccessN)} corrected · {formatNumber(student.pendingN)}{" "}
                 pending
               </p>
               <p>
                 First value accuracy:{" "}
                 {student.firstValueAccuracy === null
                   ? "No evidence"
-                  : `${student.firstValueCorrectN}/${student.submittedN} (${Math.round(student.firstValueAccuracy * 100)}%)`}
+                  : `${formatNumber(student.firstValueCorrectN)}/${formatNumber(student.submittedN)} (${formatNumber(Math.round(student.firstValueAccuracy * 100))}%)`}
                 . Correction success:{" "}
                 {student.correctionAccuracy === null
                   ? "No first-wrong orders"
-                  : `${student.correctionSuccessN}/${student.firstWrongN} (${Math.round(student.correctionAccuracy * 100)}%)`}
+                  : `${formatNumber(student.correctionSuccessN)}/${formatNumber(student.firstWrongN)} (${formatNumber(Math.round(student.correctionAccuracy * 100))}%)`}
                 .
               </p>
               <p>
@@ -302,9 +309,9 @@ export function TeacherScreen({
               <details>
                 <summary>Support and possible patterns</summary>
                 <p>
-                  Orders with H1: {student.supportCounts?.H1 ?? 0}; H2:{" "}
-                  {student.supportCounts?.H2 ?? 0}; H3:{" "}
-                  {student.supportCounts?.H3 ?? 0}.
+                  Orders with H1: {formatNumber(student.supportCounts?.H1 ?? 0)}; H2:{" "}
+                  {formatNumber(student.supportCounts?.H2 ?? 0)}; H3:{" "}
+                  {formatNumber(student.supportCounts?.H3 ?? 0)}.
                 </p>
                 {student.misconceptionCounts?.filter(
                   (item: any) => item.showPattern,
@@ -316,7 +323,7 @@ export function TeacherScreen({
                         <li key={item.code}>
                           Possible{" "}
                           {item.code.toLowerCase().replaceAll("_", " ")} pattern
-                          in {item.orderN} of {item.targetedN} targeted orders.
+                          in {formatNumber(item.orderN)} of {formatNumber(item.targetedN)} targeted orders.
                           Review the stored answers; this is a candidate
                           pattern.
                         </li>
@@ -328,12 +335,12 @@ export function TeacherScreen({
               </details>
               <details>
                 <summary>
-                  Skill progress ({student.skills?.length ?? 0})
+                  Skill progress ({formatNumber(student.skills?.length ?? 0)})
                 </summary>
                 <ul>
                   {student.skills?.map((skill: any) => (
                     <li key={skill.skillId}>
-                      {skill.skillId}: {skill.status}, {skill.sampleN} eligible
+                      {skill.skillId}: {skill.status}, {formatNumber(skill.sampleN)} eligible
                       orders
                       {skill.score === null
                         ? ""
@@ -363,8 +370,8 @@ export function TeacherScreen({
                       ) : null}
                       {detail ? (
                         <p>
-                          Page {pageIndex + 1} · {detail.evidence.length} of{" "}
-                          {detail.totalN} records · Viewed at{" "}
+                          Page {formatNumber(pageIndex + 1)} · {formatNumber(detail.evidence.length)} of{" "}
+                          {formatNumber(detail.totalN)} records · Viewed at{" "}
                           {new Date(detail.asOf).toLocaleTimeString()}
                         </p>
                       ) : null}
@@ -404,7 +411,7 @@ export function TeacherScreen({
                             <td>
                               <details>
                                 <summary>
-                                  {row.target.toLocaleString()} ·{" "}
+                                  {formatNumber(row.target)} ·{" "}
                                   {row.firstResponse?.order?.primarySkill ??
                                     "Order"}
                                 </summary>
@@ -412,7 +419,7 @@ export function TeacherScreen({
                                   Allowed machines:{" "}
                                   {row.firstResponse?.order?.allowed
                                     ?.map((place: number) =>
-                                      place.toLocaleString(),
+                                      formatNumber(place),
                                     )
                                     .join(", ") ?? "—"}
                                 </p>

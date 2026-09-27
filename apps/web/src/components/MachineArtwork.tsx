@@ -1,6 +1,8 @@
 import { useId } from "react";
+import { formatNumber } from "../formatNumber.js";
 
 /** Decorative equipment. Exact quantities and controls remain semantic HTML. */
+
 export function MachineArtwork({ value, closed }: { value: number; closed: boolean }) {
   const id = useId().replaceAll(":", "");
   const metal = `${id}-metal`, paint = `${id}-paint`, face = `${id}-face`;
@@ -19,7 +21,7 @@ export function MachineArtwork({ value, closed }: { value: number; closed: boole
     <path d="M20 43H172 M31 32H159" stroke="white" strokeOpacity=".55" strokeWidth="4"/>
     <path d="M23 83 76 118H116L168 83" fill="none" stroke="#102653" strokeOpacity=".35" strokeWidth="4"/>
     <rect x="29" y="46" width="135" height="34" rx="8" fill="#102653" stroke="#ffffff" strokeOpacity=".45" strokeWidth="3"/>
-    <text x="96" y="70" textAnchor="middle" fill="#fff" fontSize="23" fontWeight="900">{value.toLocaleString()}</text>
+    <text x="96" y="70" textAnchor="middle" fill="#fff" fontSize="23" fontWeight="900">{formatNumber(value)}</text>
     <path d="M77 123H116L111 134H82Z" fill={`url(#${metal})`} stroke="#102653" strokeWidth="2"/>
     {closed && <g><rect x="47" y="99" width="99" height="29" rx="5" fill="#142957" stroke="#ffcf4a" strokeWidth="2"/><text x="97" y="118" textAnchor="middle" fill="#ffdf77" fontSize="12" fontWeight="900">CLOSED</text></g>}
   </svg>;

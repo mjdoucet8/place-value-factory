@@ -81,7 +81,7 @@ test("quantity keyboard navigation and Enter ship work on a saved mission", asyn
   await expect(openQuantities.nth(1)).toBeFocused();
   await page.keyboard.press("Shift+Tab");
   await expect(openQuantities.first()).toBeFocused();
-  let remainder = Number((await page.locator(".current-order strong").innerText()).replaceAll(",", ""));
+  let remainder = Number((await page.locator(".current-order strong").innerText()).replace(/[ ,]/g, ""));
   for (const [index, value] of [100000,10000,1000,100,10,1].entries()) {
     if (!(await page.locator(`#quantity-${index}`).isEnabled())) continue;
     const quantity = Math.floor(remainder / value);
@@ -103,7 +103,7 @@ test("student can finish five orders using keyboard controls and reach saved res
   await page.keyboard.press("Enter");
   await expect(page.getByText("CURRENT ORDER", { exact: true })).toBeVisible();
   for (let slot = 0; slot < 5; slot++) {
-    const target = Number((await page.locator(".current-order strong").innerText()).replaceAll(",", ""));
+    const target = Number((await page.locator(".current-order strong").innerText()).replace(/[ ,]/g, ""));
     await page.getByRole("button", { name: "Help" }).focus();
     const enabled = page.locator('.machines input[id^="quantity-"]:not([disabled])');
     let reached = false;
@@ -165,7 +165,7 @@ test("local quantity input reaches the displayed total within the browser target
   });
   for (let count = 1; count <= 30; count++) {
     await page.locator("#quantity-0").fill(String(count));
-    await expect(page.getByLabel(`Total ${(count * 100000).toLocaleString()}`)).toBeVisible();
+    await expect(page.getByLabel(`Total ${String(count * 100000).replace(/\B(?=(\d{3})+(?!\d))/g, " ")}`)).toBeVisible();
   }
   const samples = await page.evaluate(() => (window as any).__displaySamples as number[]);
   expect(samples).toHaveLength(30);
