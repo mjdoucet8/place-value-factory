@@ -105,3 +105,110 @@ Overall result: Implemented and verified broad visual/keyboard coverage, safe ar
 Prompt: Continue from `cfabd61`, focus only on PERF-01, make one targeted full-contract optimization, rerun the unchanged sustained workload, and stop with a resumable checkpoint and decision options if p95 still misses 500 ms.
 
 Overall result: A scoped joined report read and single-pass report calculations preserved the v1 detail and correctness checks. Real PostgreSQL/restart, focused tests and typecheck passed. The unchanged sustained run still failed: best report p95 833 ms; final targeted run report 842 ms and start 510 ms. All counts, rewards and tenant isolation reconciled with zero request errors. Timing identified report loading and large JSON transfer as the main costs. PERF-01 remains open; performance experiments stopped. Existing local data, server formatting and private files were preserved.
+
+
+## 2026-09-27 — Reporting v2 work paused at usage guard
+
+Prompt: Complete essential reporting work, checking weekly Codex usage now, between major steps and about every five minutes; stop at 80% used or if usage cannot be checked; save a resumable handoff and never redeem a reset.
+
+Overall result: Weekly usage could not be verified because no account-usage tool or connected browser was available. Stopped new coding/testing without estimating or redeeming a reset. Saved `docs/qa/REPORTING_V2_PAUSED_HANDOFF.md` and updated shared status/log. Prior reporting v2 implementation and passing typecheck/PostgreSQL evidence remain uncommitted; the already-running benchmark finished with browser class-summary p95 566 ms, so PERF-01 and final checks remain open. Waiting for the owner.
+
+
+## 2026-09-27 — Resume locally and update usage guard
+
+Prompts: Continue Math Factory in the actual folder, preserving all changes; change the usage guard to 90%.
+
+Result: Accessed the actual repository, recovered the reporting-v2 handoff, verified weekly usage at 75%, recorded a bounded diagnostic claim and updated the active usage threshold to 90%. Existing uncommitted code and development data preserved. Performance investigation continues; no completion claim.
+
+Follow-up result: completed a bounded report-query diagnosis on retained fictional data. Rejected an equivalent but slower query variant; no application source changed. Findings saved in docs/qa/REPORTING_V2_RESUME_DIAGNOSTIC.md. Latest weekly usage 76%; PERF-01 still open.
+
+
+## 2026-09-27 — Continue report-performance target
+
+Prompt: Continue working on that target please.
+
+Result: Optimized shared evidence selection without changing educational rules. The unchanged full historical workload passed: browser class-summary requests 475 ms p95 versus the 500 ms target, zero unexpected errors and complete report/retry/reward parity. Regular, PostgreSQL/restart, browser and build checks passed with documented skips. Full usable-summary interaction remains separately measured at 717 ms. Saved durable evidence and updated current acceptance; existing changes preserved, no commit/deployment/reset.
+
+
+## 2026-09-27 — Current website visual preview
+
+Prompt: Show a preview of what the website looks like right now.
+
+Result: Started the existing Vite visual-gallery preview at http://127.0.0.1:5181/dev/place-value-factory/states?fixture=calm (session 5541). Uses current application components with fictional fixture states and does not award progress. Automatic browser opening/render verification was blocked because the browser security-policy check was unavailable; no workaround attempted. Supplied direct gameplay/map/results links. No application source changes. Weekly usage verified at 80%, below the 90% guard.
+
+
+## 2026-09-27 — Dimensional crates and machines, first pass
+
+Prompt: Please start working on making the equipment closer to the original artwork and making the crates look like actual crates.
+
+Result: Added original SVG hoppers and open slatted crates across all six machines, exact quantity counters, representative stacks and empty receiving bays. Kept the existing quantity/exchange behavior. Typecheck, build and static component checks passed. Preview updates through the existing local server; live visual inspection remains blocked by the unavailable browser security check. Existing user changes preserved.
+
+
+## 2026-09-27 — Closer reference composition
+
+Prompt: Make the site look as much like the original reference as possible.
+
+Result: Generated and integrated matching decorative factory scenery, enlarged the robot, styled a suspended order sign, opened the machinery row onto a shared conveyor, and moved the packing monitor into a lower control console. All values and controls remain live. Typecheck/build/static render passed; browser visual QA remains blocked by unavailable security verification. Provenance and exact image prompt saved in docs/ART_SCENE_V2.md.
+
+
+## 2026-09-27 — Continuous conveyor and crate number entry
+
+Prompt: Work on the continuous conveyor and crates below the value number; number entry should be on the crate itself.
+
+Result: One shared conveyor replaces separate roller bases. Each machine has an open crate with its native editable number field and plus/minus controls on the front, including when count is zero. Exact quantity/exchange behavior retained. Narrow screens scroll the production line horizontally. Typecheck/build/static checks passed; live visual confirmation remains pending due to browser security-policy unavailability.
+
+
+## 2026-09-27 — Crate button clearance
+
+Prompt: Make intersecting plus/minus circles smaller or rounded rectangles.
+
+Result: Changed them to shorter rounded rectangles and moved them down, leaving a 9 px gap below the number-field box. Scoped CSS only; no interaction changes.
+
+
+## 2026-09-27 — Place-value label alignment pending
+
+Prompt: Place-value names such as Thousands are not properly centered in their boxes.
+
+Result: Weekly usage check returned 91%, above the owner-set 90% guard. Paused before styling edits or tests. Next task: inspect the illustrated-machine h2 rules (including production-line override) and center label content horizontally and vertically while preserving long-name wrapping and the fixed machine-row alignment. No reset redeemed.
+
+## 2026-09-27 — Resume and center place-value labels
+
+Prompt: Continue after reducing the model strength to Sol.
+
+Result: Resumed with explicit owner authorization. Centered place-value names horizontally and vertically inside equal-height boxes, including wrapped labels such as Hundred thousands. No machine, crate, or interaction behavior changed.
+
+## 2026-09-27 — Smaller crate number fields
+
+Prompt: Shrink the number-entry boxes because they cover too much of the crates.
+
+Result: Used the supplied preview screenshot to reduce and recenter each number field, revealing more of the crate face while retaining readable values and the existing controls.
+
+## 2026-09-27 — Recenter crate number fields
+
+Prompt: Center the number field more on the crate and keep it clear of the bottom frame.
+
+Result: Recentered the field against the visible front face of the angled crate and moved it upward, leaving clear space above the lower rim.
+
+## 2026-09-27 — Shorter crate number fields
+
+Prompt: Make the number boxes a bit shorter so they fit with more room.
+
+Result: Reduced the field height to 28 px while preserving its vertical center, adding more space around it inside the crate face.
+
+## 2026-09-27 — 24 px centered crate fields
+
+Prompt: Try 24 px high and recenter the fields on the crates.
+
+Result: Set the number fields to 24 px and centered them within the open front panel between the crate rails.
+
+## 2026-09-27 — Fix rendered crate field height
+
+Prompt: The fields are too low and intersect the plus/minus buttons.
+
+Result: The screenshot exposed a global 48 px minimum height overriding the crate-specific height. Added a scoped 24 px minimum/maximum and moved the field upward, removing the overlap.
+
+## 2026-09-27 — Functional MVP and staging path
+
+Prompt: Begin the four-step path with minimal interruption: secure end-to-end pilot, blocker fixes, release-candidate freeze and private staging deployment.
+
+Result: A fresh fictional PostgreSQL teacher/student pilot passed, including recovery, reporting, revocation and archive. Corrected two accessibility regressions exposed by the factory redesign and refreshed the intentional calm visual baseline. Final typecheck, build, regular, PostgreSQL/restart, standard browser and secure-pilot suites pass with documented environment/harness skips. Added a guarded single-container fictional staging package and verified its static server, health route and deployment validation. External upload could not proceed because the saved GitHub credential is invalid and no hosting/container CLI is connected; production remains fail-closed pending school identity. Existing development data and private files were preserved outside the checkpoint.

@@ -1,5 +1,6 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import type { AddressInfo } from "node:net";
+import type { IncomingMessage } from "node:http";
 import { Pool } from "pg";
 import { describe, it, expect } from "vitest";
 import { createApiServer } from "../../apps/server/src/index.js";
@@ -108,6 +109,25 @@ describe.skipIf(!socket || process.env.PVF_TEST_PG_RESTART === "1")(
         await pool.query("UPDATE pvf_session SET last_seen_at=now()-interval '2 minutes' WHERE token_hash=$1", [createHash("sha256").update(t1.cookie.slice("pvf_session=".length)).digest("hex")]);
         const concurrentReads = await Promise.all(Array.from({ length: 10 }, () => request("/teacher/classes", undefined, t1)));
         expect(concurrentReads.every((result) => result.status === 200)).toBe(true);
+        // A long read must not hold the idle-heartbeat row against another read.
+        await pool.query("UPDATE pvf_session SET last_seen_at=now()-interval '2 minutes' WHERE token_hash=$1", [createHash("sha256").update(t1.cookie.slice("pvf_session=".length)).digest("hex")]);
+        const reads = [0,1].map(() => ({method:"GET",headers:{cookie:t1.cookie}} as IncomingMessage));
+        let firstReady!: () => void, releaseFirst!: () => void;
+        const ready = new Promise<void>((resolve) => { firstReady=resolve; });
+        const held = new Promise<void>((resolve) => { releaseFirst=resolve; });
+        const firstRead = store.transaction(async () => {
+          expect((await identity.authenticate(reads[0]))?.role).toBe("teacher");
+          firstReady(); await held;
+        }, true);
+        try {
+          await ready;
+          await store.transaction(async () => {
+            await store.connection().query("SET LOCAL statement_timeout='1s'");
+            expect((await identity.authenticate(reads[1]))?.role).toBe("teacher");
+          }, true);
+        } finally { releaseFirst(); await firstRead; }
+        await Promise.all(reads.map((read) => identity.touchReadSession(read,pool)));
+        expect((await pool.query("SELECT last_seen_at>now()-interval '1 minute' AS refreshed FROM pvf_session WHERE token_hash=$1", [createHash("sha256").update(t1.cookie.slice("pvf_session=".length)).digest("hex")])).rows[0].refreshed).toBe(true);
         const classCommand = {
           commandId: "class-one",
           name: "Fictional One",

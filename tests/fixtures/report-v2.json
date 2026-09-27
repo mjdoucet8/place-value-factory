@@ -1,0 +1,22 @@
+{
+  "summaryCounts": {
+    "submittedN": 60,
+    "firstObjectiveCorrectN": 57,
+    "eventuallyCorrectN": 58,
+    "correctionSuccessN": 1,
+    "pendingN": 1,
+    "supportCounts": { "H1": 0, "H2": 1, "H3": 0 }
+  },
+  "firstEvidence": {
+    "orderId": "order-000",
+    "target": 100,
+    "vector": [0, 0, 0, 0, 0, 0],
+    "accepted": true,
+    "status": "shipped",
+    "role": "main",
+    "firstResponse": { "representationA": [0, 0, 0, 0, 0, 0], "validation": { "objectiveMet": false }, "at": "2026-09-26T10:00:00.000Z" },
+    "finalResponse": { "representationA": [0, 0, 0, 1, 0, 0], "validation": { "objectiveMet": true }, "at": "2026-09-27T10:00:00.000Z" },
+    "supports": [{ "orderId": "order-000", "step": "H2", "at": "2026-09-26T10:00:00.000Z" }]
+  },
+  "defaultEvidenceQuery": { "limit": 25, "cursor": null, "viewRevision": null, "includeTransfer": false }
+}

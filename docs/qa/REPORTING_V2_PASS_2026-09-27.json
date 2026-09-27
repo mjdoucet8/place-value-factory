@@ -1,0 +1,150 @@
+{
+  "students": 90,
+  "concurrency": 30,
+  "apiProcesses": 3,
+  "historyPerStudent": 10,
+  "measuredMs": 91285,
+  "rounds": 27,
+  "requests": 19845,
+  "throughputRps": 217,
+  "errors": 0,
+  "lockWaitSamples": 0,
+  "finalCounts": {
+    "attempts": 3510,
+    "answers": 17550,
+    "receipts": 15660,
+    "bytes": "93166615"
+  },
+  "metrics": {
+    "profile": {
+      "count": 2430,
+      "p50Ms": 125,
+      "p95Ms": 277,
+      "p99Ms": 354,
+      "maxMs": 455
+    },
+    "start": {
+      "count": 2430,
+      "p50Ms": 137,
+      "p95Ms": 272,
+      "p99Ms": 346,
+      "maxMs": 434
+    },
+    "answer": {
+      "count": 12150,
+      "p50Ms": 105,
+      "p95Ms": 224,
+      "p99Ms": 303,
+      "maxMs": 485
+    },
+    "retry": {
+      "count": 2430,
+      "p50Ms": 111,
+      "p95Ms": 235,
+      "p99Ms": 318,
+      "maxMs": 466
+    },
+    "summary": {
+      "count": 162,
+      "p50Ms": 163,
+      "p95Ms": 414,
+      "p99Ms": 449,
+      "maxMs": 453
+    },
+    "detail": {
+      "count": 243,
+      "p50Ms": 81,
+      "p95Ms": 179,
+      "p99Ms": 219,
+      "maxMs": 279
+    }
+  },
+  "summaryBreakdown": {
+    "class": {
+      "n": 81,
+      "p95Ms": 430
+    },
+    "student": {
+      "n": 81,
+      "p95Ms": 177
+    }
+  },
+  "browserMetrics": {
+    "summary": {
+      "n": 27,
+      "p50Ms": 522,
+      "p95Ms": 717,
+      "maxMs": 742
+    },
+    "evidence": {
+      "n": 27,
+      "p50Ms": 373,
+      "p95Ms": 558,
+      "maxMs": 577
+    },
+    "nextPage": {
+      "n": 27,
+      "p50Ms": 254,
+      "p95Ms": 335,
+      "maxMs": 393
+    }
+  },
+  "serverTimings": {
+    "report_auth0": {
+      "p50": 5,
+      "p95": 15
+    },
+    "report_auth1": {
+      "p50": 0,
+      "p95": 0
+    },
+    "report_before": {
+      "p50": 14,
+      "p95": 31
+    },
+    "report_pool": {
+      "p50": 0,
+      "p95": 0
+    },
+    "report_read": {
+      "p50": 227,
+      "p95": 357
+    },
+    "report_build": {
+      "p50": 24,
+      "p95": 39
+    },
+    "report_sql0": {
+      "p50": 208,
+      "p95": 334
+    }
+  },
+  "refreshConflicts": 18,
+  "browserEvidenceRetrieved": 1350,
+  "browserApiMetrics": {
+    "classSummary": {
+      "n": 27,
+      "p95Ms": 475,
+      "successP95Ms": 475,
+      "headerP95Ms": 470,
+      "bodyP95Ms": 11,
+      "refreshConflicts": 0
+    },
+    "studentSummary": {
+      "n": 27,
+      "p95Ms": 157,
+      "successP95Ms": 157,
+      "headerP95Ms": 152,
+      "bodyP95Ms": 4,
+      "refreshConflicts": 0
+    },
+    "detail": {
+      "n": 54,
+      "p95Ms": 181,
+      "successP95Ms": 181,
+      "headerP95Ms": 179,
+      "bodyP95Ms": 6,
+      "refreshConflicts": 0
+    }
+  }
+}

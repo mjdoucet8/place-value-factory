@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "../api.js";
 import { TeacherScreen } from "./TeacherScreen.js";
 
@@ -18,10 +18,14 @@ type Student = {
   enabled: boolean;
 };
 
+const EMPTY_REPORT = { students: [] };
+
 export function TeacherWorkspace() {
+  const reportRequest = useRef<AbortController | null>(null);
   const [classes, setClasses] = useState<Classroom[]>([]);
   const [classId, setClassId] = useState("");
   const [students, setStudents] = useState<Student[]>([]);
+  const [reportLoading, setReportLoading] = useState(true);
   const [report, setReport] = useState<any>();
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -40,15 +44,56 @@ export function TeacherWorkspace() {
     if (from) params.set("from", from);
     if (to) params.set("to", to);
     if (includeTransfer) params.set("includeTransfer", "true");
-    return `/teacher/classes/${id}/games/place-value-factory/report?${params}`;
+    return `/v2/teacher/classes/${id}/games/place-value-factory/summary?${params}`;
+  };
+  const loadReport = async (id: string, signal: AbortSignal) => {
+    const first = await api(reportPath(id), { signal });
+    const rows = [...first.students];
+    let cursor = first.nextCursor;
+    while (cursor) {
+      const params = new URLSearchParams({
+        from: first.from,
+        to: first.to,
+        includeTransfer: String(first.includeTransfer),
+        cursor,
+      });
+      const page = await api(
+        `/v2/teacher/classes/${id}/games/place-value-factory/summary?${params}`,
+        { signal },
+      );
+      rows.push(...page.students);
+      cursor = page.nextCursor;
+    }
+    return { ...first, students: rows, nextCursor: null };
   };
   const refresh = async (id: string) => {
-    const [roster, evidence] = await Promise.all([
-      api(`/teacher/classes/${id}/students`),
-      api(reportPath(id)),
-    ]);
-    setStudents(roster.students);
-    setReport(evidence);
+    setReportLoading(true);
+    if (!id) {
+      try {
+        const data = await api("/teacher/classes");
+        setClasses(data.classes);
+        setClassId(data.classes[0]?.id ?? "");
+        if (!data.classes.length) setReport(EMPTY_REPORT);
+      } finally {
+        setReportLoading(false);
+      }
+      return;
+    }
+    reportRequest.current?.abort();
+    const controller = new AbortController();
+    reportRequest.current = controller;
+    try {
+      const [roster, evidence] = await Promise.all([
+        api(`/teacher/classes/${id}/students`, { signal: controller.signal }),
+        loadReport(id, controller.signal),
+      ]);
+      if (!controller.signal.aborted) {
+        setStudents(roster.students);
+        setReport(evidence);
+      }
+    } finally {
+      if (!controller.signal.aborted) setReportLoading(false);
+    }
   };
   useEffect(() => {
     let cancelled = false;
@@ -57,10 +102,17 @@ export function TeacherWorkspace() {
         if (!cancelled) {
           setClasses(data.classes);
           setClassId(data.classes[0]?.id ?? "");
+          if (!data.classes.length) {
+            setReport(EMPTY_REPORT);
+            setReportLoading(false);
+          }
         }
       })
       .catch((error) => {
-        if (!cancelled) setNotice(error.message);
+        if (!cancelled) {
+          setNotice(error.message);
+          setReportLoading(false);
+        }
       });
     return () => {
       cancelled = true;
@@ -68,26 +120,14 @@ export function TeacherWorkspace() {
   }, []);
   useEffect(() => {
     if (!classId) return;
-    let cancelled = false;
     setReport(undefined);
     setStudents([]);
     setIssued(null);
-    Promise.all([
-      api(`/teacher/classes/${classId}/students`),
-      api(reportPath(classId)),
-    ])
-      .then(([roster, evidence]) => {
-        if (!cancelled) {
-          setStudents(roster.students);
-          setReport(evidence);
-        }
-      })
-      .catch((error) => {
-        if (!cancelled) setNotice(error.message);
-      });
-    return () => {
-      cancelled = true;
-    };
+    setNotice("");
+    void refresh(classId).catch((error) => {
+      if (error.name !== "AbortError") setNotice(error.message);
+    });
+    return () => reportRequest.current?.abort();
   }, [classId]);
   const mutate = async (
     path: string,
@@ -107,13 +147,26 @@ export function TeacherWorkspace() {
     try {
       await work();
     } catch (error) {
-      setNotice((error as Error).message);
+      if ((error as Error).name !== "AbortError")
+        setNotice((error as Error).message);
     } finally {
       setBusy(false);
     }
   };
   return (
-    <TeacherScreen report={report} filters={{ from, to, includeTransfer, setFrom, setTo, setIncludeTransfer, apply: () => void run(() => refresh(classId)) }}>
+    <TeacherScreen
+      report={report}
+      loading={reportLoading}
+      filters={{
+        from,
+        to,
+        includeTransfer,
+        setFrom,
+        setTo,
+        setIncludeTransfer,
+        apply: () => void run(() => refresh(classId)),
+      }}
+    >
       <section
         className="teacher-management"
         aria-label="Class and access management"
@@ -173,7 +226,12 @@ export function TeacherWorkspace() {
                 {selected.classCode ?? selected.code ?? "FACTORY5"}
               </strong>
             </p>
-            {selected.archivedAt ? <p role="status">Archived class. Student activity is closed; saved reports remain available.</p> : null}
+            {selected.archivedAt ? (
+              <p role="status">
+                Archived class. Student activity is closed; saved reports remain
+                available.
+              </p>
+            ) : null}
             <form
               onSubmit={(event) => {
                 event.preventDefault();
@@ -211,7 +269,13 @@ export function TeacherWorkspace() {
                   maxLength={40}
                 />
               </label>
-              <button disabled={busy || selected.enabled === false || Boolean(selected.archivedAt)}>
+              <button
+                disabled={
+                  busy ||
+                  selected.enabled === false ||
+                  Boolean(selected.archivedAt)
+                }
+              >
                 Issue student access
               </button>
             </form>
@@ -224,60 +288,63 @@ export function TeacherWorkspace() {
                 <button onClick={() => setIssued(null)}>Hide PIN</button>
               </div>
             ) : null}
-            <ul className="roster-list">
-              {students.map((student) => (
-                <li key={student.id}>
-                  <strong>{student.alias}</strong>
-                  <span>
-                    {student.username} ·{" "}
-                    {student.enabled ? "Access enabled" : "Access disabled"}
-                  </span>
-                  <div className="actions">
-                    <button
-                      disabled={busy || Boolean(selected.archivedAt)}
-                      onClick={() =>
-                        void run(async () => {
-                          const reset = await mutate(
-                            `/teacher/students/${student.id}/reset-pin`,
-                            {},
-                          );
-                          setIssued({
-                            alias: student.alias,
-                            pin: reset.oneTimePin,
-                          });
-                          setNotice(
-                            "New PIN issued. Previous sessions have ended.",
-                          );
-                        })
-                      }
-                    >
-                      Reset PIN for {student.alias}
-                    </button>
-                    <button
-                      disabled={busy || Boolean(selected.archivedAt)}
-                      onClick={() =>
-                        void run(async () => {
-                          await mutate(
-                            `/teacher/students/${student.id}/access`,
-                            { enabled: !student.enabled },
-                            "PATCH",
-                          );
-                          await refresh(classId);
-                          setNotice(
-                            student.enabled
-                              ? "Access revoked. Previous sessions have ended."
-                              : "Access enabled. The student can sign in again.",
-                          );
-                        })
-                      }
-                    >
-                      {student.enabled ? "Revoke" : "Enable"} access for{" "}
-                      {student.alias}
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <details>
+              <summary>Manage student access ({students.length})</summary>
+              <ul className="roster-list">
+                {students.map((student) => (
+                  <li key={student.id}>
+                    <strong>{student.alias}</strong>
+                    <span>
+                      {student.username} ·{" "}
+                      {student.enabled ? "Access enabled" : "Access disabled"}
+                    </span>
+                    <div className="actions">
+                      <button
+                        disabled={busy || Boolean(selected.archivedAt)}
+                        onClick={() =>
+                          void run(async () => {
+                            const reset = await mutate(
+                              `/teacher/students/${student.id}/reset-pin`,
+                              {},
+                            );
+                            setIssued({
+                              alias: student.alias,
+                              pin: reset.oneTimePin,
+                            });
+                            setNotice(
+                              "New PIN issued. Previous sessions have ended.",
+                            );
+                          })
+                        }
+                      >
+                        Reset PIN for {student.alias}
+                      </button>
+                      <button
+                        disabled={busy || Boolean(selected.archivedAt)}
+                        onClick={() =>
+                          void run(async () => {
+                            await mutate(
+                              `/teacher/students/${student.id}/access`,
+                              { enabled: !student.enabled },
+                              "PATCH",
+                            );
+                            await refresh(classId);
+                            setNotice(
+                              student.enabled
+                                ? "Access revoked. Previous sessions have ended."
+                                : "Access enabled. The student can sign in again.",
+                            );
+                          })
+                        }
+                      >
+                        {student.enabled ? "Revoke" : "Enable"} access for{" "}
+                        {student.alias}
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </details>
             <button
               disabled={busy || Boolean(selected.archivedAt)}
               onClick={() =>
@@ -301,19 +368,42 @@ export function TeacherWorkspace() {
                 })
               }
             >
-              {selected.archivedAt ? "Archived class access" : `${selected.enabled === false ? "Enable" : "Disable"} class access`}
+              {selected.archivedAt
+                ? "Archived class access"
+                : `${selected.enabled === false ? "Enable" : "Disable"} class access`}
             </button>
             {!selected.archivedAt ? (
               <button
                 className="secondary"
                 disabled={busy}
                 onClick={() => {
-                  if (!window.confirm(`Archive ${selected.name}? Students will lose access, and saved reports will remain available.`)) return;
+                  if (
+                    !window.confirm(
+                      `Archive ${selected.name}? Students will lose access, and saved reports will remain available.`,
+                    )
+                  )
+                    return;
                   void run(async () => {
-                    const archived = await mutate(`/teacher/classes/${classId}/archive`, {}, "PATCH");
-                    setClasses((current) => current.map((item) => item.id === classId ? { ...item, enabled: false, archivedAt: archived.archivedAt } : item));
+                    const archived = await mutate(
+                      `/teacher/classes/${classId}/archive`,
+                      {},
+                      "PATCH",
+                    );
+                    setClasses((current) =>
+                      current.map((item) =>
+                        item.id === classId
+                          ? {
+                              ...item,
+                              enabled: false,
+                              archivedAt: archived.archivedAt,
+                            }
+                          : item,
+                      ),
+                    );
                     setIssued(null);
-                    setNotice("Class archived. Student sessions have ended; saved reports remain available.");
+                    setNotice(
+                      "Class archived. Student sessions have ended; saved reports remain available.",
+                    );
                     await refresh(classId);
                   });
                 }}

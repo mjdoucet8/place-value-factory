@@ -154,9 +154,8 @@ test("teacher issues access, student ships, and teacher reviews and revokes it",
   await page
     .getByLabel("Class", { exact: true })
     .selectOption({ label: className });
-  await expect(
-    page.getByText("5 submitted orders · 5 accepted shipments"),
-  ).toBeVisible();
+  await page.getByRole("button", { name: "View evidence for Pilot Learner" }).click();
+  await expect(page.getByText("5 submitted orders · 5 accepted shipments")).toBeVisible();
   await expect(page.getByRole("table", { name: /Stored question and first\/final answers/ })).toBeVisible();
   await expect(page.getByRole("columnheader", { name: "First answer" })).toBeVisible();
   await expect(page.getByRole("columnheader", { name: "Final answer" })).toBeVisible();
@@ -179,6 +178,7 @@ test("teacher issues access, student ships, and teacher reviews and revokes it",
   await expect(student.getByText("Practice builds your skills. Your map stars stay the same.")).toBeVisible();
   await page.reload();
   await page.getByLabel("Class", { exact: true }).selectOption({ label: className });
+  await page.getByRole("button",{name:"View evidence for Pilot Learner"}).click();
   await expect(page.getByText("10 submitted orders · 10 accepted shipments")).toBeVisible();
   await student.getByRole("button", { name: "Back to map" }).click();
   await student.getByRole("button", { name: /Replay mission/ }).first().click();
@@ -192,6 +192,7 @@ test("teacher issues access, student ships, and teacher reviews and revokes it",
   }
   await student.getByRole("button", { name: "Ship order" }).click();
   await expect(student.getByRole("button", { name: "Try saving again" })).toBeVisible();
+  await page.locator("summary").filter({hasText:"Manage student access"}).click();
   await page
     .getByRole("button", { name: "Revoke access for Pilot Learner" })
     .click();
@@ -203,10 +204,12 @@ test("teacher issues access, student ships, and teacher reviews and revokes it",
   await expect(student.getByText(/Your work is waiting to save/)).toBeVisible();
   await page.reload();
   await page.getByLabel("Class", { exact: true }).selectOption({ label: className });
+  await page.getByRole("button",{name:"View evidence for Pilot Learner"}).click();
   await expect(page.getByText("10 submitted orders · 10 accepted shipments")).toBeVisible();
   page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: `Archive ${className}` }).click();
   await expect(page.getByText(/Class archived\. Student sessions have ended/)).toBeVisible();
+  await page.getByRole("button",{name:"View evidence for Pilot Learner"}).click();
   await expect(page.getByText("10 submitted orders · 10 accepted shipments")).toBeVisible();
   await student.reload();
   await expect(

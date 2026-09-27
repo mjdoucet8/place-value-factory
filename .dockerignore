@@ -1,0 +1,9 @@
+.git
+.codex
+node_modules
+**/node_modules
+**/dist
+test-results
+playwright-report
+apps/server/db/local-development.json
+*.log

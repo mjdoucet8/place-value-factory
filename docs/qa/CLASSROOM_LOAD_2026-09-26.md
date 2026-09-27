@@ -1,5 +1,9 @@
 # Local classroom load — 26 September 2026
 
+**Latest: 27 September 2026.** The approved v2 request-performance workload now passes (browser class-summary p95 475 ms). See `REPORTING_V2_PASS_2026-09-27.md` for current evidence, separate 717 ms usable-summary timing and remaining release work. Earlier failed/paused results below are historical; the active usage guard remains 90%.
+
+The sections below preserve the measured history. The owner has since approved the additive v2 summary/drilldown boundary; see `REPORTING_V2_2026-09-26.md` for its contract and complete-workflow evidence. The retained v1 benchmark continues to assert its original target.
+
 Command: `npm run test:load`. It creates a private, disposable PostgreSQL 16 cluster with a Unix socket, no TCP listener, an isolated schema, and fictional teacher/student identities. The API is a local Node HTTP server. The run uses 90 students in three classes of 30, one active attempt per student, and 30 concurrent starts in three waves. Thirty students submit an actual correct answer and retry its identical immutable command; teacher report reads overlap the submissions and run again after them. The test checks 90 attempts, 30 answers, 30 answer receipts, zero request errors, identical retry receipts, and final report totals across all three classes. It times HTTP request through parsed JSON response; it does not measure browser rendering or school-network latency. A 50 ms sampler counts database sessions waiting on the advisory lock.
 
 | Local run | Start p95 | Answer p95 | Retry p95 | Report p95 | Throughput | Errors | Lock-wait samples |

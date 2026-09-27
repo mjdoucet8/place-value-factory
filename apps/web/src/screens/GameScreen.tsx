@@ -128,11 +128,7 @@ export function GameScreen(props: Props) {
           <strong>{order.target.toLocaleString()}</strong>
           <p>{objective}</p>
         </section>
-        <RepresentationMonitor
-          quantities={props.quantities}
-          quantitiesB={props.quantitiesB}
-          twoWays={order.distinctRepresentations === 2}
-        />
+
       </div>
       {(props.attempt.writerTabId !== props.tabId || props.pendingConflict) && (
         <aside className="takeover" role="status">
@@ -197,6 +193,12 @@ export function GameScreen(props: Props) {
         setQuantities={props.setQuantities}
         setQuantitiesB={props.setQuantitiesB}
       />
+      <div className="factory-console">
+        <RepresentationMonitor
+          quantities={props.quantities}
+          quantitiesB={props.quantitiesB}
+          twoWays={order.distinctRepresentations === 2}
+        />
       <section className="controls">
         <button
           className="secondary"
@@ -231,6 +233,7 @@ export function GameScreen(props: Props) {
           Pause mission
         </button>
       </section>
+      </div>
       {props.pending && !props.saving && (
         <section className="pending-recovery" role="status">
           <p>

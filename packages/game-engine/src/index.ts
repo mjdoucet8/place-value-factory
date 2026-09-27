@@ -933,20 +933,23 @@ export function isIndependentFirst(facts: ResolutionFacts): boolean {
 export function eligibleEvidence(
   records: readonly EvidenceRecord[],
 ): EvidenceRecord[] {
-  const latestFirst = [...records]
+  // Parse once per record rather than during every sort comparison. Stable
+  // sorting preserves the existing input order when timestamps tie.
+  const latestFirst = records
     .filter((record) => record.eligible !== false)
-    .sort((a, b) => Date.parse(b.committedAt) - Date.parse(a.committedAt));
+    .map((record) => ({ record, committedAt: Date.parse(record.committedAt) }))
+    .sort((a, b) => b.committedAt - a.committedAt);
   const seen = new Map<string, number>();
-  return latestFirst
-    .filter((record) => {
-      const committedAt = Date.parse(record.committedAt);
-      const prior = seen.get(record.signature);
-      if (prior !== undefined && prior - committedAt < 24 * 60 * 60 * 1000)
-        return false;
-      seen.set(record.signature, committedAt);
-      return true;
-    })
-    .slice(0, 12);
+  const selected: EvidenceRecord[] = [];
+  for (const { record, committedAt } of latestFirst) {
+    const prior = seen.get(record.signature);
+    if (prior !== undefined && prior - committedAt < 24 * 60 * 60 * 1000)
+      continue;
+    seen.set(record.signature, committedAt);
+    selected.push(record);
+    if (selected.length === 12) break;
+  }
+  return selected;
 }
 
 export function summarizeMastery(

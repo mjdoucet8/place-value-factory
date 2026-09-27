@@ -358,6 +358,7 @@ describe.skipIf(!socket)("real PostgreSQL isolated cluster", () => {
           "INSERT INTO pvf_skill_evidence(id,student_id,order_id,skill_id,score,independent_first,signature,policy_version) VALUES($1,'upgrade-student','old-order','pv.ones',1,true,'old-signature','v1-local')",
           [randomUUID()],
         );
+        await pool.query("INSERT INTO pvf_response(id,order_id,command_id,sequence,representation_a,validation) VALUES($1,'old-order','old-command',0,'[0,0,0,0,0,3]','{\"objectiveMet\":true,\"valueMatches\":true,\"shipmentAccepted\":true}')", [randomUUID()]);
         const before = (await pool.query("SELECT * FROM pvf_skill_evidence"))
           .rows;
         expect(await migrateDatabase(pool)).toEqual([
@@ -370,6 +371,7 @@ describe.skipIf(!socket)("real PostgreSQL isolated cluster", () => {
           "008_rc07_integrity.sql",
           "009_operations.sql",
           "010_backup_expiry.sql",
+          "011_report_order_facts.sql",
         ]);
         expect(
           (await pool.query("SELECT student_id,spec FROM pvf_order")).rows,
@@ -378,6 +380,7 @@ describe.skipIf(!socket)("real PostgreSQL isolated cluster", () => {
           (await pool.query("SELECT * FROM pvf_skill_evidence")).rows,
         ).toEqual(before);
         expect(await migrateDatabase(pool)).toEqual([]);
+        expect((await pool.query("SELECT response_n,first_objective,accepted FROM pvf_report_order WHERE order_id='old-order'")).rows).toEqual([{response_n:1,first_objective:true,accepted:true}]);
       } finally {
         await pool.end();
       }
@@ -447,6 +450,7 @@ describe.skipIf(!socket)("real PostgreSQL isolated cluster", () => {
         "008_rc07_integrity.sql",
         "009_operations.sql",
         "010_backup_expiry.sql",
+          "011_report_order_facts.sql",
       ]);
       expect(await migrateDatabase(isolated)).toEqual([]);
       const attemptId = randomUUID();
@@ -538,6 +542,7 @@ describe.skipIf(!socket)("real PostgreSQL isolated cluster", () => {
         (await isolated.query("SELECT revision FROM pvf_attempt")).rows[0]
           .revision,
       ).toBe(0);
+      expect((await isolated.query("SELECT count(*)::int AS n FROM pvf_report_order")).rows[0].n).toBe(0);
       const concurrent = await Promise.all(
         Array.from({ length: 6 }, () => repository.persistResponse(input)),
       );
@@ -573,6 +578,7 @@ describe.skipIf(!socket)("real PostgreSQL isolated cluster", () => {
           leaseEpoch: 0,
         }),
       ).toMatchObject({ kind: "conflict", code: "LEASE_LOST" });
+      expect((await isolated.query("SELECT response_n,accepted FROM pvf_report_order WHERE order_id='order'")).rows).toEqual([{response_n:1,accepted:true}]);
       const evidence = await repository.evidenceFor(
         "fictional-student",
         "pv.ones",

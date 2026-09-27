@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { randomUUID } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
+import { classifyResponse, type ReportFacts } from "./reporting.js";
 import type { Attempt, Store } from "./index.js";
 
 type Context = {
@@ -8,6 +9,7 @@ type Context = {
   state?: Store;
   dirty: boolean;
   snapshotOnly: boolean;
+  connectionWaitMs: number;
   originalAttempts?: Map<string, Attempt>;
   originalProfiles?: Map<string, string>;
   changedAttemptIds?: Set<string>;
@@ -36,20 +38,22 @@ export class PostgresRuntimeStore {
   }
 
   private async transactionOnce<T>(operation: () => Promise<T>, snapshotOnly: boolean, studentLockId?: string): Promise<T> {
+    const checkoutStarted = performance.now();
     const client = await this.pool.connect();
+    const connectionWaitMs = performance.now() - checkoutStarted;
     try {
-      await client.query("BEGIN");
-      if (snapshotOnly)
-        await client.query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
-      await client.query("SET LOCAL lock_timeout='5s'");
-      await client.query("SET LOCAL statement_timeout='10s'");
+      // Fixed statements execute in the same order on PostgreSQL. One wire
+      // request avoids three extra event-loop turns during historical reads.
+      await client.query(snapshotOnly
+        ? "BEGIN; SET TRANSACTION ISOLATION LEVEL REPEATABLE READ; SET LOCAL lock_timeout='5s'; SET LOCAL statement_timeout='10s'"
+        : "BEGIN; SET LOCAL lock_timeout='5s'; SET LOCAL statement_timeout='10s'");
       if (!snapshotOnly) {
         if (studentLockId) {
           await client.query("SELECT pg_advisory_xact_lock_shared(736482902)");
           await client.query("SELECT pg_advisory_xact_lock(736482903,hashtext($1))", [studentLockId]);
         } else await client.query("SELECT pg_advisory_xact_lock(736482902)");
       }
-      const context: Context = { client, dirty: false, snapshotOnly };
+      const context: Context = { client, dirty: false, snapshotOnly, connectionWaitMs };
       const result = await this.context.run(context, operation);
       if (context.dirty && context.state)
         await this.persist(client, context.state, context);
@@ -63,9 +67,10 @@ export class PostgresRuntimeStore {
     }
   }
 
-  async load(studentIds?: string[], reportOnly = false, startCommandId?: string): Promise<Store> {
+  async load(studentIds?: string[], reportOnly = false, startCommandId?: string, summaryWindow?: {from: Date;to: Date;includeTransfer: boolean}): Promise<Store> {
     const context = this.requiredContext();
     if (context.state) return context.state;
+    if (summaryWindow) return this.loadSummary(studentIds ?? [], summaryWindow);
     const client = context.client;
     const readRows = async (query: string, values: unknown[] = []) =>
       (await client.query(query, values)).rows;
@@ -81,7 +86,7 @@ export class PostgresRuntimeStore {
     // for each order. Read those together so one row parser pass covers the
     // common one-response/one-evidence case, including skipped evidence.
     const reportRows = reportOnly ? await readRows(
-      `SELECT o.id,o.attempt_id,o.spec,o.slot_index,o.replacement_index,o.role,o.status,
+      `SELECT o.id,o.attempt_id,o.spec,o.slot_index,o.replacement_index,o.role,o.status,f.change_id,
         r.order_id AS response_order_id,r.command_id,r.active_ms,r.representation_a,r.representation_b,r.validation,
         r.committed_at AS response_at,r.sequence,
         e.order_id AS evidence_order_id,e.skill_id,e.score,e.independent_first,e.signature,e.eligible,
@@ -89,6 +94,7 @@ export class PostgresRuntimeStore {
        FROM pvf_order o
        LEFT JOIN pvf_response r ON r.order_id=o.id
        LEFT JOIN pvf_skill_evidence e ON e.order_id=o.id
+       LEFT JOIN pvf_report_order f ON f.order_id=o.id
        WHERE o.attempt_id=ANY($1::uuid[])`,
       [attemptIds],
     ) : [];
@@ -153,6 +159,7 @@ export class PostgresRuntimeStore {
       ),
       attempts: attempts.map((row) => ({
         id: row.id,
+        reportFactRevision: reportOnly ? (ordersByAttempt.get(row.id)??[]).filter((o)=>o.change_id).map((o)=>`${o.id}:${o.change_id}`).sort().join("|") : undefined,
         studentId: row.student_id,
         levelId: row.level_id,
         seed: Number(row.seed),
@@ -239,6 +246,130 @@ export class PostgresRuntimeStore {
       );
     }
     return context.state;
+  }
+
+  /** Profile fields depend on attempt metadata and evidence, never answer/receipt payloads. */
+  async loadProfile(studentId: string): Promise<Store> {
+    const context = this.requiredContext();
+    if (!context.snapshotOnly) throw new Error("Profile reads require a read snapshot");
+    const client = context.client;
+    const profile = (await client.query("SELECT settings,certifications FROM pvf_game_profile WHERE student_id=$1", [studentId])).rows[0];
+    const attempts = (await client.query("SELECT * FROM pvf_attempt WHERE student_id=$1 ORDER BY created_at,id", [studentId])).rows;
+    const evidence = (await client.query(`SELECT e.*,o.attempt_id FROM pvf_skill_evidence e JOIN pvf_order o ON o.id=e.order_id
+      WHERE e.student_id=$1 ORDER BY e.committed_at,e.id`, [studentId])).rows;
+    const byAttempt = new Map<string, Attempt["evidence"]>();
+    for (const e of evidence) {
+      const records = byAttempt.get(e.attempt_id) ?? [];
+      records.push({orderId:e.order_id,skillId:e.skill_id,score:Number(e.score),independentFirst:e.independent_first,
+        attemptId:e.attempt_id,signature:e.signature,committedAt:iso(e.committed_at),eligible:e.eligible});
+      byAttempt.set(e.attempt_id, records);
+    }
+    return { settings: {[studentId]:profile?.settings ?? {}}, certifications:{[studentId]:profile?.certifications ?? []},
+      attempts:attempts.map((a)=>({id:a.id,studentId:a.student_id,levelId:a.level_id,seed:Number(a.seed),slot:a.slot,status:a.status,
+        completed:a.status==="completed",revision:a.revision,leaseEpoch:a.lease_epoch,writerTabId:a.writer_tab_id,
+        leaseExpiresAt:iso(a.lease_expires_at),createdAt:iso(a.created_at),kind:a.kind,transferStar:a.transfer_star,
+        evidence:byAttempt.get(a.id)??[],responses:[],receipts:[],supportEvents:[]})) };
+  }
+
+  private async loadSummary(studentIds: string[], window: {from: Date;to: Date;includeTransfer: boolean}): Promise<Store> {
+    const context = this.requiredContext();
+    if (!context.snapshotOnly) throw new Error("Summary reads require a read snapshot");
+    const started = performance.now();
+    const payload = (await context.client.query(`WITH order_data AS MATERIALIZED (
+        SELECT o.id AS order_id,o.student_id,o.attempt_id,o.primary_skill,o.role,
+          (o.spec->>'canonicalRequired')::boolean AS canonical,jsonb_array_length(o.spec->'allowed') AS allowed_n,
+          f.response_n,f.first_at,f.last_at,f.first_objective,f.first_value,f.accepted,f.change_id,
+          e.id AS evidence_id,e.skill_id,e.score,e.independent_first,e.signature,e.eligible,e.committed_at
+        FROM pvf_order o LEFT JOIN pvf_report_order f ON f.order_id=o.id LEFT JOIN pvf_skill_evidence e ON e.order_id=o.id
+        WHERE o.student_id=ANY($1::text[]) AND (f.order_id IS NOT NULL OR e.id IS NOT NULL)
+      ), support AS MATERIALIZED (
+        SELECT s.order_id,o.attempt_id,count(*)::int AS event_n,bool_or(s.step='H1') AS h1,bool_or(s.step='H2') AS h2,bool_or(s.step='H3') AS h3
+        FROM pvf_support_event s JOIN pvf_order o ON o.id=s.order_id WHERE o.student_id=ANY($1::text[]) GROUP BY s.order_id,o.attempt_id
+      ), attempt_counts AS (
+        SELECT attempt_id,sum(coalesce(response_n,0))::int AS response_n,count(evidence_id)::int AS evidence_n,max(last_at) AS last_at,
+          string_agg(order_id||':'||change_id,'|' ORDER BY order_id COLLATE "C") FILTER(WHERE response_n IS NOT NULL) AS fact_revision
+        FROM order_data GROUP BY attempt_id
+      ), support_counts AS (
+        SELECT attempt_id,sum(event_n)::int AS support_n FROM support GROUP BY attempt_id
+      ), attempt_rows AS (
+        SELECT a.*,coalesce(c.response_n,0) AS response_n,coalesce(c.evidence_n,0) AS evidence_n,
+          coalesce(s.support_n,0) AS support_n,coalesce(c.fact_revision,'') AS fact_revision,c.last_at
+        FROM pvf_attempt a LEFT JOIN attempt_counts c ON c.attempt_id=a.id LEFT JOIN support_counts s ON s.attempt_id=a.id
+        WHERE a.student_id=ANY($1::text[]) ORDER BY a.created_at,a.id
+      ), selected AS MATERIALIZED (
+        SELECT * FROM order_data WHERE first_at >= $2 AND first_at < $3 AND ($4 OR (role<>'transfer' AND order_id NOT LIKE '%-transfer'))
+      ), grouped_rows AS (
+        SELECT d.student_id,d.primary_skill,count(*)::int AS submitted,
+          count(*) FILTER(WHERE d.first_objective)::int AS objective,count(*) FILTER(WHERE d.first_value)::int AS value,
+          count(*) FILTER(WHERE d.accepted)::int AS accepted,count(*) FILTER(WHERE NOT d.first_objective AND d.accepted)::int AS corrected,
+          count(*) FILTER(WHERE NOT d.accepted AND d.evidence_id IS NULL)::int AS pending,
+          count(*) FILTER(WHERE d.canonical)::int AS canonical,count(*) FILTER(WHERE d.allowed_n=1)::int AS single,
+          count(*) FILTER(WHERE d.allowed_n<6)::int AS restricted,
+          count(*) FILTER(WHERE s.h1)::int AS h1,count(*) FILTER(WHERE s.h2)::int AS h2,count(*) FILTER(WHERE s.h3)::int AS h3,
+          (array_agg(d.order_id ORDER BY d.first_at DESC,d.order_id DESC) FILTER(WHERE d.independent_first))[1:2] AS independent_ids,
+          (array_agg(d.order_id ORDER BY d.first_at DESC,d.order_id DESC) FILTER(WHERE NOT d.first_objective))[1:2] AS wrong_ids
+        FROM selected d LEFT JOIN support s ON s.order_id=d.order_id GROUP BY d.student_id,d.primary_skill
+      ), evidence_rows AS (
+        SELECT order_id,student_id,skill_id,score,independent_first,signature,eligible,committed_at,attempt_id,
+          (first_at >= $2 AND first_at < $3 AND ($4 OR (role<>'transfer' AND order_id NOT LIKE '%-transfer'))) AS in_window
+        FROM order_data WHERE evidence_id IS NOT NULL AND eligible ORDER BY committed_at,order_id
+      ), wrong_rows AS (
+        SELECT d.order_id AS id,d.student_id,o.spec,r.representation_a,r.representation_b FROM selected d JOIN pvf_response r ON r.order_id=d.order_id
+        JOIN pvf_order o ON o.id=d.order_id WHERE NOT (r.validation->>'objectiveMet')::boolean
+      ) SELECT
+        (SELECT coalesce(json_agg(p),'[]'::json) FROM (SELECT student_id,certifications FROM pvf_game_profile WHERE student_id=ANY($1::text[])) p) AS profiles,
+        (SELECT coalesce(json_agg(a),'[]'::json) FROM attempt_rows a) AS attempts,
+        (SELECT coalesce(json_agg(g),'[]'::json) FROM grouped_rows g) AS grouped,
+        (SELECT coalesce(json_agg(e),'[]'::json) FROM evidence_rows e) AS evidence,
+        (SELECT coalesce(json_agg(w),'[]'::json) FROM wrong_rows w) AS wrong`, [studentIds,window.from,window.to,window.includeTransfer])).rows[0];
+    const durations = [performance.now()-started];
+    const {profiles,attempts,grouped,evidence,wrong} = payload as Record<string, any[]>;
+    // JSON timestamp text is normalized to exactly the same millisecond UTC
+    // strings as the raw row adapter used by v1 and detail.
+    for(const a of attempts) for(const key of ["created_at","lease_expires_at","last_at"])
+      if(a[key]) a[key]=new Date(a[key]).toISOString();
+    for(const e of evidence) e.committed_at=new Date(e.committed_at).toISOString();
+    const facts: Record<string,ReportFacts> = Object.fromEntries(studentIds.map((id)=>[id,{orders:[],aggregate:{
+      submittedN:0,firstObjectiveCorrectN:0,firstValueCorrectN:0,eventuallyCorrectN:0,correctionSuccessN:0,pendingN:0,
+      targeted:{PLACE_SHIFT:0,ZERO_PLACEHOLDER:0,FACTOR_TEN:0,RENAMING_GAP:0},flags:{PLACE_SHIFT:0,ZERO_PLACEHOLDER:0,FACTOR_TEN:0,RENAMING_GAP:0},
+      representatives:{},supportCounts:{H1:0,H2:0,H3:0},lastActivityAt:null,windowEvidence:[]}}]));
+    for(const row of grouped) {
+      const a=facts[row.student_id].aggregate!;
+      a.submittedN+=row.submitted; a.firstObjectiveCorrectN+=row.objective; a.firstValueCorrectN+=row.value;
+      a.eventuallyCorrectN+=row.accepted; a.correctionSuccessN+=row.corrected; a.pendingN+=row.pending;
+      a.targeted.PLACE_SHIFT+=row.canonical; a.targeted.ZERO_PLACEHOLDER+=row.canonical;
+      a.targeted.FACTOR_TEN+=row.single; a.targeted.RENAMING_GAP+=row.restricted;
+      a.supportCounts.H1+=row.h1; a.supportCounts.H2+=row.h2; a.supportCounts.H3+=row.h3;
+      a.representatives[row.primary_skill]={independent:row.independent_ids??[],wrong:row.wrong_ids??[]};
+    }
+    const flagged = new Set<string>();
+    for(const row of wrong) for(const code of [...classifyResponse(row.spec,row.representation_a),...classifyResponse(row.spec,row.representation_b)]) {
+      const key=`${row.id}:${code}`; if(!flagged.has(key)) { facts[row.student_id].aggregate!.flags[code]++; flagged.add(key); }
+    }
+    const evidenceByAttempt = new Map<string,Attempt["evidence"]>();
+    for(const e of evidence) {
+      const record = {orderId:e.order_id,skillId:e.skill_id,score:Number(e.score),independentFirst:e.independent_first,attemptId:e.attempt_id,
+        signature:e.signature,committedAt:iso(e.committed_at),eligible:e.eligible};
+      const records=evidenceByAttempt.get(e.attempt_id)??[]; records.push(record); evidenceByAttempt.set(e.attempt_id,records);
+      if(e.in_window) facts[e.student_id].aggregate!.windowEvidence.push(record);
+    }
+    for(const a of attempts) if(a.last_at) {
+      const aggregate=facts[a.student_id].aggregate!;const last=iso(a.last_at);
+      if(!aggregate.lastActivityAt||last>aggregate.lastActivityAt) aggregate.lastActivityAt=last;
+    }
+    context.state = { reportReadDurations:durations, reportFacts:facts,certifications:Object.fromEntries(profiles.map((p)=>[p.student_id,p.certifications])),
+      attempts:attempts.map((a)=>({id:a.id,studentId:a.student_id,levelId:a.level_id,seed:Number(a.seed),slot:a.slot,status:a.status,completed:a.status==="completed",
+        revision:a.revision,leaseEpoch:a.lease_epoch,writerTabId:a.writer_tab_id,leaseExpiresAt:iso(a.lease_expires_at),createdAt:iso(a.created_at),kind:a.kind,
+        transferStar:a.transfer_star,responses:[],supportEvents:[],receipts:[],evidence:evidenceByAttempt.get(a.id)??[],
+        reportCounts:[a.response_n,a.support_n,a.evidence_n],reportFactRevision:a.fact_revision})) };
+    return context.state;
+  }
+
+  connectionWaitMs() { return this.requiredContext().connectionWaitMs; }
+
+  async studentAccess(studentIds: string[]): Promise<Record<string, boolean>> {
+    const rows = (await this.requiredContext().client.query("SELECT student_id,access_enabled FROM pvf_game_profile WHERE student_id=ANY($1::text[])", [studentIds])).rows;
+    return Object.fromEntries(rows.map((row) => [row.student_id, row.access_enabled]));
   }
 
   async save(state: Store, changedAttemptId?: string) {

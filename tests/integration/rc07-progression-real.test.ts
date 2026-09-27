@@ -55,7 +55,7 @@ describe.skipIf(!socket)("RC-07 real PostgreSQL progression journey", () => {
     const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api/v1`;
     let commandIndex = 0;
     const request = async (path: string, body?: any, actor = student) => {
-      const response = await fetch(base + path, {
+      const response = await fetch((path.startsWith("/v2/") ? base.replace(/\/v1$/, "") : base) + path, {
         method: body === undefined ? "GET" : "POST",
         headers: {
           "content-type": "application/json",
@@ -380,6 +380,17 @@ describe.skipIf(!socket)("RC-07 real PostgreSQL progression journey", () => {
           firstObjectiveCorrectN: expect.any(Number),
           eventuallyCorrectN: expect.any(Number),
         });
+        const compact = await request("/v2/teacher/classes/class-demo/games/place-value-factory/summary?from=2026-09-01&to=2027-12-31",undefined,"teacher-dev");
+        expect(compact.status).toBe(200);
+        const {evidence: fullEvidence,...legacyCounts}=ava;
+        const {viewRevision,...summaryCounts}=compact.body.students.find((entry:any)=>entry.studentId===student);
+        expect(summaryCounts).toEqual(legacyCounts);
+        const pages:any[]=[];let cursor:string|null=null;
+        do {
+          const page=await request(`/v2/teacher/students/${student}/games/place-value-factory/evidence?from=2026-09-01&to=2027-12-31&viewRevision=${viewRevision}${cursor?`&cursor=${encodeURIComponent(cursor)}`:""}`,undefined,"teacher-dev");
+          expect(page.status).toBe(200);pages.push(...page.body.evidence);cursor=page.body.nextCursor;
+        } while(cursor);
+        expect(pages).toEqual([...fullEvidence].sort((a:any,b:any)=>a.firstResponse.at.localeCompare(b.firstResponse.at)||a.orderId.localeCompare(b.orderId)));
         expect(ava.submittedN).toBeGreaterThanOrEqual(45);
         expect(ava.firstValueCorrectN).toBe(ava.submittedN);
         expect(ava.firstObjectiveCorrectN).toBeLessThan(ava.submittedN);

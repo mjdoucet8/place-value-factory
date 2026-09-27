@@ -1,0 +1,24 @@
+FROM node:22-bookworm-slim AS build
+WORKDIR /app
+COPY package.json package-lock.json ./
+COPY apps/server/package.json apps/server/package.json
+COPY apps/web/package.json apps/web/package.json
+COPY packages/config/package.json packages/config/package.json
+COPY packages/contracts/package.json packages/contracts/package.json
+COPY packages/game-engine/package.json packages/game-engine/package.json
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM node:22-bookworm-slim
+WORKDIR /app
+ENV NODE_ENV=production \
+    HOST=0.0.0.0 \
+    PORT=10000 \
+    PVF_MODE=staging \
+    PVF_AUTH=local \
+    PVF_FICTIONAL_ONLY=true \
+    PVF_STATIC_DIR=/app/apps/web/dist
+COPY --from=build /app /app
+EXPOSE 10000
+CMD ["npm", "run", "staging"]

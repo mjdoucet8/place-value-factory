@@ -8,7 +8,7 @@ import {
   scrypt,
   timingSafeEqual,
 } from "node:crypto";
-import type { PoolClient } from "pg";
+import type { PoolClient, Pool } from "pg";
 import type { IncomingMessage } from "node:http";
 
 export type Principal = {
@@ -58,7 +58,7 @@ async function verifyCredential(value: string, hash: string) {
   );
 }
 export const sessionCookie = (token: string, secure: boolean) =>
-  `pvf_session=${token}; HttpOnly; SameSite=Strict; Path=/api/v1; Max-Age=28800${secure ? "; Secure" : ""}`;
+  `pvf_session=${token}; HttpOnly; SameSite=Strict; Path=/api; Max-Age=28800${secure ? "; Secure" : ""}`;
 export function sessionToken(request: IncomingMessage) {
   return (
     request.headers.cookie
@@ -71,6 +71,9 @@ export function sessionToken(request: IncomingMessage) {
 
 /** Explicit local adapter; school/provider adapters can issue the same server session. */
 export class LocalIdentity {
+  private readTouches = new WeakSet<IncomingMessage>();
+  private authDurations = new WeakMap<IncomingMessage, number[]>();
+  requestTimings(request: IncomingMessage) { return this.authDurations.get(request) ?? []; }
   constructor(
     private client: () => PoolClient,
     private receiptKey?: Buffer,
@@ -513,6 +516,7 @@ export class LocalIdentity {
   }
 
   async authenticate(request: IncomingMessage): Promise<Principal | null> {
+    const authStarted = performance.now();
     const token = sessionToken(request);
     if (!/^[A-Za-z0-9_-]{43}$/.test(token)) return null;
     const client = this.client();
@@ -525,6 +529,7 @@ export class LocalIdentity {
         [digest(token)],
       )
     ).rows[0];
+    const lookupMs = performance.now() - authStarted;
     if (!row) return null;
     if (!row.enabled || (row.role === "student" && (!row.class_enabled || row.archived_at)))
       throw new AccessError(
@@ -532,16 +537,28 @@ export class LocalIdentity {
         "ACCESS_DISABLED",
         "Access is disabled. Ask your teacher for help.",
       );
-    await client.query(
+    if (["GET", "HEAD"].includes(request.method ?? "")) this.readTouches.add(request);
+    else await client.query(
       "UPDATE pvf_session SET last_seen_at=now() WHERE token_hash=$1 AND last_seen_at<now()-interval '1 minute'",
       [digest(token)],
     );
+    this.authDurations.set(request, [lookupMs, performance.now()-authStarted-lookupMs]);
     return {
       id: row.id,
       role: row.role,
       csrfToken: row.csrf_token,
       ...(row.class_id ? { classId: row.class_id } : {}),
     };
+  }
+
+  /** Finish read activity tracking after releasing the report snapshot. This
+   * cannot recreate a revoked session and does not change expiry/idle policy. */
+  async touchReadSession(request: IncomingMessage, pool: Pool) {
+    if (!this.readTouches.delete(request)) return;
+    await pool.query(
+      "UPDATE pvf_session SET last_seen_at=now() WHERE token_hash=$1 AND last_seen_at<now()-interval '1 minute'",
+      [digest(sessionToken(request))],
+    );
   }
 
   async logout(request: IncomingMessage) {
@@ -552,21 +569,22 @@ export class LocalIdentity {
 
   async directory() {
     const client = this.client();
-    const classes = (
-      await client.query(
-        'SELECT id,teacher_id AS "teacherId",name,timezone,code,enabled,archived_at AS "archivedAt" FROM pvf_class',
-      )
-    ).rows;
-    const students = (
-      await client.query(
-        'SELECT s.id,s.alias,s.username,s.class_id AS "classId",i.enabled FROM pvf_student s JOIN pvf_identity i ON i.id=s.id',
-      )
-    ).rows;
-    const teachers = (
-      await client.query(
-        "SELECT id,username FROM pvf_identity WHERE role='teacher'",
-      )
-    ).rows.map((row) => ({
+    // One statement preserves the transaction snapshot without three separate
+    // request/response turns through a busy API worker. Select no credentials.
+    const { classes, students, teachers: teacherRows } = (
+      await client.query(`SELECT
+        (SELECT coalesce(json_agg(c),'[]'::json) FROM
+          (SELECT id,teacher_id AS "teacherId",name,timezone,code,enabled,archived_at AS "archivedAt" FROM pvf_class) c) AS classes,
+        (SELECT coalesce(json_agg(s),'[]'::json) FROM
+          (SELECT s.id,s.alias,s.username,s.class_id AS "classId",i.enabled FROM pvf_student s JOIN pvf_identity i ON i.id=s.id) s) AS students,
+        (SELECT coalesce(json_agg(t),'[]'::json) FROM
+          (SELECT id,username FROM pvf_identity WHERE role='teacher') t) AS teachers`)
+    ).rows[0] as {
+      classes: {id:string;teacherId:string;name:string;timezone:string;code:string;enabled:boolean;archivedAt:string|null}[];
+      students: {id:string;alias:string;username:string;classId:string;enabled:boolean}[];
+      teachers: {id:string;username:string}[];
+    };
+    const teachers = teacherRows.map((row) => ({
       ...row,
       classIds: classes.filter((c) => c.teacherId === row.id).map((c) => c.id),
     }));

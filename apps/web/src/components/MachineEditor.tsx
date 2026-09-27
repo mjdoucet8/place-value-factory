@@ -1,4 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
+import { MachineArtwork, CrateShell } from "./MachineArtwork.js";
 import { PLACES } from "../models.js";
 
 type Props = {
@@ -20,26 +21,23 @@ export function MachineEditor({
 }: Props) {
   return (
     <>
+      <div className="production-line" role="region" aria-label="Factory conveyor and crate controls" tabIndex={0}>
       <section
         className="machines"
         aria-label="Representation A place value machines"
       >
         {PLACES.map((place, index) => (
           <article
-            className={`machine machine-${index}`}
+            className={`machine illustrated-machine machine-${index}`}
             key={place.value}
             aria-disabled={!order.allowed.includes(place.value)}
           >
-            <span className="machine-pipe" aria-hidden="true" />
-            <span className="machine-hopper" aria-hidden="true" />
             <h2>
               {place.icon} {place.name}
             </h2>
-            <p className="machine-value">
-              {place.value.toLocaleString()} each{" "}
-              {!order.allowed.includes(place.value) &&
-                "· Closed for this order"}
-            </p>
+            <MachineArtwork value={place.value} closed={!order.allowed.includes(place.value)} />
+            <div className="editable-crate">
+              <CrateShell />
             <label htmlFor={`quantity-${index}`}>Crate quantity</label>
             <div className="quantity-controls">
               <button
@@ -94,11 +92,12 @@ export function MachineEditor({
                 +
               </button>
             </div>
-            <span className="machine-crate" aria-hidden="true">
-              {quantities[index] > 0
-                ? `${quantities[index]} crate${quantities[index] === 1 ? "" : "s"}`
-                : "No crates yet"}
-            </span>
+            </div>
+            <p className="crate-inventory">
+              {order.allowed.includes(place.value)
+                ? quantities[index] > 0 ? `× ${quantities[index].toLocaleString()} crate${quantities[index] === 1 ? "" : "s"}` : "No crates yet"
+                : "Closed for this order"}
+            </p>
             {index < 5 && (
               <button
                 className="exchange"
@@ -126,6 +125,7 @@ export function MachineEditor({
           </article>
         ))}
       </section>
+      </div>
       {order.distinctRepresentations === 2 && (
         <section
           className="second-representation"

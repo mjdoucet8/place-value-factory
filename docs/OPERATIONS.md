@@ -69,3 +69,23 @@ After policy approval, an operator may schedule `backup`, `cleanup`, `audit-rete
 For an incident: stop application writes and isolate the suspect service; preserve logs and the independent deletion ledger; choose a clean archive and a new empty target; authenticate and restore; confirm deletion replay; compare teacher totals, immutable answer counts, certifications and reward state; revoke restored sessions and reconcile current class/student access, PIN resets and archives; then obtain the school operator's approval before exposing the target. Rotate affected keys under the custodian's procedure if compromise is suspected. The local rehearsal proves mechanics with fictional data, not a production recovery-time objective or backup-custody process.
 
 `npm run test:postgres` creates a private disposable cluster and exercises these operations with fictional records. It does not prove school backup custody or a real deployment.
+
+## Reporting v2 derived facts (migration 011)
+
+`pvf_report_order` stores only response-derived counts, first correctness/date and eventual acceptance. Immutable `pvf_response` and `pvf_order` records remain the authority. Database triggers maintain this table atomically on response insert/update/delete, including application corrections; foreign-key cascades remove it with an order/student. Duplicate commands that create no response also create no fact update. Failed transactions roll back both.
+
+Migration 011 backfills from existing responses. Encrypted backup and restore include the facts and trigger definitions. The separate-database restore test compares all v2 evidence pages with v1, and a deleted student's v2 routes return 404. There is no in-process report cache or expiry interval that could expose deleted evidence.
+
+Administrators can rebuild the derived facts during an approved maintenance window:
+
+```sql
+BEGIN;
+SELECT pvf_rebuild_report_orders();
+COMMIT;
+```
+
+This function takes a maintenance-only SHARE lock on `pvf_response`, waits for in-flight response writes, and atomically rebuilds from raw rows. Concurrent readers retain a coherent PostgreSQL snapshot; new writes resume after commit. It does not alter questions, responses, evidence, receipts, rewards, attempts or certificates. The function returns the number of rebuilt order rows. Rebuild regenerates per-order change tokens, invalidating existing report cursors even when the educational facts are identical. Teachers receive `REPORT_CHANGED` and refresh after maintenance. No HTTP route exposes this operation. Rebuild was exercised only in disposable fictional test databases. The normal request-path advisory locking policy is unchanged.
+
+A quick operator reconciliation checks `sum(response_n)` in `pvf_report_order` equals the count of `pvf_response`, and its row count equals distinct response order IDs. Full parity additionally compares first flags/time and eventual acceptance against raw aggregation; the test suite checks golden outcomes, rebuild equality, correction/delete updates, rollback, retries and restore. Run `npm run test:postgres` after a migration or restore rehearsal.
+
+Reporting reads authenticate within their repeatable-read snapshot. The idle activity timestamp refresh runs immediately after that transaction commits, in a short conditional update; it cannot recreate a revoked session. This avoids holding a session row for the duration of a large report. Mutation authentication and the 30-minute idle limit and existing absolute expiry remain unchanged. The sustained harness retains three workers with 15 connections each; the standalone application retains the driver default.

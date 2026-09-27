@@ -32,6 +32,12 @@ describe("provider-independent deployment preflight", () => {
       const badKey = run("pilot", { PVF_BACKUP_KEY: env.PVF_RECEIPT_KEY });
       expect(badKey.status).not.toBe(0);
       expect(JSON.parse(badKey.stdout).errors).toContain("Keys: use distinct private keys for receipts, backup and deletion ledger");
+      const staging = run("staging", {
+        PVF_ORIGIN: "https://fictional-staging.example",
+        PVF_FICTIONAL_ONLY: "true",
+      });
+      expect(staging.status, staging.stderr).toBe(0);
+      expect(JSON.parse(staging.stdout)).toMatchObject({ profile: "staging", valid: true, errors: [] });
       const production = run("production", { PVF_ORIGIN: "https://fictional.example" });
       expect(production.status).not.toBe(0);
       expect(JSON.parse(production.stdout).errors).toContain("PVF_AUTH: school identity adapter is not implemented; production remains blocked");

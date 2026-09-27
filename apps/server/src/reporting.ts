@@ -145,7 +145,33 @@ export function reportWindow(
   }
 }
 
-export function buildStudentReport(input: {
+export type ReportOrderFact = {
+  orderId: string;
+  attemptId: string;
+  firstAt: string;
+  lastAt: string;
+  primarySkill: string;
+  transfer: boolean;
+  canonicalRequired: boolean;
+  allowedN: number;
+  firstObjective: boolean;
+  firstValue: boolean;
+  accepted: boolean;
+  hasEvidence: boolean;
+  independentFirst: boolean;
+  flags: string[];
+  supports: string[];
+};
+export type ReportAggregate = {
+  submittedN: number; firstObjectiveCorrectN: number; firstValueCorrectN: number;
+  eventuallyCorrectN: number; correctionSuccessN: number; pendingN: number;
+  targeted: Record<string, number>; flags: Record<string, number>;
+  representatives: Record<string, {independent: string[]; wrong: string[]}>;
+  supportCounts: Record<string, number>; lastActivityAt: string | null;
+  windowEvidence: Attempt["evidence"];
+};
+export type ReportFacts = { orders: ReportOrderFact[]; aggregate?: ReportAggregate };
+type ReportInput = {
   student: { id: string; alias: string };
   attempts: Attempt[];
   from: Date;
@@ -156,74 +182,37 @@ export function buildStudentReport(input: {
   achievedTier: string;
   certifications: string[];
   primaryPracticeSkillId: string | null;
-}) {
-  const { student, attempts, from, to, now, includeTransfer } = input;
-  const responses = attempts
-    .flatMap((a) => a.responses)
-    .sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
-  const grouped = new Map<string, Response[]>();
-  for (const record of responses) {
-    if (!includeTransfer && isTransferOrder(record.order)) continue;
-    const group = grouped.get(record.order.id) ?? [];
-    group.push(record);
-    grouped.set(record.order.id, group);
-  }
-  const groups = [...grouped.values()].filter(
-    (group) =>
-      Date.parse(group[0].at) >= from.getTime() &&
-      Date.parse(group[0].at) < to.getTime(),
-  );
-  const accepted = (group: Response[]) =>
-    group.some((r) => r.validation.shipmentAccepted);
-  const firstWrong = groups.filter((g) => !g[0].validation.objectiveMet);
-  const ids = new Set(groups.map((g) => g[0].order.id));
-  const allEvidence = attempts.flatMap((a) => a.evidence);
-  const evidenceOrderIds = new Set(allEvidence.map((record) => record.orderId));
-  const independentOrderIds = new Set(
-    allEvidence.filter((record) => record.independentFirst).map((record) => record.orderId),
-  );
-  const evidence = allEvidence.filter((e) => !e.orderId || ids.has(e.orderId));
-  const supportsByOrder = new Map<string, Attempt["supportEvents"]>();
-  for (const event of attempts.flatMap((attempt) => attempt.supportEvents)) {
-    const events = supportsByOrder.get(event.orderId) ?? [];
-    events.push(event);
-    supportsByOrder.set(event.orderId, events);
-  }
-  const supportCounts = Object.fromEntries(
-    ["H1", "H2", "H3"].map((step) => [
-      step,
-      new Set(
-        [...supportsByOrder.values()]
-          .flatMap((events) => events)
-          .filter((s) => s.step === step && ids.has(s.orderId))
-          .map((s) => s.orderId),
-      ).size,
-    ]),
-  );
-  const misconceptionCodes = ["PLACE_SHIFT", "ZERO_PLACEHOLDER", "FACTOR_TEN", "RENAMING_GAP"] as const;
-  const misconceptionTotals = Object.fromEntries(misconceptionCodes.map((code) => [code, { orderN: 0, targetedN: 0 }])) as Record<(typeof misconceptionCodes)[number], { orderN: number; targetedN: number }>;
-  for (const group of groups) {
-    const order = group[0].order;
-    const flags = new Set(group.flatMap((record) => [
-      ...classifyResponse(record.order, record.representationA),
-      ...classifyResponse(record.order, record.representationB),
-    ]));
-    for (const code of misconceptionCodes) {
-      if (flags.has(code)) misconceptionTotals[code].orderN++;
-      if (code === "FACTOR_TEN" ? order.allowed.length === 1 : code === "RENAMING_GAP" ? order.allowed.length < 6 : order.canonicalRequired)
-        misconceptionTotals[code].targetedN++;
-    }
-  }
-  const misconceptionCounts = misconceptionCodes.map((code) => ({
-    code,
-    ...misconceptionTotals[code],
-    candidate: true,
-    ruleVersion: "v1",
-    showPattern: misconceptionTotals[code].orderN >= 3,
-  }));
+  summaryOnly?: boolean;
+  facts?: ReportFacts;
+};
+
+/** Both v1 and v2 use this reducer; SQL facts change transport, not educational rules. */
+function summarizeFacts(input: ReportInput, facts: ReportFacts) {
+  const aggregate = facts.aggregate;
+  const allEvidence = input.attempts
+    .flatMap((a) => a.evidence)
+    .sort(
+      (a, b) =>
+        a.committedAt.localeCompare(b.committedAt) ||
+        (a.orderId ?? "").localeCompare(b.orderId ?? ""),
+    );
+  const groups = facts.orders
+    .filter(
+      (g) =>
+        (input.includeTransfer || !g.transfer) &&
+        Date.parse(g.firstAt) >= input.from.getTime() &&
+        Date.parse(g.firstAt) < input.to.getTime(),
+    )
+    .sort(
+      (a, b) =>
+        a.firstAt.localeCompare(b.firstAt) ||
+        a.orderId.localeCompare(b.orderId),
+    );
+  const ids = new Set(groups.map((g) => g.orderId));
+  const evidence = aggregate?.windowEvidence ?? allEvidence.filter((e) => !e.orderId || ids.has(e.orderId));
   const skills = [...new Set(Object.values(STAGE_GATE_SKILLS).flat())]
     .sort()
-    .map((skillId) => summarizeMastery(skillId, allEvidence, now));
+    .map((id) => summarizeMastery(id, allEvidence, input.now));
   const trends = skills.map(({ skillId }) => {
     const recent = eligibleEvidence(
       evidence.filter((e) => e.skillId === skillId),
@@ -248,27 +237,49 @@ export function buildStudentReport(input: {
       previous5,
     };
   });
-  const representativeOrderIds = skills.flatMap(({ skillId }) => {
-    const selected = groups
-      .filter((g) => g[0].order.primarySkill === skillId)
-      .reverse();
-    return [
-      ...selected.filter((g) => independentOrderIds.has(g[0].order.id)).slice(0, 2),
-      ...selected.filter((g) => !g[0].validation.objectiveMet).slice(0, 2),
-    ].map((g) => g[0].order.id);
+  const codes = [
+    "PLACE_SHIFT",
+    "ZERO_PLACEHOLDER",
+    "FACTOR_TEN",
+    "RENAMING_GAP",
+  ];
+  const misconceptionCounts = codes.map((code) => {
+    const orderN = aggregate?.flags[code] ?? groups.filter((g) => g.flags.includes(code)).length;
+    const targetedN = aggregate?.targeted[code] ?? groups.filter((g) =>
+      code === "FACTOR_TEN"
+        ? g.allowedN === 1
+        : code === "RENAMING_GAP"
+          ? g.allowedN < 6
+          : g.canonicalRequired,
+    ).length;
+    return {
+      code,
+      orderN,
+      targetedN,
+      candidate: true,
+      ruleVersion: "v1",
+      showPattern: orderN >= 3,
+    };
   });
-  const submittedN = groups.length;
-  const firstObjectiveCorrectN = groups.filter(
-    (g) => g[0].validation.objectiveMet,
-  ).length;
-  const firstValueCorrectN = groups.filter(
-    (g) => g[0].validation.valueMatches,
-  ).length;
-  const eventuallyCorrectN = groups.filter(accepted).length;
-  const correctionSuccessN = firstWrong.filter(accepted).length;
+  const representativeOrderIds = skills.flatMap(({ skillId }) => {
+    if (aggregate) { const selected = aggregate.representatives[skillId]; return selected ? [...selected.independent, ...selected.wrong] : []; }
+    const selected = groups.filter((g) => g.primarySkill === skillId).reverse();
+    return [
+      ...selected.filter((g) => g.independentFirst).slice(0, 2),
+      ...selected.filter((g) => !g.firstObjective).slice(0, 2),
+    ].map((g) => g.orderId);
+  });
+  const submittedN = aggregate?.submittedN ?? groups.length,
+    firstObjectiveCorrectN = aggregate?.firstObjectiveCorrectN ?? groups.filter((g) => g.firstObjective).length,
+    firstValueCorrectN = aggregate?.firstValueCorrectN ?? groups.filter((g) => g.firstValue).length,
+    eventuallyCorrectN = aggregate?.eventuallyCorrectN ?? groups.filter((g) => g.accepted).length,
+    firstWrongN = submittedN - firstObjectiveCorrectN,
+    correctionSuccessN = aggregate?.correctionSuccessN ?? groups.filter(
+      (g) => !g.firstObjective && g.accepted,
+    ).length;
   return {
-    studentId: student.id,
-    alias: student.alias,
+    studentId: input.student.id,
+    alias: input.student.alias,
     currentLevelId: input.currentLevelId,
     achievedTier: input.achievedTier,
     certifications: input.certifications,
@@ -276,49 +287,125 @@ export function buildStudentReport(input: {
     firstObjectiveCorrectN,
     firstValueCorrectN,
     eventuallyCorrectN,
-    firstWrongN: firstWrong.length,
+    firstWrongN,
     correctionSuccessN,
     firstObjectiveAccuracy: submittedN
       ? firstObjectiveCorrectN / submittedN
       : null,
     firstValueAccuracy: submittedN ? firstValueCorrectN / submittedN : null,
     eventualAccuracy: submittedN ? eventuallyCorrectN / submittedN : null,
-    correctionAccuracy: firstWrong.length
-      ? correctionSuccessN / firstWrong.length
-      : null,
+    correctionAccuracy: firstWrongN ? correctionSuccessN / firstWrongN : null,
     evidenceLabel: submittedN ? "Evidence available" : "No evidence",
-    pendingN: groups.filter(
-      (g) =>
-        !accepted(g) && !evidenceOrderIds.has(g[0].order.id),
-    ).length,
+    pendingN: aggregate?.pendingN ?? groups.filter((g) => !g.accepted && !g.hasEvidence).length,
     primaryPracticeSkillId: input.primaryPracticeSkillId,
-    lastActivityAt: responses.at(-1)?.at ?? null,
+    lastActivityAt: aggregate ? aggregate.lastActivityAt : facts.orders.reduce<string | null>(
+      (last, g) =>
+        !last || Date.parse(g.lastAt) > Date.parse(last) ? g.lastAt : last,
+      null,
+    ),
     skills,
     completedLevelIds: [
       ...new Set(
-        attempts
+        input.attempts
           .filter((a) => a.completed && a.kind !== "practice")
           .map((a) => a.levelId),
       ),
     ],
-    supportCounts,
+    supportCounts: aggregate?.supportCounts ?? Object.fromEntries(
+      ["H1", "H2", "H3"].map((step) => [
+        step,
+        groups.filter((g) => g.supports.includes(step)).length,
+      ]),
+    ),
     misconceptionCounts,
     trends,
     representativeOrderIds: [...new Set(representativeOrderIds)],
-    evidence: groups.map((g) => ({
+  };
+}
+
+export function buildStudentReport(input: ReportInput) {
+  if (input.summaryOnly && input.facts)
+    return {
+      ...summarizeFacts(input, input.facts),
+      evidence: [] as ReturnType<typeof reportEvidence>,
+    };
+  const responses = input.attempts
+    .flatMap((a) => a.responses)
+    .sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
+  const groups = new Map<string, Response[]>();
+  for (const response of responses) {
+    const group = groups.get(response.order.id) ?? [];
+    group.push(response);
+    groups.set(response.order.id, group);
+  }
+  const allEvidence = input.attempts.flatMap((a) => a.evidence);
+  const evidenceIds = new Set(allEvidence.map((e) => e.orderId));
+  const independentIds = new Set(
+    allEvidence.filter((e) => e.independentFirst).map((e) => e.orderId),
+  );
+  const supports = new Map<string, Attempt["supportEvents"]>();
+  for (const event of input.attempts.flatMap((a) => a.supportEvents)) {
+    const events = supports.get(event.orderId) ?? [];
+    events.push(event);
+    supports.set(event.orderId, events);
+  }
+  const facts: ReportFacts = {
+    orders: [...groups.values()].map((g) => ({
       orderId: g[0].order.id,
-      target: g[0].order.target,
-      vector: g[0].representationA,
-      accepted: accepted(g),
-      status: accepted(g)
-        ? "shipped"
-        : evidenceOrderIds.has(g[0].order.id)
-          ? "skipped"
-          : "pending",
-      role: isTransferOrder(g[0].order) ? "transfer" : "main",
-      firstResponse: g[0],
-      finalResponse: g.at(-1),
-      supports: supportsByOrder.get(g[0].order.id) ?? [],
+      attemptId: g[0].order.attemptId ?? "",
+      firstAt: g[0].at,
+      lastAt: g.at(-1)!.at,
+      primarySkill: g[0].order.primarySkill ?? "",
+      transfer: isTransferOrder(g[0].order),
+      canonicalRequired: g[0].order.canonicalRequired,
+      allowedN: g[0].order.allowed.length,
+      firstObjective: g[0].validation.objectiveMet,
+      firstValue: g[0].validation.valueMatches,
+      accepted: g.some((r) => r.validation.shipmentAccepted),
+      hasEvidence: evidenceIds.has(g[0].order.id),
+      independentFirst: independentIds.has(g[0].order.id),
+      flags: [
+        ...new Set(
+          g.flatMap((r) => [
+            ...classifyResponse(r.order, r.representationA),
+            ...classifyResponse(r.order, r.representationB),
+          ]),
+        ),
+      ],
+      supports: (supports.get(g[0].order.id) ?? []).map((s) => s.step),
     })),
   };
+  const selected = [...groups.values()].filter(
+    (g) =>
+      (input.includeTransfer || !isTransferOrder(g[0].order)) &&
+      Date.parse(g[0].at) >= input.from.getTime() &&
+      Date.parse(g[0].at) < input.to.getTime(),
+  );
+  return {
+    ...summarizeFacts(input, facts),
+    evidence: input.summaryOnly
+      ? []
+      : reportEvidence(selected, evidenceIds, supports),
+  };
+}
+function reportEvidence(
+  groups: Response[][],
+  evidenceIds: Set<string | undefined>,
+  supports: Map<string, Attempt["supportEvents"]>,
+) {
+  return groups.map((g) => ({
+    orderId: g[0].order.id,
+    target: g[0].order.target,
+    vector: g[0].representationA,
+    accepted: g.some((r) => r.validation.shipmentAccepted),
+    status: g.some((r) => r.validation.shipmentAccepted)
+      ? "shipped"
+      : evidenceIds.has(g[0].order.id)
+        ? "skipped"
+        : "pending",
+    role: isTransferOrder(g[0].order) ? "transfer" : "main",
+    firstResponse: g[0],
+    finalResponse: g.at(-1),
+    supports: supports.get(g[0].order.id) ?? [],
+  }));
 }

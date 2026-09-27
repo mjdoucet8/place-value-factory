@@ -99,6 +99,7 @@ test("student completes five saved orders, settings, and optional transfer; teac
   await expect(
     teacher.getByRole("heading", { name: "Teacher evidence" }),
   ).toBeVisible();
+  await teacher.getByRole("button",{name:/View evidence for/}).first().click();
   await expect(teacher.getByText("accepted shipments")).toBeVisible();
   await teacher.close();
 });

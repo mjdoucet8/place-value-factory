@@ -6,7 +6,7 @@ import {
   type ServerResponse,
 } from "node:http";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { dirname, extname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Pool } from "pg";
 import { AsyncLocalStorage } from "node:async_hooks";
@@ -17,7 +17,9 @@ import {
   sessionToken,
 } from "./identity.js";
 import { PostgresRuntimeStore } from "./runtime-store.js";
-import { buildStudentReport, reportWindow } from "./reporting.js";
+import { parseReportQueryV2 } from "../../../packages/contracts/src/index.js";
+import { reportRevision, reportPage } from "./report-pagination.js";
+import { buildStudentReport, reportWindow, type ReportFacts } from "./reporting.js";
 import {
   DENOMINATIONS,
   adaptedDifficulty,
@@ -46,8 +48,22 @@ const defaultDataPath = process.env.PVF_DATA_PATH
   ? resolve(process.env.PVF_DATA_PATH)
   : resolve(process.cwd(), "db/local-development.json");
 const leaseDurationMs = 60_000;
-const stageCertificationIds = ["stage-1", "stage-2", "stage-3", "stage-4", "stage-5", "stage-6"];
-const stageDisplayTiers = ["Packer", "Converter", "Specialist", "Supervisor", "Supervisor", "Factory Master"];
+const stageCertificationIds = [
+  "stage-1",
+  "stage-2",
+  "stage-3",
+  "stage-4",
+  "stage-5",
+  "stage-6",
+];
+const stageDisplayTiers = [
+  "Packer",
+  "Converter",
+  "Specialist",
+  "Supervisor",
+  "Supervisor",
+  "Factory Master",
+];
 
 type Order = ReturnType<typeof generateLevelOrder>;
 type ResponseRecord = {
@@ -69,6 +85,9 @@ type Receipt = {
 type HintStep = "H1" | "H2" | "H3";
 type SupportEvent = { orderId: string; step: HintStep; at: string };
 export type Attempt = {
+  /** Read-only summary metadata; never submitted or persisted as evidence. */
+  reportCounts?: [number, number, number];
+  reportFactRevision?: string;
   id: string;
   studentId: string;
   levelId: string;
@@ -94,7 +113,13 @@ export type Attempt = {
   practiceSkill?: string;
   practiceSchedule?: string[];
   awardedTier?: string;
-  issuedOrders?: { spec: Order; slot: number; replacement: number; role: "main" | "transfer"; status: "active" | "resolved" | "skipped" }[];
+  issuedOrders?: {
+    spec: Order;
+    slot: number;
+    replacement: number;
+    role: "main" | "transfer";
+    status: "active" | "resolved" | "skipped";
+  }[];
 };
 type Settings = {
   sound: boolean;
@@ -103,11 +128,21 @@ type Settings = {
   textScale: "normal" | "large";
 };
 export type Store = {
+  reportReadDurations?: number[];
+  reportFacts?: Record<string, ReportFacts>;
   attempts: Attempt[];
   settings?: Record<string, Settings>;
   studentAccess?: Record<string, boolean>;
   certifications?: Record<string, string[]>;
-  levelAccessOverrides?: { teacherId: string; studentId: string; levelId: string; enabled: boolean; reasonCode: string; commandId: string; at: string }[];
+  levelAccessOverrides?: {
+    teacherId: string;
+    studentId: string;
+    levelId: string;
+    enabled: boolean;
+    reasonCode: string;
+    commandId: string;
+    at: string;
+  }[];
 };
 type Actor = { id: string; role: "student" | "teacher" };
 type Command = {
@@ -202,15 +237,19 @@ export function createApiServer(
   } = {},
 ): Server {
   const now = options.now ?? (() => new Date());
-  if (process.env.NODE_ENV === "production" || process.env.PVF_MODE === "production")
+  const runtimeMode =
+    process.env.PVF_MODE ??
+    (process.env.NODE_ENV === "production" ? "production" : "development");
+  if (runtimeMode === "production")
     throw new Error("Production startup requires the school identity adapter; only fictional pilot mode is implemented.");
+  if (runtimeMode === "staging" && process.env.PVF_FICTIONAL_ONLY !== "true")
+    throw new Error("Staging requires PVF_FICTIONAL_ONLY=true; do not use real student data.");
   if (
-    (process.env.NODE_ENV === "production" ||
-      process.env.PVF_MODE === "pilot") &&
+    ["pilot", "staging"].includes(runtimeMode) &&
     !options.identity
   )
     throw new Error(
-      "Secure identity configuration is required; the development identity adapter cannot run in pilot or production mode.",
+      "Secure identity configuration is required; the development identity adapter cannot run in pilot or staging mode.",
     );
   const database = options.database;
   const sqlStore = database ? new PostgresRuntimeStore(database) : null;
@@ -237,6 +276,74 @@ export function createApiServer(
     )
   )
     throw new Error("Secure identity requires HTTPS except on local loopback.");
+  const staticRoot = process.env.PVF_STATIC_DIR
+    ? resolve(process.env.PVF_STATIC_DIR)
+    : null;
+  if (runtimeMode === "staging" && !staticRoot)
+    throw new Error("Staging requires PVF_STATIC_DIR with the built web application.");
+  const serveStatic = async (
+    request: IncomingMessage,
+    response: ServerResponse,
+  ) => {
+    if (!staticRoot || !["GET", "HEAD"].includes(request.method ?? ""))
+      return false;
+    const url = new URL(request.url ?? "/", `http://${request.headers.host}`);
+    if (url.pathname.startsWith("/api/")) return false;
+    let pathname: string;
+    try {
+      pathname = decodeURIComponent(url.pathname);
+    } catch {
+      response.writeHead(400, { "content-type": "text/plain; charset=utf-8" });
+      response.end("Bad request");
+      return true;
+    }
+    const requested = resolve(staticRoot, `.${pathname}`);
+    const inside = relative(staticRoot, requested);
+    const candidate =
+      inside && !inside.startsWith(`..${sep}`) && inside !== ".."
+        ? requested
+        : resolve(staticRoot, "index.html");
+    let file = candidate;
+    try {
+      const bytes = await readFile(file);
+      const type =
+        ({
+          ".css": "text/css; charset=utf-8",
+          ".html": "text/html; charset=utf-8",
+          ".js": "text/javascript; charset=utf-8",
+          ".json": "application/json; charset=utf-8",
+          ".png": "image/png",
+          ".svg": "image/svg+xml",
+          ".webp": "image/webp",
+        } as Record<string, string>)[extname(file)] ??
+        "application/octet-stream";
+      response.writeHead(200, {
+        "content-type": type,
+        "x-content-type-options": "nosniff",
+        "cache-control": file.endsWith("index.html")
+          ? "no-cache"
+          : "public, max-age=31536000, immutable",
+      });
+      response.end(request.method === "HEAD" ? undefined : bytes);
+      return true;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    }
+    if (extname(pathname)) {
+      response.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
+      response.end("Not found");
+      return true;
+    }
+    file = resolve(staticRoot, "index.html");
+    const bytes = await readFile(file);
+    response.writeHead(200, {
+      "content-type": "text/html; charset=utf-8",
+      "x-content-type-options": "nosniff",
+      "cache-control": "no-cache",
+    });
+    response.end(request.method === "HEAD" ? undefined : bytes);
+    return true;
+  };
   const directories = new AsyncLocalStorage<
     Awaited<ReturnType<LocalIdentity["directory"]>>
   >();
@@ -253,12 +360,13 @@ export function createApiServer(
     extraHeaders: Record<string, string>;
   };
   const pendingReplies = new WeakMap<ServerResponse, Reply | null>();
+  const requestStarted = new WeakMap<ServerResponse, number>();
   async function store(startCommandId?: string): Promise<Store> {
     if (sqlStore) {
       const actor = actorScope.getStore();
       const classIds = actor?.role === "teacher"
         ? new Set(identity
-          ? directory().classes.filter((item) => item.teacherId === actor.id).map((item) => item.id)
+          ? directory().classes.filter((item) => "teacherId" in item && item.teacherId === actor.id).map((item) => item.id)
           : directory().teachers.find((item) => item.id === actor.id)?.classIds ?? [])
         : null;
       const studentIds = actor?.role === "student"
@@ -277,7 +385,13 @@ export function createApiServer(
       };
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === "ENOENT")
-        return { attempts: [], settings: {}, studentAccess: {}, certifications: {}, levelAccessOverrides: [] };
+        return {
+          attempts: [],
+          settings: {},
+          studentAccess: {},
+          certifications: {},
+          levelAccessOverrides: [],
+        };
       throw error;
     }
   }
@@ -306,6 +420,7 @@ export function createApiServer(
               "content-type,x-session,idempotency-key",
           }),
       ...extraHeaders,
+      ...(extraHeaders["set-cookie"] ? { "set-cookie": [extraHeaders["set-cookie"], "pvf_session=; HttpOnly; SameSite=Strict; Path=/api/v1; Max-Age=0"] } : {}),
     });
     response.end(body === undefined ? undefined : JSON.stringify(body));
   }
@@ -373,15 +488,23 @@ export function createApiServer(
   function correctedSlots(attempt: Attempt) {
     const firstOrderResponse = new Map<string, ResponseRecord>();
     for (const record of attempt.responses)
-      if (!record.order.id.endsWith("-transfer") && !firstOrderResponse.has(record.order.id))
+      if (
+        !record.order.id.endsWith("-transfer") &&
+        !firstOrderResponse.has(record.order.id)
+      )
         firstOrderResponse.set(record.order.id, record);
     const accepted = new Set(
       attempt.responses
-        .filter((record) => !record.order.id.endsWith("-transfer") && record.validation.shipmentAccepted)
+        .filter(
+          (record) =>
+            !record.order.id.endsWith("-transfer") &&
+            record.validation.shipmentAccepted,
+        )
         .map((record) => record.order.id),
     );
     return [...firstOrderResponse.values()].filter(
-      (record) => accepted.has(record.order.id) && !record.validation.shipmentAccepted,
+      (record) =>
+        accepted.has(record.order.id) && !record.validation.shipmentAccepted,
     ).length;
   }
   function completedPathLevels(attempts: Attempt[]) {
@@ -406,12 +529,22 @@ export function createApiServer(
   }
   function tierFor(state: Store, studentId: string) {
     const certifications = state.certifications?.[studentId] ?? [];
-    const stage = Math.max(-1, ...certifications.map((item) => stageCertificationIds.indexOf(item)));
+    const stage = Math.max(
+      -1,
+      ...certifications.map((item) => stageCertificationIds.indexOf(item)),
+    );
     return stage < 0 ? "Trainee" : stageDisplayTiers[stage];
   }
-  function hasStageCertification(state: Store, studentId: string, stage: number) {
+  function hasStageCertification(
+    state: Store,
+    studentId: string,
+    stage: number,
+  ) {
     const values = state.certifications?.[studentId] ?? [];
-    return values.includes(stageCertificationIds[stage - 1]) || values.includes(stageDisplayTiers[stage - 1]);
+    return (
+      values.includes(stageCertificationIds[stage - 1]) ||
+      values.includes(stageDisplayTiers[stage - 1])
+    );
   }
   function displayCertifications(state: Store, studentId: string) {
     return (state.certifications?.[studentId] ?? []).map((value) => {
@@ -420,7 +553,9 @@ export function createApiServer(
     });
   }
   function awardCertifications(state: Store, studentId: string) {
-    const attempts = state.attempts.filter((item) => item.studentId === studentId);
+    const attempts = state.attempts.filter(
+      (item) => item.studentId === studentId,
+    );
     const completed = completedPathLevels(attempts);
     const evidence = attempts.flatMap((item) => item.evidence);
     state.certifications ??= {};
@@ -430,15 +565,19 @@ export function createApiServer(
       const last = LEVELS.filter((level) => level.stage === stage).at(-1);
       const certification = stageCertificationIds[stage - 1];
       if (
-        last && completed.has(last.id) &&
-        stageGate(stage, evidence, now()).satisfied && !earned.includes(certification)
+        last &&
+        completed.has(last.id) &&
+        stageGate(stage, evidence, now()).satisfied &&
+        !earned.includes(certification)
       ) {
         earned.push(certification);
         newest = certification;
       }
     }
     state.certifications[studentId] = earned;
-    return newest ? stageDisplayTiers[stageCertificationIds.indexOf(newest)] : null;
+    return newest
+      ? stageDisplayTiers[stageCertificationIds.indexOf(newest)]
+      : null;
   }
   function snapshot(attempt: Attempt, state?: Store) {
     return {
@@ -469,10 +608,19 @@ export function createApiServer(
     };
   }
   function publicOrder(order: Order) {
-    const { seed: _seed, witness: _witness, minimumAnswer: _minimumAnswer, ...visible } = order as Order & { seed?: number; witness?: unknown; minimumAnswer?: unknown };
+    const {
+      seed: _seed,
+      witness: _witness,
+      minimumAnswer: _minimumAnswer,
+      ...visible
+    } = order as Order & {
+      seed?: number;
+      witness?: unknown;
+      minimumAnswer?: unknown;
+    };
     return visible;
   }
-  function mapFor(attempts: Attempt[], certifications: string[] = []) {
+  function mapFor(attempts: Attempt[], certifications: string[] = [], includeEfficiency = true) {
     const completed = completedPathLevels(attempts);
     const highest = Math.max(
       0,
@@ -486,8 +634,8 @@ export function createApiServer(
       (level.stage === 1 ||
         level.ordinal !==
           LEVELS.find((item) => item.stage === level.stage)?.ordinal ||
-        (certifications.includes(stageCertificationIds[level.stage - 2]) ||
-          stageGate(level.stage - 1, evidence).satisfied));
+        certifications.includes(stageCertificationIds[level.stage - 2]) ||
+        stageGate(level.stage - 1, evidence).satisfied);
     const zones = [...new Set(LEVELS.map((level) => level.zone))].map(
       (zone) => ({
         id: zone.toLowerCase(),
@@ -513,16 +661,31 @@ export function createApiServer(
     return {
       configVersion: "v1-local",
       zones,
-      achievedTier: certifications.length ? (() => { const stage = Math.max(-1, ...certifications.map((item) => stageCertificationIds.indexOf(item))); return stage < 0 ? certifications.at(-1) ?? "Trainee" : stageDisplayTiers[stage]; })() : "Trainee",
-      certifications: certifications.map((value) => { const index = stageCertificationIds.indexOf(value); return index >= 0 ? stageDisplayTiers[index] : value; }),
+      achievedTier: certifications.length
+        ? (() => {
+            const stage = Math.max(
+              -1,
+              ...certifications.map((item) =>
+                stageCertificationIds.indexOf(item),
+              ),
+            );
+            return stage < 0
+              ? (certifications.at(-1) ?? "Trainee")
+              : stageDisplayTiers[stage];
+          })()
+        : "Trainee",
+      certifications: certifications.map((value) => {
+        const index = stageCertificationIds.indexOf(value);
+        return index >= 0 ? stageDisplayTiers[index] : value;
+      }),
       profileRevision: completed.size,
       highestUnlockedLevelId: LEVELS.filter(eligible).at(-1)?.id ?? "level-1",
-      lastCompletedEfficiency: (() => {
+      lastCompletedEfficiency: includeEfficiency ? (() => {
         const last = attempts
           .filter((attempt) => attempt.completed && attempt.kind !== "practice")
           .at(-1);
         return last ? result(last).efficiency : null;
-      })(),
+      })() : null,
     };
   }
   function responseError(
@@ -541,7 +704,10 @@ export function createApiServer(
   function result(attempt: Attempt, allAttempts: Attempt[] = [attempt]) {
     const firstPerOrder = new Map<string, ResponseRecord>();
     for (const record of attempt.responses)
-      if (!record.order.id.endsWith("-transfer") && !firstPerOrder.has(record.order.id))
+      if (
+        !record.order.id.endsWith("-transfer") &&
+        !firstPerOrder.has(record.order.id)
+      )
         firstPerOrder.set(record.order.id, record);
     let currentStreak = 0;
     let bestStreak = 0;
@@ -551,16 +717,25 @@ export function createApiServer(
     }
     const skillStatuses = [
       ...new Set(attempt.evidence.map((item) => item.skillId)),
-    ].map((skillId) => summarizeMastery(skillId, allAttempts.flatMap((item) => item.evidence)));
+    ].map((skillId) =>
+      summarizeMastery(
+        skillId,
+        allAttempts.flatMap((item) => item.evidence),
+      ),
+    );
     const next = LEVELS.find(
       (level) => level.ordinal === Number(attempt.levelId.slice(6)) + 1,
     );
     const nextUnlocked =
       next &&
       (next.stage === levelById(attempt.levelId)?.stage ||
-        allAttempts.some((item) => item.awardedTier === stageDisplayTiers[next.stage - 2]) ||
-        stageGate(next.stage - 1, allAttempts.flatMap((item) => item.evidence))
-          .satisfied);
+        allAttempts.some(
+          (item) => item.awardedTier === stageDisplayTiers[next.stage - 2],
+        ) ||
+        stageGate(
+          next.stage - 1,
+          allAttempts.flatMap((item) => item.evidence),
+        ).satisfied);
     return {
       attemptId: attempt.id,
       completed: true,
@@ -577,10 +752,19 @@ export function createApiServer(
       skillStatuses,
       correctedSlots: correctedSlots(attempt),
       skippedOrders: attempt.skippedOrders ?? 0,
-      efficiency: Math.max(0, 100 - 6 * correctedSlots(attempt) - 4 * Math.min(5, attempt.skippedOrders ?? 0)),
+      efficiency: Math.max(
+        0,
+        100 -
+          6 * correctedSlots(attempt) -
+          4 * Math.min(5, attempt.skippedOrders ?? 0),
+      ),
       mainStars: attempt.kind === "practice" ? 0 : 2,
-      transferStar: attempt.kind === "practice" ? false : (attempt.transferStar ?? false),
-      bestLevelStars: attempt.kind === "practice" ? 0 : bestStars(allAttempts, attempt.levelId),
+      transferStar:
+        attempt.kind === "practice" ? false : (attempt.transferStar ?? false),
+      bestLevelStars:
+        attempt.kind === "practice"
+          ? 0
+          : bestStars(allAttempts, attempt.levelId),
       newlyUnlockedLevelIds:
         attempt.kind !== "path" || !nextUnlocked ? [] : [next.id],
       newlyEarnedTier: attempt.awardedTier ?? null,
@@ -665,20 +849,55 @@ export function createApiServer(
       .map(({ spec }) => orderSignature(spec))
       .slice(-10);
   }
-  function generatedForAttempt(attempt: Attempt, state: Store, slot: number, seed: number, band: "easy" | "medium" | "hard") {
+  function generatedForAttempt(
+    attempt: Attempt,
+    state: Store,
+    slot: number,
+    seed: number,
+    band: "easy" | "medium" | "hard",
+  ) {
     const skill = attempt.practiceSchedule?.[slot] ?? attempt.practiceSkill;
     return attempt.kind === "practice" && skill
-      ? generatePracticeOrder(skill, seed, slot, band, Number(attempt.levelId.slice(6)), recentSignatures(state, attempt.studentId))
-      : generateLevelOrder(attempt.levelId, seed, slot, band, recentSignatures(state, attempt.studentId));
+      ? generatePracticeOrder(
+          skill,
+          seed,
+          slot,
+          band,
+          Number(attempt.levelId.slice(6)),
+          recentSignatures(state, attempt.studentId),
+        )
+      : generateLevelOrder(
+          attempt.levelId,
+          seed,
+          slot,
+          band,
+          recentSignatures(state, attempt.studentId),
+        );
   }
-  function retainIssuedOrder(attempt: Attempt, spec: Order, slot: number, replacement: number, role: "main" | "transfer" = "main") {
+  function retainIssuedOrder(
+    attempt: Attempt,
+    spec: Order,
+    slot: number,
+    replacement: number,
+    role: "main" | "transfer" = "main",
+  ) {
     attempt.issuedOrders ??= [];
     if (!attempt.issuedOrders.some((entry) => entry.spec.id === spec.id))
-      attempt.issuedOrders.push({ spec, slot: Math.min(slot, 4), replacement, role, status: "active" });
+      attempt.issuedOrders.push({
+        spec,
+        slot: Math.min(slot, 4),
+        replacement,
+        role,
+        status: "active",
+      });
   }
   function issuedOrder(
-    attemptId: string, generated: Order, slot: number, replacement: number,
-    seed: number, role: "main" | "transfer" = "main",
+    attemptId: string,
+    generated: Order,
+    slot: number,
+    replacement: number,
+    seed: number,
+    role: "main" | "transfer" = "main",
   ): Order {
     return {
       ...generated,
@@ -690,7 +909,9 @@ export function createApiServer(
       seed,
       configVersion: "v1-local",
       engineVersion: "xorshift32-v1",
-      forbidden: DENOMINATIONS.filter((place) => !generated.allowed.includes(place)),
+      forbidden: DENOMINATIONS.filter(
+        (place) => !generated.allowed.includes(place),
+      ),
       skillIds: generated.primarySkill ? [generated.primarySkill] : [],
     };
   }
@@ -734,6 +955,8 @@ export function createApiServer(
     try {
       if (request.method === "OPTIONS") return send(response, 204);
       const url = new URL(request.url ?? "/", `http://${request.headers.host}`);
+      if (request.method === "GET" && url.pathname === "/api/healthz")
+        return send(response, 200, { status: "ok" });
       if (
         identity &&
         !["GET", "HEAD", "OPTIONS"].includes(request.method ?? "") &&
@@ -795,7 +1018,7 @@ export function createApiServer(
                 csrfToken: "local-dev",
               },
               {
-                "set-cookie": `pvf_session=${student.id}; HttpOnly; SameSite=Lax; Path=/api/v1`,
+                "set-cookie": `pvf_session=${student.id}; HttpOnly; SameSite=Lax; Path=/api`,
               },
             )
           : send(
@@ -825,7 +1048,7 @@ export function createApiServer(
                 csrfToken: "local-dev",
               },
               {
-                "set-cookie": `pvf_session=${teacher.id}; HttpOnly; SameSite=Lax; Path=/api/v1`,
+                "set-cookie": `pvf_session=${teacher.id}; HttpOnly; SameSite=Lax; Path=/api`,
               },
             )
           : send(
@@ -874,7 +1097,7 @@ export function createApiServer(
                   ? { classId: classForStudent(actor.id) }
                   : {}),
               },
-            })
+            }, sessionToken(request) ? { "set-cookie": sessionCookie(sessionToken(request), origin?.protocol === "https:") } : {})
           : send(
               response,
               401,
@@ -888,7 +1111,7 @@ export function createApiServer(
         );
       actorScope.enterWith({ id: actor.id, role: actor.role, path: url.pathname });
       if (
-        url.pathname.startsWith("/api/v1/teacher/") &&
+        /^\/api\/v[12]\/teacher\//.test(url.pathname) &&
         actor.role !== "teacher"
       )
         throw new AccessError(
@@ -940,11 +1163,11 @@ export function createApiServer(
         url.pathname === "/api/v1/profile" &&
         actor.role === "student"
       ) {
-        const state = await store();
+        const state = sqlStore ? await sqlStore.loadProfile(actor.id) : await store();
         const attempts = state.attempts.filter(
           (attempt) => attempt.studentId === actor.id,
         );
-        const map = mapFor(attempts, state.certifications?.[actor.id] ?? []);
+        const map = mapFor(attempts, state.certifications?.[actor.id] ?? [], false);
         return send(response, 200, {
           studentAlias:
             directory().students.find((student) => student.id === actor.id)
@@ -995,11 +1218,12 @@ export function createApiServer(
         const nextLevel = LEVELS.find(
           (level) => level.ordinal === highestCompleted + 1,
         );
-        const gateSkills = highestCompleted === 30
-          ? STAGE_GATE_SKILLS[6]
-          : nextLevel && nextLevel.stage > 1
-            ? STAGE_GATE_SKILLS[nextLevel.stage - 1]
-            : STAGE_GATE_SKILLS[1];
+        const gateSkills =
+          highestCompleted === 30
+            ? STAGE_GATE_SKILLS[6]
+            : nextLevel && nextLevel.stage > 1
+              ? STAGE_GATE_SKILLS[nextLevel.stage - 1]
+              : STAGE_GATE_SKILLS[1];
         return send(response, 200, {
           skills: skillIds.map((skillId) =>
             summarizeMastery(skillId, evidence),
@@ -1096,14 +1320,19 @@ export function createApiServer(
           requestedLevel &&
           LEVELS.find((item) => item.stage === requestedLevel.stage)?.id ===
             requestedLevel.id;
-        const stageAccessAllowed = requestedLevel?.stage === 1 || !requestedLevel ||
+        const stageAccessAllowed =
+          requestedLevel?.stage === 1 ||
+          !requestedLevel ||
           hasStageCertification(state, actor.id, requestedLevel.stage - 1) ||
           stageGate(requestedLevel.stage - 1, evidence, now()).satisfied ||
-          Boolean(state.levelAccessOverrides?.some((override) =>
-            override.studentId === actor.id &&
-            override.levelId === requestedLevel.id &&
-            override.enabled,
-          ));
+          Boolean(
+            state.levelAccessOverrides?.some(
+              (override) =>
+                override.studentId === actor.id &&
+                override.levelId === requestedLevel.id &&
+                override.enabled,
+            ),
+          );
         if (
           !requestedLevel ||
           (!isPractice &&
@@ -1215,7 +1444,9 @@ export function createApiServer(
           revision: 0,
           leaseEpoch: 1,
           writerTabId: command.tabId,
-          leaseExpiresAt: new Date(issuedAt.getTime() + leaseDurationMs).toISOString(),
+          leaseExpiresAt: new Date(
+            issuedAt.getTime() + leaseDurationMs,
+          ).toISOString(),
           receipts: [],
           evidence: [],
           supportEvents: [],
@@ -1301,7 +1532,9 @@ export function createApiServer(
         if (!activeLease(attempt)) attempt.leaseEpoch += 1;
         attempt.status = stateChange[2] === "pause" ? "paused" : "active";
         attempt.writerTabId = command.tabId;
-        attempt.leaseExpiresAt = new Date(now().getTime() + leaseDurationMs).toISOString();
+        attempt.leaseExpiresAt = new Date(
+          now().getTime() + leaseDurationMs,
+        ).toISOString();
         attempt.revision += 1;
         const bodyOut = {
           commandId: command.commandId,
@@ -1379,7 +1612,9 @@ export function createApiServer(
             409,
             responseError("LEASE_LOST", "Another tab is editing this attempt."),
           );
-        attempt.leaseExpiresAt = new Date(now().getTime() + leaseDurationMs).toISOString();
+        attempt.leaseExpiresAt = new Date(
+          now().getTime() + leaseDurationMs,
+        ).toISOString();
         const bodyOut = {
           commandId: command.commandId,
           leaseEpoch: attempt.leaseEpoch,
@@ -1449,7 +1684,9 @@ export function createApiServer(
           );
         attempt.leaseEpoch += 1;
         attempt.writerTabId = command.tabId;
-        attempt.leaseExpiresAt = new Date(now().getTime() + leaseDurationMs).toISOString();
+        attempt.leaseExpiresAt = new Date(
+          now().getTime() + leaseDurationMs,
+        ).toISOString();
         attempt.revision += 1;
         const bodyOut = {
           commandId: command.commandId,
@@ -1661,15 +1898,27 @@ export function createApiServer(
         });
         attempt.replacementIndex = (attempt.replacementIndex ?? 0) + 1;
         attempt.skippedOrders = (attempt.skippedOrders ?? 0) + 1;
-        const replacementSeed = ((attempt.seed + attempt.replacementIndex * 997) >>> 0) || 1;
+        const replacementSeed =
+          (attempt.seed + attempt.replacementIndex * 997) >>> 0 || 1;
         attempt.activeOrder = issuedOrder(
           attempt.id,
-          generatedForAttempt(attempt, state, attempt.slot, replacementSeed, "easy"),
+          generatedForAttempt(
+            attempt,
+            state,
+            attempt.slot,
+            replacementSeed,
+            "easy",
+          ),
           attempt.slot,
           attempt.replacementIndex,
           replacementSeed,
         );
-        retainIssuedOrder(attempt, attempt.activeOrder, attempt.slot, attempt.replacementIndex);
+        retainIssuedOrder(
+          attempt,
+          attempt.activeOrder,
+          attempt.slot,
+          attempt.replacementIndex,
+        );
         attempt.revision += 1;
         const bodyOut = {
           commandId: command.commandId,
@@ -1747,18 +1996,30 @@ export function createApiServer(
           });
         const base = generateLevelOrder(
           attempt.levelId,
-          ((attempt.seed + 10_007) >>> 0) || 1,
+          (attempt.seed + 10_007) >>> 0 || 1,
           4,
           "easy",
         );
         attempt.transferOrder = issuedOrder(
-          attempt.id, base, 4, (attempt.replacementIndex ?? 0) + 1,
-          ((attempt.seed + 10_007) >>> 0) || 1, "transfer",
+          attempt.id,
+          base,
+          4,
+          (attempt.replacementIndex ?? 0) + 1,
+          (attempt.seed + 10_007) >>> 0 || 1,
+          "transfer",
         );
-        retainIssuedOrder(attempt, attempt.transferOrder, 4, (attempt.replacementIndex ?? 0) + 1, "transfer");
+        retainIssuedOrder(
+          attempt,
+          attempt.transferOrder,
+          4,
+          (attempt.replacementIndex ?? 0) + 1,
+          "transfer",
+        );
         attempt.writerTabId = command.tabId;
         attempt.leaseEpoch += 1;
-        attempt.leaseExpiresAt = new Date(now().getTime() + leaseDurationMs).toISOString();
+        attempt.leaseExpiresAt = new Date(
+          now().getTime() + leaseDurationMs,
+        ).toISOString();
         attempt.revision += 1;
         const bodyOut = {
           commandId: command.commandId,
@@ -1790,7 +2051,14 @@ export function createApiServer(
           );
         if (request.method === "GET" && url.pathname.endsWith("/results"))
           return attempt.completed
-            ? send(response, 200, result(attempt, state.attempts.filter((item) => item.studentId === actor.id)))
+            ? send(
+                response,
+                200,
+                result(
+                  attempt,
+                  state.attempts.filter((item) => item.studentId === actor.id),
+                ),
+              )
             : send(
                 response,
                 409,
@@ -1969,7 +2237,14 @@ export function createApiServer(
             validation,
             snapshot: snapshot(attempt, state),
             ...(attempt.completed && !attempt.transferOrder
-              ? { result: result(attempt, state.attempts.filter((item) => item.studentId === actor.id)) }
+              ? {
+                  result: result(
+                    attempt,
+                    state.attempts.filter(
+                      (item) => item.studentId === actor.id,
+                    ),
+                  ),
+                }
               : {}),
           };
           attempt.receipts.push({
@@ -2012,7 +2287,7 @@ export function createApiServer(
             404,
             responseError("NOT_FOUND", "Class not found."),
           );
-        const state = await store();
+        const state = sqlStore ? { studentAccess: await sqlStore.studentAccess(directory().students.filter((student) => student.classId === teacherStudents[1]).map((student) => student.id)) } : await store();
         return send(response, 200, {
           students: directory()
             .students.filter(
@@ -2106,45 +2381,152 @@ export function createApiServer(
             ) ?? null,
         });
       }
+      const reportingV2 = url.pathname.match(
+        /^\/api\/v2\/teacher\/(classes|students)\/([^/]+)\/games\/place-value-factory\/(summary|evidence)$/,
+      );
+      if (reportingV2 && request.method === "GET" && actor.role === "teacher") {
+        const [, resource, id, operation] = reportingV2;
+        const selectedStudent = resource === "students" ? directory().students.find((item) => item.id === id) : undefined;
+        const classId = resource === "classes" ? id : selectedStudent?.classId;
+        const classroom = directory().classes.find((item) => item.id === classId);
+        if (!classroom || !ownsClass(actor, classroom.id) || (resource === "students" && !selectedStudent) || (resource === "classes" && operation === "evidence"))
+          return send(response, 404, responseError("NOT_FOUND", "Report not found."));
+        try {
+          const query = parseReportQueryV2(url.searchParams, operation === "evidence");
+          const reportNow = now();
+          const window = reportWindow(url.searchParams, classroom.timezone, reportNow);
+          const roster = (selectedStudent ? [selectedStudent] : directory().students.filter((item) => item.classId === classroom.id)).sort((a, b) => a.id.localeCompare(b.id));
+          const readStarted = performance.now();
+          const state = sqlStore ? await sqlStore.load(roster.map((s) => s.id), true, undefined, operation === "summary" ? { ...window, includeTransfer: query.includeTransfer } : undefined) : await store();
+          const readMs = performance.now() - readStarted;
+          const buildStarted = performance.now();
+          const common = { version: 2, timezone: classroom.timezone, from: window.from.toISOString(), to: window.to.toISOString(), asOf: reportNow.toISOString(), includeTransfer: query.includeTransfer };
+          const binding = [actor.id, resource, id, operation, common.from, common.to, query.includeTransfer, query.limit];
+          const reports = roster.map((student) => {
+            const attempts = state.attempts.filter((a) => a.studentId === student.id);
+            const highest = Math.max(0, ...[...completedPathLevels(attempts)].map((level) => Number(level.slice(6))));
+            const nextLevel = Math.min(30, highest + 1);
+            const evidence = attempts.flatMap((a) => a.evidence);
+            const certifications = state.certifications?.[student.id] ?? [];
+            const viewRevision = reportRevision(attempts, [student, certifications]);
+            return { ...buildStudentReport({ student, attempts, ...window, now: reportNow,
+              includeTransfer: query.includeTransfer, currentLevelId: `level-${nextLevel}`, achievedTier: tierFor(state, student.id), certifications,
+              primaryPracticeSkillId: nextPracticeSkill(STAGE_GATE_SKILLS[levelById(`level-${nextLevel}`)?.stage ?? 6] ?? [], evidence, reportNow), summaryOnly: operation === "summary", facts: state.reportFacts?.[student.id] }), viewRevision };
+          });
+          const reportHeaders = { "cache-control": "no-store", "server-timing": [...(identity?.requestTimings(request)??[]).map((ms,i)=>`report_auth${i};dur=${ms.toFixed(1)}`), `report_before;dur=${(readStarted-(requestStarted.get(response)??readStarted)).toFixed(1)}`, `report_pool;dur=${(sqlStore?.connectionWaitMs()??0).toFixed(1)}`, `report_read;dur=${readMs.toFixed(1)}`, `report_build;dur=${(performance.now()-buildStarted).toFixed(1)}`, ...(state.reportReadDurations??[]).map((ms,i)=>`report_sql${i};dur=${ms.toFixed(1)}`)].join(",") };
+          if (operation === "evidence") {
+            const report = reports[0];
+            const ordered = report.evidence.sort((a, b) => a.firstResponse.at.localeCompare(b.firstResponse.at) || a.orderId.localeCompare(b.orderId));
+            const page = reportPage(ordered, (item) => item.orderId, { ...query, revision: report.viewRevision, binding });
+            return send(response, 200, { ...common, studentId: id, viewRevision: report.viewRevision, totalN: ordered.length, evidence: page.items, nextCursor: page.nextCursor }, reportHeaders);
+          }
+          const summaries = reports.map(({ evidence: _evidence, ...summary }) => summary);
+          if (selectedStudent) {
+            reportPage(summaries, (item) => item.studentId, { ...query, revision: summaries[0].viewRevision, binding });
+            return send(response, 200, { ...common, ...summaries[0] }, reportHeaders);
+          }
+          const revision = reportRevision(state.attempts, summaries.map((item) => [item.studentId, item.viewRevision]));
+          const page = reportPage(summaries, (item) => item.studentId, { ...query, revision, binding });
+          return send(response, 200, { ...common, classId: classroom.id, viewRevision: revision, students: page.items, nextCursor: page.nextCursor }, reportHeaders);
+        } catch (error) {
+          if ((error as Error).message === "REPORT_CHANGED")
+            return send(response, 409, responseError("REPORT_CHANGED", "New activity changed this report. Refresh to read the latest evidence from page one."));
+          if ((error as Error).message === "INVALID_INPUT")
+            return send(response, 422, responseError("INVALID_INPUT", "Use valid report filters and a cursor from this report."));
+          throw error;
+        }
+      }
       const classReport = url.pathname.match(
         /^\/api\/v1\/teacher\/classes\/([^/]+)\/games\/place-value-factory\/report$/,
       );
       const studentReport = url.pathname.match(
         /^\/api\/v1\/teacher\/students\/([^/]+)\/games\/place-value-factory\/report$/,
       );
-      if ((classReport || studentReport) && request.method === "GET" && actor.role === "teacher") {
+      if (
+        (classReport || studentReport) &&
+        request.method === "GET" &&
+        actor.role === "teacher"
+      ) {
         const directoryState = directory();
         const selectedStudent = studentReport
           ? directoryState.students.find((item) => item.id === studentReport[1])
           : null;
         const classId = classReport?.[1] ?? selectedStudent?.classId;
-        const classroom = directoryState.classes.find((item) => item.id === classId);
-        if (!classId || !classroom || !ownsClass(actor, classId) || (studentReport && !selectedStudent))
-          return send(response, 404, responseError("NOT_FOUND", "Report not found."));
+        const classroom = directoryState.classes.find(
+          (item) => item.id === classId,
+        );
+        if (
+          !classId ||
+          !classroom ||
+          !ownsClass(actor, classId) ||
+          (studentReport && !selectedStudent)
+        )
+          return send(
+            response,
+            404,
+            responseError("NOT_FOUND", "Report not found."),
+          );
         const reportNow = now();
         let window: { from: Date; to: Date };
         try {
-          window = reportWindow(url.searchParams, classroom.timezone, reportNow);
+          window = reportWindow(
+            url.searchParams,
+            classroom.timezone,
+            reportNow,
+          );
         } catch {
-          return send(response, 422, responseError("INVALID_INPUT", "Use an increasing ISO date range."));
+          return send(
+            response,
+            422,
+            responseError("INVALID_INPUT", "Use an increasing ISO date range."),
+          );
         }
         const transferParam = url.searchParams.get("includeTransfer");
-        if (transferParam !== null && transferParam !== "true" && transferParam !== "false")
-          return send(response, 422, responseError("INVALID_INPUT", "Invalid transfer filter."));
+        if (
+          transferParam !== null &&
+          transferParam !== "true" &&
+          transferParam !== "false"
+        )
+          return send(
+            response,
+            422,
+            responseError("INVALID_INPUT", "Invalid transfer filter."),
+          );
         const includeTransfer = transferParam === "true";
         const limitValue = Number(url.searchParams.get("limit") ?? 100);
         const cursor = url.searchParams.get("cursor");
-        if (!Number.isInteger(limitValue) || limitValue < 1 || limitValue > 100 ||
-            (cursor !== null && !directoryState.students.some((item) => item.id === cursor && item.classId === classId)))
-          return send(response, 422, responseError("INVALID_INPUT", "Invalid report pagination."));
+        if (
+          !Number.isInteger(limitValue) ||
+          limitValue < 1 ||
+          limitValue > 100 ||
+          (cursor !== null &&
+            !directoryState.students.some(
+              (item) => item.id === cursor && item.classId === classId,
+            ))
+        )
+          return send(
+            response,
+            422,
+            responseError("INVALID_INPUT", "Invalid report pagination."),
+          );
         const state = await store();
-        const roster = (selectedStudent ? [selectedStudent] : directoryState.students.filter((item) => item.classId === classId))
-          .sort((a, b) => a.id.localeCompare(b.id));
-        const page = cursor ? roster.filter((item) => item.id > cursor) : roster;
+        const roster = (
+          selectedStudent
+            ? [selectedStudent]
+            : directoryState.students.filter((item) => item.classId === classId)
+        ).sort((a, b) => a.id.localeCompare(b.id));
+        const page = cursor
+          ? roster.filter((item) => item.id > cursor)
+          : roster;
         const students = page.slice(0, limitValue).map((student) => {
-          const attempts = state.attempts.filter((attempt) => attempt.studentId === student.id);
+          const attempts = state.attempts.filter(
+            (attempt) => attempt.studentId === student.id,
+          );
           const completed = completedPathLevels(attempts);
-          const highest = Math.max(0, ...[...completed].map((id) => Number(id.slice(6))));
+          const highest = Math.max(
+            0,
+            ...[...completed].map((id) => Number(id.slice(6))),
+          );
           const nextLevel = Math.min(30, highest + 1);
           const nextStage = levelById(`level-${nextLevel}`)?.stage ?? 6;
           const evidence = attempts.flatMap((attempt) => attempt.evidence);
@@ -2157,7 +2539,11 @@ export function createApiServer(
             currentLevelId: `level-${nextLevel}`,
             achievedTier: tierFor(state, student.id),
             certifications: state.certifications?.[student.id] ?? [],
-            primaryPracticeSkillId: nextPracticeSkill(STAGE_GATE_SKILLS[nextStage] ?? [], evidence, reportNow),
+            primaryPracticeSkillId: nextPracticeSkill(
+              STAGE_GATE_SKILLS[nextStage] ?? [],
+              evidence,
+              reportNow,
+            ),
           });
         });
         const common = {
@@ -2166,12 +2552,16 @@ export function createApiServer(
           to: window.to.toISOString(),
           asOf: reportNow.toISOString(),
         };
-        if (studentReport) return send(response, 200, { ...common, ...students[0] });
+        if (studentReport)
+          return send(response, 200, { ...common, ...students[0] });
         return send(response, 200, {
           classId,
           ...common,
           students,
-          nextCursor: page.length > limitValue ? students.at(-1)?.studentId ?? null : null,
+          nextCursor:
+            page.length > limitValue
+              ? (students.at(-1)?.studentId ?? null)
+              : null,
         });
       }
       return send(
@@ -2200,6 +2590,8 @@ export function createApiServer(
     }
   };
   return createServer(async (request, response) => {
+    if (await serveStatic(request, response)) return;
+    requestStarted.set(response, performance.now());
     if (!sqlStore) return handle(request, response);
     pendingReplies.set(response, null);
     try {
@@ -2229,6 +2621,7 @@ export function createApiServer(
         request.method === "GET" || request.method === "HEAD",
         studentLockId,
       );
+      if (identity) await identity.touchReadSession(request, database!);
       const reply = pendingReplies.get(response);
       pendingReplies.delete(response);
       if (!reply) throw new Error("Missing response");
@@ -2279,8 +2672,8 @@ if (
             : {}),
         }
       : {},
-  ).listen(port, "127.0.0.1", () =>
+  ).listen(port, process.env.HOST ?? "127.0.0.1", () =>
     console.log(
-      `Place Value Factory API listening on http://localhost:${port}`,
+      `Place Value Factory listening on http://${process.env.HOST ?? "127.0.0.1"}:${port}`,
     ),
   );

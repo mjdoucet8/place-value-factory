@@ -681,7 +681,7 @@ Timestamp (UTC): 2026-09-26T20:26:31Z. Scope: final local V1 release-candidate i
 
 Timestamp (UTC): 2026-09-26T20:01:58Z. Reviewed the committed RC-07 checkpoint after the cross-layer audit and closed remaining local runtime gaps: reconstructed per-skill scaffold state from committed student evidence and applied it to initial and subsequent issued orders; rejected malformed/extra answer fields before recording history; retained best stars across attempts; normalized transferred seeds; and added exact Level 9 slot and all-blueprint attribution assertions. The scaffold's two-order recovery counter now survives continued low evidence.
 
-Verification: `npm test` 71 passed, 8 cases skipped outside the real-PostgreSQL harness; `npx tsc --noEmit` passed; `npm run build` passed; `npm run test:postgres` passed 7 initial tests and 3 restart-phase tests (2 restart-inapplicable skips); `npm run test:e2e` 13 passed; isolated secure-pilot Playwright 4 passed. `git diff --check` passed for the staged changes. Local fictional-data evidence only; external school/device/accessibility gates remain.
+Verification: `npm test` 71 passed, 8 cases skipped outside the real-PostgreSQL harness; `npx tsc --noEmit` passed; `npm run build` passed; `npm run test:postgres` passed 7 initial tests and 3 restart-phase tests (2 restart-inapplicable skips); `npm run test:e2e` 13 passed; isolated secure-pilot Playwright 4 passed. `git diff --check` to be recorded after scoped staging. Local fictional-data evidence only; external school/device/accessibility gates remain.
 
 Review contributions: `math_audit` identified blueprint assertion gaps; `runtime_audit` audited the answer/progression/results/transfer paths; `pg_journey` supplied the real-PostgreSQL progression journey, which passed; `report_core` supplied report reconstruction and focused tests. PA integrated/fixed runtime findings and reconciled the acceptance and QA evidence. Handoff: PA integration; QA should rerun cross-layer acceptance after merge.
 
@@ -706,3 +706,146 @@ Timestamp (UTC): 2026-09-26T22:28:15Z. Continuing the existing PERF-01 claim aft
 Timestamp (UTC): 2026-09-26T22:50:29Z. The owner narrowed work to one time-boxed report optimization and the unchanged sustained workload, with a stop if p95 still missed. The report-only store joined orders, responses and unique evidence in one scoped read without a database sort. Report assembly precomputed support/evidence lookups and classified misconception flags once per response. The v1 class report body, date range, pagination and student isolation were preserved. Client-side header/body/parse metrics remain in the sustained test; temporary server timing was removed after diagnosis. No contract or migration change.
 
 Verification: `npx tsc --noEmit`, 17 focused unit/journey/idempotency tests, `npm run test:postgres` (7 initial plus 3 post-restart passed; 2 restart-inapplicable skips), and `git diff --check` passed. Two unchanged full sustained runs failed the 500 ms gate: the best report p95 was **833 ms** (start 481 ms, 30 rounds, 237 req/s); the final single-pass calculation run yielded report **842 ms** and start **510 ms** (28 rounds, 216 req/s). Both had zero request errors and observed advisory waits, exact final attempts/answers/receipts, class-local teacher totals and unchanged rewards. Final report breakdown: headers 639, body transfer 172 and client parse 90 ms p95 for 11.4 MB p95 bodies; temporary route timing: data load 370, report build 90 ms p95. See `docs/qa/CLASSROOM_LOAD_2026-09-26.md`. Evidence level: integrated local fictional-data diagnostic, **PERF-01 open**. Stop performance experiments per owner instruction. Next decision: continue v1-preserving report-path engineering, or decide on the pending versioned summary/drilldown proposal; either requires the unchanged full workload to pass before the gate closes. Preexisting server formatting, task-log sentence, development database and private `.codex/` files remain excluded from the checkpoint.
+
+## 2026-09-26 | PERF-REPORT-V2-01 | CLAIM | PA / BE / FE / QA
+
+Goal: close PERF-01 under the owner's authorized summary/drilldown reporting workflow, retaining legacy v1 and its failing benchmark honestly. Single main thread; PA is sole contract editor, performing affected-role review sequentially. Owned paths: `apps/server/src/reporting.ts`, new reporting modules, semantic changes in `apps/server/src/index.ts`, measured scoped-read changes in `runtime-store.ts`, `apps/web/src/screens/TeacherScreen.tsx`, `TeacherWorkspace.tsx`, `apps/web/src/api.ts`, teacher CSS, `packages/contracts/src/`, report fixtures/tests, sustained and browser test harnesses, `scripts/test-postgres.mjs`, root manifest and relevant documentation. Dependencies: cfabd61/1980ef4, v1 remains compatible. Preserve preexisting server formatting, RC-07 log sentence, development JSON and `.codex/`. Acceptance: REPORT-01..04, PERF-01, SEC/DATA/recovery/exactly-once regression; complete paginated parity, refresh/isolation/deletion/restore, 90-student/30-concurrent/3-worker/90-second history load and browser evidence. Output: additive v2 summary/detail contract and integrated teacher UI, reproducible measurements, local checkpoint.
+
+## 2026-09-26 | PERF-REPORT-V2-01 | UPDATE | BE / FE / QA
+
+Implemented additive summaries and revision-bound evidence pages from authoritative rows, compact summary SQL projection, on-demand teacher evidence with Previous/Next and explicit refresh, schema/filter checks, session-cookie compatibility, cancellation and guarded stale-view handling. Initial 93.1-second API workload passed p95 profile/start/answer/retry/summary/detail 199/354/195/213/439/152 ms; 30 rounds, 18,900 final answers, 237 req/s, zero errors/advisory waits and all final v2 pages equal v1. 28 optimistic-refresh conflicts were explicitly counted. PostgreSQL suite passed 9 initial tests plus 3 restart-phase tests (2 restart skips); browser suite passed 21 with native zoom unverified/skipped. Additional real-browser sustained timing, extended pagination browser tests and final regression remain in progress; this is progress evidence, not DONE.
+
+## 2026-09-26 | PERF-REPORT-V2-01 | UPDATE | PA / BE / QA
+
+The expanded actual-browser workload exposed class-summary p95 596 ms, despite the initial API-only pass. Batching the same response objects as positional JSON worsened class-summary p95 to 815 ms and was rejected. Counts, full parity, cross-worker receipts and rewards still reconciled with zero unexpected errors. The implementation now reads per-order facts directly, fetches missed-objective vectors only for candidate classification, and uses one summary reducer for v1 and v2. No persisted cache, migration, history truncation or lock change. JSON/PG golden parity plus the 9 initial/3 restart-phase PostgreSQL checks pass. The complete sustained run is in progress. UI was compacted to a class table and selected evidence; keyboard/35-record paging and narrow layout pass. Regular suite passed 74 tests/9 harness skips after a CPU-contention-only oracle timeout during concurrent suites; no timeout assertion was relaxed.
+
+## 2026-09-26 | PERF-REPORT-V2-01 | UPDATE | BE / PA
+
+Fact-query profiling: isolated final-history summary read/build was 152/35 ms warm; three concurrent same-worker reports reached 500 ms, with row aggregation and parsing dominant. The complete browser workload still missed class-summary p95 at 608 ms (starts 427 ms, details 142 ms). Scope extends to forward migration `db/migrations/011_report_order_facts.sql`, maintained per-order response facts and explicit transactional rebuild. The owner explicitly authorized necessary migrations and derived summaries subject to parity/invalidation proof. Required checks now include migration backfill, trigger rollback/exactly-once, correction/delete, rebuild and encrypted restore parity. Original responses and immutable questions remain authoritative. No production services or existing development data are changed.
+
+## 2026-09-27 | PERF-REPORT-V2-01 | UPDATE | QA / BE
+
+Transactional facts passed scripted class-summary/start/detail p95 390/360/190 ms in the final-candidate 30-round, 92.1-second run (239 req/s; 18,900 answers; no unexpected errors or advisory waits). Adding direct browser request timing exposed class-summary p95 709 ms despite student-summary/detail p95 135/124 ms; the stricter complete-workflow assertion fails and PERF-01 remains open. Complete final evidence traversal, reward/retry/count parity and 1,500 browser-rendered evidence records passed. Browser timing setup initially failed because an injected callback referenced the Node clock import; using window.performance fixed instrumentation. Investigating browser/server latency breakdown before further changes; no thresholds or workload were reduced.
+
+## 2026-09-27 | PERF-REPORT-V2-01 | UPDATE | BE / QA
+
+Combined identity-directory and facts/evidence reads passed full PostgreSQL parity/restart but still missed browser summary p95 (564 ms, then 651 ms in a diagnostic repeat). Instrumentation measured 211 ms p95 before report processing, only 0.1 ms connection checkout, and 278/66 ms read/build; no pool-size or lock change was justified. Isolated JSON aggregation was slower (92–99 ms versus warm row reads 58–66 ms) and was rejected. Audit found GET profile reconstructing historical questions, answers, supports and receipts that its public response never uses. Scope now includes a read-only profile projection retaining all attempt progress/settings/mastery evidence and omitting unused last-result efficiency calculation for that route only. Projection/full-read parity, full 30-level progression, security, operations, 9 initial and 3 restart-phase PostgreSQL cases, and typecheck pass; complete workload revalidation follows.
+
+## 2026-09-27 | PERF-REPORT-V2-01 | UPDATE | BE / QA / PA
+
+Profile projection retained correctness, but browser summary still missed at 716 ms in a run with 132 ms p95 database connection checkout on the browser's worker. The three workers use the existing hash-based actor distribution, so a 30-student wave can fill one worker's 15-connection pool even when another has headroom. Scope extends to shared default pool sizing and `tests/integration/fixtures/sustained-api.ts`: 25 connections per API worker (75 maximum for three workers), without changing worker count, cohort, actor distribution, history, 30-user concurrency, duration or assertions. Actual application startup and the fixture use the same constant. This is a measured resource-capacity adjustment; no advisory-lock change. Final resource/performance evidence must use this configuration and report the earlier 15-connection trial failures honestly.
+
+## 2026-09-27 | PERF-REPORT-V2-01 | UPDATE | BE / QA
+
+The pool increase was rejected (browser summary p95 809 ms with checkout 0.1 ms), restoring all original pool sizes. An isolated same-session test reproduced roughly 200 ms pre-report retry when two GETs refreshed a stale activity timestamp while one held a long read transaction. GET/HEAD now refresh the activity timestamp in a short conditional autocommit statement after their authorized snapshot commits; mutation transactions, expiry checks, revocation and advisory locks remain unchanged. Scope includes `apps/server/src/identity.ts`, the API transaction completion hook and `tests/integration/security-real.test.ts`. The controlled held-read regression authenticates a second read before releasing the first snapshot, then verifies activity refresh. All 9 initial/3 restart-phase PostgreSQL tests pass, including security/expiry/revocation, complete progression, parity and operations. Full sustained browser/API revalidation is running.
+
+## 2026-09-27 | PERF-REPORT-V2-01 | UPDATE | BE / QA / PA
+
+Read-heartbeat and batched transaction setup still missed complete-workflow latency (610 then 594 ms browser class summary; the latter scripted class summary was 575 ms). Isolated positional JSON was slower than native rows (warm 99–112 versus 64–77 ms), so no JSON transport variant is retained. Summary reads now group facts into exact student/skill counts and representative IDs rather than transferring each order fact to JavaScript; all eligible mastery evidence is retained and all evidence remains accessible in detail. Query/cursor counts include ineligible records. Scope includes the shared reporting reducer and `tests/integration/rc07-progression-real.test.ts`, extended to compare complete v2 summaries and every evidence page with v1 across the earned 30-level/advanced-correction/restricted-representation journey and restart. Typecheck and all 9 initial/3 restart-phase PostgreSQL tests pass. Complete workload remains the final performance criterion.
+
+
+## 2026-09-27 00:55:56 UTC | PERF-REPORT-V2-01 | HANDOFF | PA / QA
+
+Paused under the owner's explicit weekly Codex usage guard: account quota could not be checked, so no further coding/testing started. No estimate or usage reset. Owned handoff paths: `docs/qa/REPORTING_V2_PAUSED_HANDOFF.md`, `PROJECT_STATUS.md`, `TASK_LOG.md`, `PROMPT_RESULTS.md`; dependencies/contracts unchanged. Existing benchmark completed with exit 1: actual-browser class summary p95 566 ms versus 500 ms target; scripted class 467 ms, all final counts/parity/rewards reconciled, zero unexpected errors/advisory waits. Its disposable database stopped normally. Latest typecheck and PostgreSQL 9+3 checks passed before this prompt. Evidence: integrated fictional data; PERF-01 OPEN, final regression/documentation/scoped commit outstanding. No DONE. Next owner: owner resumes after verifiable usage, then PA/BE review remaining browser summary latency. Full resumable state and preservation boundaries are in the handoff.
+
+
+## 2026-09-27T10:53:31.524558+00:00 | PERF-REPORT-V2-02 | CLAIM | PA / BE / QA
+
+Owner resumed work in the actual repository, preserving all existing changes. Weekly usage verified at 75%, below the saved 80% guard. Single main agent. Scope: inspect retained browser/server timings and summary query plan, then make only an evidence-supported report-read optimization if warranted. Owned paths: apps/server/src/runtime-store.ts, focused reporting tests if needed, docs/qa reporting evidence, TASK_LOG.md, PROJECT_STATUS.md and PROMPT_RESULTS.md. Contracts, workload and 500 ms target remain unchanged. Preserve all existing uncommitted work, development JSON and private .codex files. No staging, reset or deployment.
+
+
+## 2026-09-27 | PERF-REPORT-V2-02 | UPDATE | PA
+
+Owner explicitly changed the weekly usage stop threshold from 80% to 90%. Updated the active status and resumable handoff; historical prompt records are preserved. Continue verification before work, between major steps and approximately every five minutes, stopping if usage cannot be checked. No reset authorized or redeemed.
+
+
+## 2026-09-27 | PERF-REPORT-V2-02 | HANDOFF | PA / BE / QA
+
+Completed the bounded resumed query diagnosis. Retained benchmark confirms SQL/read work dominates remaining class-summary latency. Isolated current-query EXPLAIN: 106 ms cold, 87 ms warm; narrower materialized order projection returned equivalent normalized data but showed no speed gain in eight alternating comparisons, so rejected without source edits. Evidence: docs/qa/REPORTING_V2_RESUME_DIAGNOSTIC.md. No acceptance workload or broad regressions rerun; prior 566 ms browser p95 remains latest full-load result, PERF-01 OPEN. Weekly usage verified at 76%, new owner threshold 90%. No staging, commit, reset or changes to existing development records. Next step: measured summary serialization/aggregation optimization followed by unchanged parity and workload verification.
+
+
+## 2026-09-27 | PERF-REPORT-V2-03 | CLAIM | PA / BE / QA
+
+Owner requested continued work toward PERF-01. Weekly usage 76%, guard 90%. Single main agent; preserve all existing changes. Scope: measure and reduce summary transport/serialization costs, retain only an improvement supported by complete parity and unchanged historical workload. Owned paths: apps/server/src/runtime-store.ts, focused report tests if needed, docs/qa reporting evidence, status/task/prompt records. No contract, educational rule, workload or threshold changes; no staging, commit or deployment.
+
+
+## 2026-09-27 | PERF-REPORT-V2-03 | UPDATE | GL / BE / QA
+
+Scope extends to packages/game-engine/src/index.ts eligibleEvidence and tests/unit/evidence-selection.test.ts. Retain the exact existing 24-hour signature deduplication, stable timestamp tie order and newest-12 selection. Parse each timestamp once and stop after 12 accepted records; no educational rule change. This shared calculation runs on concurrent student paths as well as reports. Verify frozen-original differential parity and existing math/progression/report suites before the unchanged load test.
+
+
+## 2026-09-27 | PERF-REPORT-V2-03 | HANDOFF / REVIEW / DONE | GL / BE / QA / PA
+
+Bounded target completed: unchanged approved v2 historical workload passes with browser class-summary p95 475 ms (<500), scripted class 430 ms, all API phases below target, zero unexpected errors/advisory waits, reconciled 3,510 attempts/17,550 answers/15,660 receipts and unchanged parity/rewards. Only retained application edit is eligibleEvidence timestamp precomputation and early exit after the same 12 accepted records. Frozen-original differential checks, typecheck, npm test 76 passed/9 harness skips, PostgreSQL 9 initial+3 restart passed/2 restart skips, E2E 22 passed/1 native-zoom skip and build passed. Full usable-summary interaction measured separately at 717 ms p95. Evidence: docs/qa/REPORTING_V2_PASS_2026-09-27.md and JSON. Added current-acceptance/status records; older failures retained. DONE applies only to this approved local v2 request-performance target, not full release/classroom readiness or legacy v1 performance. Existing work preserved; no staging, commit, reset or deployment. Final `git diff --check` passed after documentation save.
+
+
+## 2026-09-27 | ART-CRATES-01 | CLAIM | FE / QA
+
+Owner authorized starting the reference-faithful machine/crate treatment. Single main agent; owns new MachineArtwork.tsx, MachineEditor.tsx, scoped styles.css additions, visual evidence and task/prompt records. Preserve all existing changes. Original full gameplay PNG inspected. Build dimensional SVG crates/hoppers with exact count labels and retain quantity/exchange behavior. No mathematical, API or data changes. Usage guard 90%; initial usage 81%.
+
+
+## 2026-09-27 | ART-CRATES-01 | HANDOFF | FE / QA
+
+Implemented first-pass reference-inspired SVG equipment in MachineArtwork.tsx and integrated all six denominations through MachineEditor.tsx with scoped styles.css rules. Crates have open tops, slats, rims, side faces, corner nails, denomination plates and shadows; hoppers have bevelled paint, pipes, nozzles and roller receiving platforms. Empty quantity shows receiving bay; positive quantity shows at most three representative crates with exact HTML count. Closed-machine treatment and original quantity/exchange logic retained. Original programmatic vector art, informed by supplied game_screen.png; no new external assets. Typecheck and build passed. Server-rendered component check verified six SVGs, unique gradient/control IDs, exact count labels and retained exchange controls; git diff whitespace check passed. Live visual/browser interaction verification blocked by unavailable browser security-policy check; no alternate browser access attempted. No screenshot baselines updated and no visual acceptance claim. Preview Vite remains at port 5181. Next: owner visual review and desktop/narrow browser verification when available; larger scene composition remains future work.
+
+
+## 2026-09-27 | ART-SCENE-02 | CLAIM | FE
+
+Owner requests closer fidelity to original reference. Single main agent; scope: original generated decorative factory backdrop, scoped game composition styles and art provenance. Preserve live controls, mathematics, current component changes and other work. Reference inspected earlier in session. Usage 84%, guard 90%. Browser inspection remains unavailable unless security policy check recovers.
+
+
+## 2026-09-27 | ART-SCENE-02 | HANDOFF | FE
+
+Integrated new reference-guided background plus scoped composition styling and moved RepresentationMonitor into a lower factory-console alongside the existing controls. Retained original assets and all prior changes. Exact generated-asset provenance/prompt in docs/ART_SCENE_V2.md. Typecheck/build/static React screen checks and git diff --check passed. Live browser rendering still blocked by unavailable admin-policy verification; no workaround or visual approval claim. Usage 85%, guard 90%. No deployment/commit/reset. Next: owner visual review and live desktop/mobile verification when browser policy is available.
+
+
+## 2026-09-27 | ART-BELT-03 | CLAIM | FE
+
+Owner requests one continuous belt and a crate beneath each denomination with the number entry on the crate. Own MachineArtwork.tsx, MachineEditor.tsx, scoped CSS and task/prompt records. Preserve quantity handlers and all prior work. Usage 86%, guard 90%.
+
+
+## 2026-09-27 | ART-BELT-03 | HANDOFF | FE
+
+Replaced per-machine roller SVGs with one full-width slatted conveyor and roller fascia. Added persistent open crate shells below each denomination; original native quantity inputs and plus/minus handlers now overlay the crate fronts. Exact count captions and exchange actions retained. Narrow layouts use a labelled keyboard-focusable horizontal scroll region to preserve a continuous production line and usable input sizes. Typecheck/build passed; static React checks confirm six editable crate shells, six quantity IDs, unique SVG IDs, exact 42/999999 values and one line. Diff check passed. Browser visual/interaction QA remains unavailable from the prior security-policy blocker; no bypass or screenshot-baseline changes. Current usage verified 86%, threshold 90%. Existing work preserved.
+
+
+## 2026-09-27 | ART-BUTTONS-04 | CLAIM / HANDOFF | FE
+
+Owner reports plus/minus circles touching the quantity-field frame. Scoped CSS fix: 44×34 px rounded rectangles (8 px radius), lowered from top 96 to 104 px; number field ends at 95 px, leaving 9 px clearance before its shadow/focus outline. Handlers unchanged; existing work preserved. Source geometry checked; browser visual QA still unavailable. Usage 87%, guard 90%.
+
+
+## 2026-09-27 | ART-LABELS-05 | BLOCKED | FE
+
+Owner requests centered place-value names. Usage verified at 91%; stop threshold 90%. No implementation begun. Pending scope: apps/web/src/styles.css illustrated-machine h2 rules; ensure centered content and long-label wrapping without changing machine alignment. Resume only within the owner usage guard or upon explicit owner change. No reset redeemed.
+
+## 2026-09-27 | ART-LABELS-05 | RESUMED / HANDOFF | FE
+
+Owner explicitly authorized continuing after switching to Sol. Centered each place-value heading horizontally and vertically with a fixed 34 px flex box, centered wrapping and full-width alignment. Long labels retain wrapping and all machine geometry remains unchanged. Build and whitespace verification follow. No reset redeemed.
+
+## 2026-09-27 | ART-CRATE-INPUT-06 | CLAIM / HANDOFF | FE
+
+Owner supplied a preview screenshot showing that the quantity plates covered too much of each crate front. Reduced the input from 65% × 44 px to 49% × 34 px, recentered it on the front panel and reduced its numeral size from 1.5 rem to 1.2 rem. Native number entry, focus treatment and crate controls are unchanged. Build and whitespace verification follow.
+
+## 2026-09-27 | ART-CRATE-INPUT-07 | HANDOFF | FE
+
+Aligned the input to the crate's asymmetric front face rather than the full SVG canvas: left 17%, width 50%, top 54 px and height 32 px. This centers the field on the visible front panel and keeps its bottom edge well above the lower crate rim. Reduced numeral size slightly to 1.15 rem. Interaction behavior unchanged; build and whitespace verification follow.
+
+## 2026-09-27 | ART-CRATE-INPUT-08 | HANDOFF | FE
+
+Reduced quantity-field height from 32 px to 28 px and adjusted its top to 56 px, preserving its center while creating more clearance from the crate frame. Numeral size is 1.05 rem. No behavior change; build and whitespace verification follow.
+
+## 2026-09-27 | ART-CRATE-INPUT-09 | HANDOFF | FE
+
+Set quantity fields to 24 px high and top 64 px, centering them within the clear crate-front panel between its upper and lower rails. Numerals reduced to 1 rem. Width and horizontal alignment remain unchanged. Build and whitespace verification follow.
+
+## 2026-09-27 | ART-CRATE-INPUT-10 | FIX / HANDOFF | FE
+
+Owner screenshot showed the field still rendered at roughly 48 px and overlapped the buttons. Root cause: the global `input, button { min-height: 48px; }` rule overrode the requested height. Added scoped 24 px minimum and maximum heights and moved the field from top 64 px to 58 px. The rendered field can now be 24 px and sits above the controls. Build and whitespace verification follow.
+
+## 2026-09-27 | MVP-RC-01 | CLAIM | PA / FE / BE / QA
+
+Owner authorized the four-step path to a deployed functional MVP with minimal interruption. Scope: run the isolated secure PostgreSQL teacher-to-student pilot with the current factory UI; repair blocking regressions; verify and freeze an evidence-backed local release candidate; then prepare and attempt a private staging deployment without real student data. Owned paths are the current application, focused tests, deployment configuration/docs, and status/task/prompt records. Preserve every existing change and use only fictional identities. Production identity, provider credentials, region and school-policy approvals remain external dependencies; record any hard blocker precisely rather than weakening fail-closed startup.
+
+## 2026-09-27 | MVP-RC-01 | HANDOFF / REVIEW | PA / FE / BE / QA
+
+Fresh isolated secure pilot passed all four journeys, including provisioning, five orders, recovery, evidence, practice, revocation and archive. Full browser regression initially found a 3.62:1 Ship gradient and translucent artwork-label backing; both were corrected, focused contrast audit then passed all 26 states, and the intentional calm baseline was refreshed. Final evidence: typecheck/build pass; 77 regular tests pass with 9 harness skips; PostgreSQL 9 initial plus 3 restart pass with 2 restart skips; Chromium 22 pass with 1 native-zoom environment skip; secure pilot 4 pass; diff check pass. Added a one-container fictional staging runtime, health route, forward migration/one-teacher seed, staging validator and focused tests. External upload is BLOCKED only at the provider boundary: saved GitHub CLI credential is invalid and no hosting/container CLI is connected. Production school identity remains deliberately blocked. Evidence: docs/qa/MVP_RC_2026-09-27.md. Existing development JSON and private .codex configuration remain excluded from the release checkpoint.

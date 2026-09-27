@@ -27,6 +27,9 @@ test("teacher report stays keyboard readable at narrow width", async ({ page }) 
   await page.getByRole("button", { name: "Teacher login", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Teacher evidence" })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await page.getByRole("button", { name: /View evidence for/ }).first().focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByText("No submitted orders in this date range.")).toBeVisible();
   const region = page.getByRole("region", { name: /Stored order evidence/ }).first();
   await expect(region).toHaveAttribute("tabindex", "0");
   await region.focus();

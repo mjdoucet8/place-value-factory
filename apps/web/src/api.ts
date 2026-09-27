@@ -17,7 +17,7 @@ export async function api(path: string, options: RequestInit = {}) {
   headers.delete("x-session");
   if (csrfToken && !["GET", "HEAD"].includes(options.method ?? "GET"))
     headers.set("x-csrf-token", csrfToken);
-  const response = await fetch(`/api/v1${path}`, {
+  const response = await fetch(path.startsWith("/v2/") ? `/api${path}` : `/api/v1${path}`, {
     ...options,
     credentials: "same-origin",
     headers,

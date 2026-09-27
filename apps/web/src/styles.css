@@ -1558,3 +1558,224 @@ td {
   animation: none !important;
   transition: none !important;
 }
+
+.report-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+.report-filters label { display: flex; align-items: center; gap: 0.35rem; }
+.report-overview { margin: 1.25rem 0; }
+.report-overview th[scope="row"] { text-align: left; }
+
+/* Reference-inspired equipment: a painted hopper above a dimensional crate bay. */
+.game-screen .illustrated-machine {
+  --paint-light: color-mix(in srgb, var(--machine), white 38%);
+  --paint-dark: color-mix(in srgb, var(--machine), #081d46 35%);
+  padding: 8px 8px 12px;
+  border: 2px solid #6e94ce;
+  border-radius: 18px 18px 12px 12px;
+  background: linear-gradient(180deg, #172f62ee 0%, #23497ab8 57%, #102653 57%);
+  box-shadow: inset 0 2px 0 #b7ddff80, 0 6px 0 #0b1c42, 0 12px 16px #0b1c4240;
+  color: #f5fbff;
+}
+.game-screen .illustrated-machine h2 {
+  min-height: 2.3em;
+  margin: 2px 0 0;
+  text-align: center;
+  color: #f5fbff;
+  font-size: .85rem;
+}
+.machine-artwork { display: block; width: 100%; height: 184px; overflow: visible; }
+.machine-artwork .paint-light { stop-color: var(--paint-light); }
+.machine-artwork .paint-base { stop-color: var(--machine); }
+.machine-artwork .paint-dark { stop-color: var(--paint-dark); }
+.machine-artwork .crate-rim { fill: var(--paint-light); stroke: var(--paint-dark); stroke-width: 1; }
+.machine-artwork .crate-side, .machine-artwork .crate-edge { fill: var(--paint-dark); }
+.machine-artwork .crate-groove { fill: none; stroke: #102653; stroke-opacity: .35; stroke-width: 2; }
+.machine-artwork .crate-edge-stroke { stroke: var(--paint-light); }
+.game-screen .illustrated-machine .crate-inventory {
+  margin: 1px 0 8px;
+  min-height: 24px;
+  text-align: center;
+  font-size: .9rem;
+  font-weight: 800;
+  color: #fff;
+}
+.game-screen .illustrated-machine label { color: #dcecff; }
+.game-screen .illustrated-machine .quantity-controls { margin-top: 4px; }
+.game-screen .illustrated-machine .exchange { width: 100%; font-size: .75rem; padding: 5px; }
+.game-screen .illustrated-machine[aria-disabled="true"] { opacity: 1; }
+.game-screen .illustrated-machine[aria-disabled="true"] .machine-artwork { filter: saturate(.3); }
+@media (max-width: 699px) {
+  .machine-artwork { height: 160px; }
+}
+
+/* Second art pass: compose the live equipment into the reference factory stage. */
+.game-screen {
+  max-width: 1672px;
+  min-height: calc(100vh - 68px);
+  background: url('/assets/art-v2/factory-reference-stage.png') center center / cover;
+  isolation: isolate;
+}
+.game-screen > header {
+  background: linear-gradient(180deg, #195ed7, #103caa 48%, #092978);
+  border: 4px solid #50d7ff;
+  box-shadow: inset 0 3px 0 #b2eeff99, inset 0 -4px 0 #071c7566, 0 5px 0 #102b7dcc;
+  border-radius: 24px;
+  padding: 12px 22px;
+}
+.game-screen .factory-brief {
+  grid-template-columns: minmax(150px, 220px) minmax(280px, 610px) minmax(0, 160px);
+  justify-content: center;
+  min-height: 240px;
+  margin: 20px 0 0;
+  gap: 28px;
+}
+.game-screen .factory-brief .robot-guide .mascot { width: 200px; height: 200px; max-width: 100%; filter: drop-shadow(0 12px 8px #10347155); }
+.game-screen .factory-brief .robot-guide { margin: 0; align-self: end; gap: 0; }
+.game-screen .factory-brief .robot-guide p { margin: -15px 0 0; border: 3px solid #487be7; box-shadow: 0 4px 0 #122b6c66; font-size: 1rem; position: relative; }
+.game-screen .factory-brief .current-order {
+  color: #102653;
+  background: #fff9e8 linear-gradient(130deg, #fffef2, #fff9e8 70%, #ffe8b9);
+  border: 6px solid #ffbe3e;
+  border-radius: 30px;
+  box-shadow: inset 0 0 0 3px #fff9b5, 0 6px 0 #ed8629, 0 12px 16px #183b6866;
+  padding: 24px 28px 20px;
+  text-align: center;
+}
+.game-screen .current-order::before, .game-screen .current-order::after {
+  content: ''; position: absolute; z-index: -1; top: -65px; height: 64px; width: 18px;
+  background: repeating-linear-gradient(0deg, #183271 0 9px, #667ce0 9px 16px, #243fa0 16px 23px);
+  border: 3px solid #123274; border-radius: 5px;
+}
+.game-screen .current-order::before { left: 13%; }
+.game-screen .current-order::after { right: 13%; }
+.game-screen .current-order #order-heading {
+  display: table; margin: -45px auto 8px; padding: 9px 22px;
+  color: #fff; background: #b94207; border: 4px solid #ffca55; border-radius: 16px 16px 5px 5px;
+  font-size: 1.1rem; letter-spacing: .02em; text-shadow: 0 2px #762403;
+}
+.game-screen .current-order strong { color: #cc076b; font-size: clamp(2.7rem, 5vw, 4.6rem); }
+.game-screen .current-order p:last-child { font-size: 1.05rem; font-weight: 750; }
+.game-screen .machines { position: relative; gap: 8px; margin: 4px 0 0; }
+.game-screen .illustrated-machine {
+  background: transparent; border: 0; border-radius: 0; box-shadow: none;
+  padding: 5px 7px 8px;
+}
+.game-screen .illustrated-machine h2 {
+  display: table; min-height: 2.3em; margin: 0 auto; padding: 4px 7px;
+  background: #102653; border-radius: 8px; font-size: .78rem;
+}
+.game-screen .illustrated-machine .machine-artwork { height: 195px; filter: drop-shadow(0 6px 4px #0a20555c); }
+.game-screen .machines::before {
+  content: ''; pointer-events: none; position: absolute; left: 0; right: 0; top: 205px; height: 28px; z-index: -1;
+  border: 4px solid #82b9fc; border-radius: 12px;
+  background: repeating-linear-gradient(105deg, #0d2457 0 16px, #324f95 16px 19px, #152e64 19px 35px);
+  box-shadow: 0 7px 0 #10245b;
+}
+.game-screen .illustrated-machine .crate-inventory { background: #112b60; border: 2px solid #709ee5; border-radius: 8px; padding: 3px; margin: 3px 0 5px; }
+.game-screen .illustrated-machine label { display: block; background: #102653; border-radius: 6px 6px 0 0; text-align: center; padding: 4px 2px; }
+.game-screen .illustrated-machine .quantity-controls { margin: 0; background: #102653; padding: 4px; border-radius: 0 0 8px 8px; }
+.game-screen .illustrated-machine .exchange { min-height: 40px; margin-top: 5px; border-width: 2px; }
+.game-screen .factory-console {
+  display: grid; grid-template-columns: minmax(240px, .8fr) minmax(0, 2fr); gap: 18px; align-items: stretch;
+  margin-top: 14px;
+}
+.game-screen .factory-console .representation-monitor {
+  width: 100%; max-width: none; margin: 0; border: 6px solid #7a9ef6; outline: 3px solid #15366f;
+  background: linear-gradient(145deg, #0b2260, #064191); border-radius: 20px;
+  box-shadow: inset 0 0 0 3px #20d5ef, 0 7px 0 #16307a;
+}
+.game-screen .factory-console .representation-monitor strong { font-size: 2rem; color: #fff; }
+.game-screen .factory-console .controls {
+  margin: 0; align-content: center; background: linear-gradient(#3475e0, #1646a6); border: 5px solid #80bdff;
+  border-radius: 25px; box-shadow: inset 0 3px 0 #b9e8ff, 0 7px 0 #152c75;
+}
+.game-screen .factory-console .controls button { min-height: 48px; box-shadow: inset 0 2px 0 #ffffff88, 0 4px 0 #0b266c; border-radius: 14px; }
+.game-screen .factory-console .ship { background: linear-gradient(#087437, #045629); color: white; border: 3px solid #92ef99; }
+@media (max-width: 1099px) {
+  .game-screen .factory-brief { grid-template-columns: 150px minmax(230px, 1fr); min-height: 220px; gap: 16px; margin-bottom: 15px; }
+  .game-screen .factory-brief .robot-guide .mascot { width: 150px; height: 150px; }
+  .game-screen .machines::before { display: none; }
+  .game-screen .factory-console { grid-template-columns: minmax(190px, .8fr) minmax(0, 1.5fr); }
+}
+@media (max-width: 699px) {
+  .game-screen .factory-brief { grid-template-columns: 1fr; gap: 20px; margin-top: 22px; }
+  .game-screen .factory-brief .robot-guide { display: flex; flex-direction: row; justify-content: center; align-items: center; }
+  .game-screen .factory-brief .robot-guide .mascot { width: 95px; height: 95px; }
+  .game-screen .factory-brief .robot-guide p { margin: 0; max-width: 180px; }
+  .game-screen .factory-brief .current-order { padding: 20px 12px 14px; }
+  .game-screen .current-order::before, .game-screen .current-order::after { display: none; }
+  .game-screen .current-order #order-heading { margin-top: -30px; font-size: .9rem; }
+  .game-screen .illustrated-machine .machine-artwork { height: 160px; }
+  .game-screen .factory-console { grid-template-columns: 1fr; }
+  .game-screen .factory-console .representation-monitor { max-width: 100%; }
+}
+
+/* A single production line, with editable quantity plates on the crate fronts. */
+.game-screen .production-line { overflow-x: auto; padding: 8px 5px 14px; border-radius: 12px; }
+.game-screen .production-line:focus-visible { outline: 3px solid #fff; outline-offset: -3px; }
+.game-screen .production-line .machines {
+  min-width: 1020px; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px;
+  isolation: isolate; margin: 0; padding: 0 12px;
+}
+.game-screen .production-line .illustrated-machine { padding: 0 5px 8px; }
+.game-screen .production-line .illustrated-machine h2 {
+  align-items: center;
+  box-sizing: border-box;
+  display: flex;
+  height: 34px;
+  justify-content: center;
+  line-height: 1.15;
+  min-height: 34px;
+  text-align: center;
+  width: 100%;
+}
+.game-screen .production-line .machine-artwork { height: 145px; width: 100%; overflow: hidden; }
+.game-screen .production-line .editable-crate { display: block; position: relative; height: 140px; width: 100%; }
+.quantity-crate-art { position: absolute; inset: 0; width: 100%; height: 140px; overflow: visible; }
+.quantity-crate-art .crate-front { fill: var(--machine); }
+.quantity-crate-art .crate-rim { fill: var(--paint-light); stroke: var(--paint-dark); stroke-width: 1; }
+.quantity-crate-art .crate-side { fill: var(--paint-dark); }
+.quantity-crate-art .crate-groove { fill: none; stroke: #122449; stroke-opacity: .38; stroke-width: 2; }
+.quantity-crate-art .crate-edge-stroke { stroke: var(--paint-light); }
+.game-screen .production-line .editable-crate > label {
+  position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+.game-screen .production-line .editable-crate .quantity-controls {
+  position: absolute; inset: 0; display: block; padding: 0; margin: 0; background: transparent;
+}
+.game-screen .production-line .editable-crate input {
+  position: absolute; top: 58px; left: 17%; width: 50%; height: 24px; min-height: 24px; max-height: 24px; box-sizing: border-box;
+  border: 3px solid #ffe7a0; border-radius: 7px; background: #102653; color: white;
+  box-shadow: inset 0 3px 5px #020c23, 0 2px 0 #06183766;
+  font-size: 1rem; font-weight: 900; padding: 0 3px; text-align: center;
+  appearance: textfield; -moz-appearance: textfield;
+}
+.game-screen .production-line .editable-crate input::-webkit-inner-spin-button,
+.game-screen .production-line .editable-crate input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.game-screen .production-line .editable-crate input:focus-visible { outline: 3px solid white; outline-offset: 2px; }
+.game-screen .production-line .editable-crate input:disabled { background: #334569; color: #e5edff; border-color: #8fa2be; }
+.game-screen .production-line .editable-crate .quantity-controls button {
+  position: absolute; top: 104px; width: 44px; height: 34px; min-width: 44px; min-height: 34px;
+  padding: 0; border: 2px solid #b5d6ff; border-radius: 8px; box-shadow: 0 3px 0 #102653;
+}
+.game-screen .production-line .editable-crate .quantity-controls button:first-child { left: 11%; }
+.game-screen .production-line .editable-crate .quantity-controls button:last-child { right: 21%; }
+.game-screen .production-line .machines::before {
+  display: block; content: ''; position: absolute; pointer-events: none; left: 0; right: 0; top: 302px; height: 24px; z-index: -1;
+  border: 4px solid #91c5ff; border-radius: 14px 14px 4px 4px;
+  transform: none;
+  background: repeating-linear-gradient(110deg, #172954 0 22px, #5477b8 23px 26px, #0d204b 27px 48px);
+  box-shadow: inset 0 4px 0 #06152e, 0 2px 0 #172759;
+}
+.game-screen .production-line .machines::after {
+  content: ''; position: absolute; pointer-events: none; left: 0; right: 0; top: 330px; height: 28px; z-index: -1;
+  border: 3px solid #88aff4; border-top: 0; border-radius: 0 0 16px 16px;
+  background: radial-gradient(circle at 22px 12px, #142950 0 5px, #698ad0 6px 9px, #b0cfff 10px 11px, transparent 12px) 0 0 / 48px 28px repeat-x, linear-gradient(#355697, #132957);
+  box-shadow: 0 7px 0 #10204b, 0 13px 10px #10265377;
+}
+.game-screen .production-line .crate-inventory { margin-top: 52px; }

@@ -44,7 +44,7 @@ describe.skipIf(!socket || process.env.PVF_TEST_PG_RESTART === "1")("guarded ope
       const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api/v1`;
       type Session = { cookie: string; csrf: string };
       const request = async (path: string, body?: Record<string, unknown>, session?: Session, method = body ? "POST" : "GET") => {
-        const response = await fetch(base + path, { method, headers: { origin: "https://classroom.test", "content-type": "application/json", ...(session ? { cookie: session.cookie, "x-csrf-token": session.csrf } : {}), ...(body?.commandId ? { "idempotency-key": String(body.commandId) } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) });
+        const response = await fetch((path.startsWith("/v2/") ? base.replace(/\/v1$/, "") : base) + path, { method, headers: { origin: "https://classroom.test", "content-type": "application/json", ...(session ? { cookie: session.cookie, "x-csrf-token": session.csrf } : {}), ...(body?.commandId ? { "idempotency-key": String(body.commandId) } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) });
         return { status: response.status, body: await response.json(), cookie: response.headers.get("set-cookie") };
       };
       const teacherLogin = await request("/auth/teacher/session", { username: "ops-teacher", password });
@@ -112,7 +112,18 @@ describe.skipIf(!socket || process.env.PVF_TEST_PG_RESTART === "1")("guarded ope
         const restoredBase = `http://127.0.0.1:${(restoredServer.address() as AddressInfo).port}/api/v1`;
         const restoredReport = await fetch(`${restoredBase}/teacher/classes/${classOne.id}/games/place-value-factory/report`, { headers: { origin: "https://classroom.test", cookie: teacher.cookie } });
         expect(restoredReport.status).toBe(200);
-        expect((await restoredReport.json()).students[0]).toMatchObject({ submittedN: 5, eventuallyCorrectN: 5 });
+        const legacyRestored = (await restoredReport.json()).students[0];
+        expect(legacyRestored).toMatchObject({ submittedN: 5, eventuallyCorrectN: 5 });
+        const v2Base = restoredBase.replace(/\/v1$/, "/v2");
+        const restoredSummary = await fetch(`${v2Base}/teacher/students/${first.student.id}/games/place-value-factory/summary`, {headers:{cookie:teacher.cookie}});
+        expect(restoredSummary.status).toBe(200);
+        expect(await restoredSummary.json()).toMatchObject({submittedN:5,eventuallyCorrectN:5});
+        const all: any[] = []; let cursor: string | null = null;
+        do {
+          const page: Response = await fetch(`${v2Base}/teacher/students/${first.student.id}/games/place-value-factory/evidence?limit=2${cursor ? `&cursor=${cursor}` : ""}`, {headers:{cookie:teacher.cookie}});
+          expect(page.status).toBe(200); const result: any = await page.json(); all.push(...result.evidence); cursor = result.nextCursor;
+        } while(cursor);
+        expect(all).toEqual([...legacyRestored.evidence].sort((a,b) => a.firstResponse.at.localeCompare(b.firstResponse.at) || a.orderId.localeCompare(b.orderId)));
       } finally {
         await new Promise<void>((resolve, reject) => restoredServer.close((error) => error ? reject(error) : resolve()));
       }
@@ -145,6 +156,7 @@ describe.skipIf(!socket || process.env.PVF_TEST_PG_RESTART === "1")("guarded ope
       expect(deleteRun.status, deleteRun.stderr).toBe(0);
       expect((await pool.query("SELECT count(*)::int AS n FROM pvf_student WHERE id=$1", [first.student.id])).rows[0].n).toBe(0);
       expect((await pool.query("SELECT count(*)::int AS n FROM pvf_response")).rows[0].n).toBe(0);
+      expect((await pool.query("SELECT count(*)::int AS n FROM pvf_report_order")).rows[0].n).toBe(0);
       expect((await pool.query("SELECT count(*)::int AS n FROM pvf_command_receipt WHERE actor_id=$1", [first.student.id])).rows[0].n).toBe(0);
       expect((await pool.query("SELECT count(*)::int AS n FROM pvf_student WHERE id=$1", [second.student.id])).rows[0].n).toBe(1);
       expect((await pool.query("SELECT backup_expiry_at>now() AS marked FROM pvf_operations_audit WHERE action='student_delete'")).rows[0].marked).toBe(true);
@@ -180,6 +192,8 @@ describe.skipIf(!socket || process.env.PVF_TEST_PG_RESTART === "1")("guarded ope
       expect(expiredAudit.status, expiredAudit.stderr).toBe(0);
       expect((await pool.query("SELECT count(*)::int AS n FROM pvf_operations_audit WHERE action IN ('student_delete','retention_delete')")).rows[0].n).toBe(0);
       expect((await request(`/teacher/students/${first.student.id}/games/place-value-factory/report`, undefined, teacher)).status).toBe(404);
+      expect((await request(`/v2/teacher/students/${first.student.id}/games/place-value-factory/summary`, undefined, teacher)).status).toBe(404);
+      expect((await request(`/v2/teacher/students/${first.student.id}/games/place-value-factory/evidence`, undefined, teacher)).status).toBe(404);
       await pool.query("UPDATE pvf_roster_receipt SET secret_expires_at=now()-interval '1 second' WHERE secret_ciphertext IS NOT NULL");
       const cleanup = await cleanupExpiredSecrets(pool);
       expect(cleanup.secrets).toBeGreaterThanOrEqual(0);
