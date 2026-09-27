@@ -853,3 +853,11 @@ Fresh isolated secure pilot passed all four journeys, including provisioning, fi
 ## 2026-09-27 | MVP-PREVIEW-02 | FIX / HANDOFF | FE / BE
 
 Owner reported an empty JSON response during student login at the restored local preview. The web-only Vite preview had no API process behind its `/api` proxy. Started the existing development API on 127.0.0.1:3101 without resetting data and verified the complete login request through 127.0.0.1:5181 returns HTTP 200 with the fictional `student-ava` principal and CSRF token. No source, database or credential change.
+
+## 2026-09-27 | MVP-TAB-03 | CLAIM | FE / QA
+
+Owner requests a quantity-first keyboard sequence: Tab from one enabled crate number field must move directly to the next enabled crate number field instead of an enabled trade action. Preserve mouse/touch access and accessible names for trade and plus/minus controls. Own MachineEditor.tsx, the focused keyboard browser assertion and task/prompt records.
+
+## 2026-09-27 | MVP-TAB-03 | HANDOFF / DONE | FE / QA
+
+Removed exchange actions from the sequential Tab order while retaining their click behavior, enabled/disabled state and accessible button semantics. Plus/minus controls were already outside sequential focus. Strengthened the browser test by enabling the first trade action, pressing Tab from its quantity field and asserting focus moves to the next enabled quantity field; Shift+Tab returns to the prior field. Focused Chromium test passed. No mathematics or representation behavior changed.

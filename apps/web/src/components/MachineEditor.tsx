@@ -101,6 +101,7 @@ export function MachineEditor({
             {index < 5 && (
               <button
                 className="exchange"
+                tabIndex={-1}
                 disabled={
                   saving ||
                   quantities[index] < 1 ||

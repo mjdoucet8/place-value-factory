@@ -75,7 +75,9 @@ test("quantity keyboard navigation and Enter ship work on a saved mission", asyn
   await expect(page.getByRole("button", { name: "Ship order" })).toBeEnabled();
   await expect(openQuantities.first()).toBeEnabled();
   await openQuantities.first().focus();
-  await page.keyboard.press("Shift");
+  await openQuantities.first().fill("1");
+  await expect(page.getByRole("button", { name: "Trade 1 for 10 smaller" }).first()).toBeEnabled();
+  await page.keyboard.press("Tab");
   await expect(openQuantities.nth(1)).toBeFocused();
   await page.keyboard.press("Shift+Tab");
   await expect(openQuantities.first()).toBeFocused();

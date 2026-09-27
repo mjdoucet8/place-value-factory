@@ -218,3 +218,9 @@ Result: A fresh fictional PostgreSQL teacher/student pilot passed, including rec
 Prompt: Student login fails because the response body is empty JSON.
 
 Result: The preview had been restarted without its API process. Started the existing development API without resetting data and verified the fictional student login through the website proxy returns HTTP 200 and valid JSON. No application code or stored data changed.
+
+## 2026-09-27 — Tab directly through quantity boxes
+
+Prompt: Make Tab move from one crate number box directly to the next instead of stopping at Trade 1 for 10 smaller.
+
+Result: Removed trade actions from the sequential keyboard order while preserving mouse/touch use and accessibility semantics. A focused browser test enables the intervening trade action and confirms Tab and Shift+Tab move directly between adjacent quantity fields.
