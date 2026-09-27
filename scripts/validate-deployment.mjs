@@ -30,9 +30,9 @@ const privatePath = async (name, asDirectory) => {
   } catch { errors.push(`${name}: private directory must already exist`); }
 };
 try {
-  const url = new URL(process.env.DATABASE_URL ?? "");
+  const url = new URL(process.env.DATABASE_URL || process.env.POSTGRES_URL || "");
   if (!["postgres:", "postgresql:"].includes(url.protocol) || !url.pathname.slice(1)) throw new Error();
-} catch { errors.push("DATABASE_URL: PostgreSQL URL and database name required"); }
+} catch { errors.push("DATABASE_URL/POSTGRES_URL: PostgreSQL URL and database name required"); }
 try {
   const origin = new URL(process.env.PVF_ORIGIN ?? "");
   if (origin.pathname !== "/" || origin.search || origin.hash) throw new Error();
@@ -42,6 +42,11 @@ try {
 if (profile === "pilot" && process.env.PVF_AUTH !== "local") errors.push("PVF_AUTH: local identity required for fictional pilot");
 if (profile === "staging" && process.env.PVF_AUTH !== "local") errors.push("PVF_AUTH: local identity required for fictional staging");
 if (profile === "staging" && process.env.PVF_FICTIONAL_ONLY !== "true") errors.push("PVF_FICTIONAL_ONLY: true is required for staging");
+if (profile === "staging") {
+  const poolMax = Number(process.env.PVF_DATABASE_POOL_MAX ?? "1");
+  if (!Number.isSafeInteger(poolMax) || poolMax < 1 || poolMax > 50)
+    errors.push("PVF_DATABASE_POOL_MAX: integer from 1 to 50 required");
+}
 if (profile === "production") errors.push("PVF_AUTH: school identity adapter is not implemented; production remains blocked");
 const receipt = hexKey("PVF_RECEIPT_KEY"), backup = hexKey("PVF_BACKUP_KEY"), ledger = hexKey("PVF_DELETION_LEDGER_KEY");
 if (receipt && (receipt === backup || receipt === ledger) || backup && backup === ledger) errors.push("Keys: use distinct private keys for receipts, backup and deletion ledger");

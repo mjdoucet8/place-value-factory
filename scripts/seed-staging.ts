@@ -11,8 +11,15 @@ if (
   throw new Error(
     "Staging seed requires PVF_MODE=staging, PVF_FICTIONAL_ONLY=true and PVF_AUTH=local.",
   );
-const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl) throw new Error("DATABASE_URL is required.");
+const databaseUrl =
+  process.env.PVF_MIGRATION_DATABASE_URL ||
+  process.env.POSTGRES_URL_NON_POOLING ||
+  process.env.DATABASE_URL ||
+  process.env.POSTGRES_URL;
+if (!databaseUrl)
+  throw new Error(
+    "A direct PostgreSQL migration connection is required for staging setup.",
+  );
 const username = process.env.PVF_STAGING_TEACHER_USERNAME?.trim().toLowerCase();
 const password = process.env.PVF_STAGING_TEACHER_PASSWORD;
 const pool = new Pool({ connectionString: databaseUrl });

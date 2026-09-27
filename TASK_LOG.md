@@ -865,3 +865,11 @@ Moved the trade-action row after the six machine cards in document order, preser
 ## 2026-09-27 | MVP-STAGING-04 | UPDATE | PA
 
 Owner explicitly approved pushing the verified release candidate through d1118ef to the configured `origin/main`. Push succeeded (`34ed352..d1118ef`), and an independent remote-head read confirmed `refs/heads/main` at `d1118ef92c4204a737dd573b1bb4cc918e2f8485`. No tracked development data or private `.codex` files were included. The repository has no checked-in GitHub deployment workflow; hosting service and PostgreSQL connection remain the next external staging step.
+
+## 2026-09-27 | MVP-VERCEL-05 | CLAIM | PA / BE / QA
+
+Owner authorized deployment-preparation step 1 for Vercel container hosting with Supabase PostgreSQL. Scope: add Vercel's container entrypoint/configuration, keep migrations and fictional-teacher provisioning as one-time administrative actions outside autoscaling container boot, accept Marketplace PostgreSQL environment names, bound runtime pool size for stateless scaling, and document the exact handoff. Preserve production's school-identity block and fictional-only staging guard. No provider project, database, secrets or paid resource will be created in this task.
+
+## 2026-09-27 | MVP-VERCEL-05 | HANDOFF / DONE | PA / BE / QA
+
+Added Dockerfile.vercel, Fluid vercel.json and .vercelignore. Container boot starts only the guarded fictional-staging HTTP service; migration and one-teacher provisioning remain a one-time administrative action. Runtime accepts DATABASE_URL or Marketplace POSTGRES_URL, while migration/seed prefer PVF_MIGRATION_DATABASE_URL or POSTGRES_URL_NON_POOLING. Added validated PVF_DATABASE_POOL_MAX with staging default 1. The complete regular suite exposed and then verified a fix for an empty DATABASE_URL masking POSTGRES_URL. Final evidence: typecheck pass, production web build pass, Vercel structure check pass, 78 regular tests pass with 9 dedicated-harness skips, diff check pass. Handoff: docs/qa/VERCEL_SUPABASE_PREP_2026-09-27.md and docs/DEPLOYMENT_READINESS.md. No external resource or secret created; owner account linking is next.

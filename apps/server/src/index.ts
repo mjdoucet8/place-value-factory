@@ -44,6 +44,21 @@ import {
 } from "../../../packages/config/src/index.js";
 
 const port = Number(process.env.PORT ?? 3101);
+export function runtimeDatabaseOptions(
+  environment: NodeJS.ProcessEnv = process.env,
+): { connectionString: string; max: number } | null {
+  const connectionString = environment.DATABASE_URL || environment.POSTGRES_URL;
+  if (!connectionString) return null;
+  const configured = environment.PVF_DATABASE_POOL_MAX;
+  const max = configured
+    ? Number(configured)
+    : environment.PVF_MODE === "staging"
+      ? 1
+      : 10;
+  if (!Number.isSafeInteger(max) || max < 1 || max > 50)
+    throw new Error("PVF_DATABASE_POOL_MAX must be an integer from 1 to 50.");
+  return { connectionString, max };
+}
 const defaultDataPath = process.env.PVF_DATA_PATH
   ? resolve(process.env.PVF_DATA_PATH)
   : resolve(process.cwd(), "db/local-development.json");
@@ -2656,12 +2671,13 @@ function hydrateAttempt(attempt: Partial<Attempt>): Attempt {
 if (
   process.argv[1] &&
   fileURLToPath(import.meta.url) === resolve(process.argv[1])
-)
+) {
+  const databaseOptions = runtimeDatabaseOptions();
   createApiServer(
     defaultDataPath,
-    process.env.DATABASE_URL
+    databaseOptions
       ? {
-          database: new Pool({ connectionString: process.env.DATABASE_URL }),
+          database: new Pool(databaseOptions),
           ...(process.env.PVF_AUTH === "local"
             ? {
                 identity: {
@@ -2677,3 +2693,4 @@ if (
       `Place Value Factory listening on http://${process.env.HOST ?? "127.0.0.1"}:${port}`,
     ),
   );
+}

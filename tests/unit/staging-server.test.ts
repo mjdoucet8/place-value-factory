@@ -2,7 +2,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { createApiServer } from "../../apps/server/src/index.js";
+import { createApiServer, runtimeDatabaseOptions } from "../../apps/server/src/index.js";
 
 const roots: string[] = [];
 afterEach(async () => {
@@ -11,6 +11,20 @@ afterEach(async () => {
 });
 
 describe("single-service staging server", () => {
+  it("uses Marketplace PostgreSQL and a bounded staging pool", () => {
+    expect(runtimeDatabaseOptions({
+      POSTGRES_URL: "postgresql://fictional@example.test/factory",
+      PVF_MODE: "staging",
+    })).toEqual({
+      connectionString: "postgresql://fictional@example.test/factory",
+      max: 1,
+    });
+    expect(() => runtimeDatabaseOptions({
+      DATABASE_URL: "postgresql://fictional@example.test/factory",
+      PVF_DATABASE_POOL_MAX: "0",
+    })).toThrow("PVF_DATABASE_POOL_MAX");
+  });
+
   it("serves the built SPA, keeps missing assets 404 and exposes health", async () => {
     const root = await mkdtemp(join(tmpdir(), "pvf-static-"));
     roots.push(root);

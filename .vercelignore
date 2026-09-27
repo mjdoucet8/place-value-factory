@@ -1,0 +1,8 @@
+.codex
+.git
+Place_Value_Factory_Codex_Handoff
+apps/server/db/local-development.json
+docs
+test-results
+tests
+*.log

@@ -24,3 +24,15 @@ The current application is a verified local fictional-data MVP release candidate
 Local preflight example: create private directories outside this repository and obtain three distinct keys from the responsible custodian. Set `DATABASE_URL`, `PVF_ORIGIN`, `PVF_AUTH`, `PVF_RECEIPT_KEY`, `PVF_BACKUP_KEY`, `PVF_DELETION_LEDGER_KEY`, `PVF_BACKUP_DIRECTORY`, `PVF_DELETION_LEDGER`, `PVF_RETENTION_DAYS`, `PVF_BACKUP_RETENTION_DAYS`, and `PVF_AUDIT_RETENTION_DAYS`; run `node scripts/validate-deployment.mjs pilot`. The script checks syntax, paths and key separation without connecting to or changing the database. `production` returns a named identity-adapter blocker by design. Do not put keys or connection passwords into the command line, test logs or repository.
 
 For a private fictional-data staging service, the repository includes a `Dockerfile` and one-process staging runtime. The host supplies PostgreSQL, an HTTPS `PVF_ORIGIN`, distinct private keys, and first-start `PVF_STAGING_TEACHER_USERNAME`/`PVF_STAGING_TEACHER_PASSWORD` secrets. The runtime requires `PVF_MODE=staging`, `PVF_AUTH=local` and `PVF_FICTIONAL_ONLY=true`; it builds and serves the SPA with the API, migrates forward, provisions at most one fictional teacher without printing its password, and exposes `/api/healthz`. This is an MVP review surface only. The current machine has no connected hosting CLI and its saved GitHub credential is invalid, so provider upload remains pending.
+
+### Vercel + Supabase fictional staging handoff
+
+The Vercel path is provider-specific and keeps initialization separate from autoscaling runtime:
+
+1. Import the GitHub repository into a new Vercel project. Vercel detects root `Dockerfile.vercel`; Fluid compute is enabled by `vercel.json`.
+2. Create or link a fictional-data Supabase PostgreSQL project in an approved region near the chosen Vercel compute region. The Marketplace integration supplies `POSTGRES_URL` and `POSTGRES_URL_NON_POOLING`; no Supabase browser SDK, Auth or Storage is used.
+3. In an authorized administrative environment, set the direct migration URL plus `PVF_MODE=staging`, `PVF_AUTH=local`, `PVF_FICTIONAL_ONLY=true`, `PVF_STAGING_TEACHER_USERNAME` and `PVF_STAGING_TEACHER_PASSWORD`, then run `npm run staging:seed` exactly once. Remove the teacher password from the runtime environment after provisioning.
+4. In Vercel, set the pooled database URL, the stable deployment URL as HTTPS `PVF_ORIGIN`, a new 64-hex `PVF_RECEIPT_KEY`, and the guarded staging values. Keep `PVF_DATABASE_POOL_MAX=1` for the first fictional staging trial.
+5. Deploy, require `/api/healthz` to return 200, then run the secure teacher/student smoke journey against that URL before sharing it.
+
+Vercel containers are stateless and may scale to multiple instances, so `Dockerfile.vercel` starts only the application. It never runs migrations or creates identities during instance boot. `Dockerfile` and `npm run staging` remain the persistent-host alternative.

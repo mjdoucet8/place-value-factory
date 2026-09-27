@@ -1,5 +1,9 @@
 # Project status
 
+## Current: 27 September 2026 — Vercel/Supabase fictional staging package prepared
+
+The GitHub-tracked MVP now has a Vercel container path (`Dockerfile.vercel`, Fluid configuration and build exclusions) that serves the existing web/API application on Vercel's assigned port. Autoscaling boot performs no migrations or identity provisioning. Runtime accepts Supabase Marketplace `POSTGRES_URL`, administrative setup prefers the non-pooling/direct URL, and staging limits each container to one PostgreSQL connection by default. The fictional-only and production school-identity guards remain intact. Typecheck, build, Vercel structure verification and 78 regular tests pass with 9 dedicated-harness skips. No Vercel/Supabase account, resource, database, region, secret or deployment was created. See `docs/qa/VERCEL_SUPABASE_PREP_2026-09-27.md`.
+
 ## Current: 27 September 2026 — functional MVP release candidate verified
 
 The current redesign passed a fresh isolated PostgreSQL pilot covering teacher provisioning, fictional student login, five-order play, interrupted-save recovery, results, teacher evidence, practice, revocation and archive. Release verification passes: typecheck, build, 77 regular tests (9 dedicated-harness skips), PostgreSQL 9 initial plus 3 restart checks (2 restart-inapplicable skips), 22 browser checks (1 native-zoom environment skip), and 4 secure-pilot browser journeys. The visual refresh exposed and then corrected Ship-button and artwork-label contrast issues; the intentional gameplay baseline was refreshed.

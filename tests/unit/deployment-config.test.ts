@@ -33,11 +33,21 @@ describe("provider-independent deployment preflight", () => {
       expect(badKey.status).not.toBe(0);
       expect(JSON.parse(badKey.stdout).errors).toContain("Keys: use distinct private keys for receipts, backup and deletion ledger");
       const staging = run("staging", {
+        DATABASE_URL: "",
+        POSTGRES_URL: "postgresql://fictional@pooler.example/fictional_staging",
         PVF_ORIGIN: "https://fictional-staging.example",
         PVF_FICTIONAL_ONLY: "true",
+        PVF_DATABASE_POOL_MAX: "1",
       });
       expect(staging.status, staging.stderr).toBe(0);
       expect(JSON.parse(staging.stdout)).toMatchObject({ profile: "staging", valid: true, errors: [] });
+      const badPool = run("staging", {
+        PVF_ORIGIN: "https://fictional-staging.example",
+        PVF_FICTIONAL_ONLY: "true",
+        PVF_DATABASE_POOL_MAX: "0",
+      });
+      expect(badPool.status).not.toBe(0);
+      expect(JSON.parse(badPool.stdout).errors).toContain("PVF_DATABASE_POOL_MAX: integer from 1 to 50 required");
       const production = run("production", { PVF_ORIGIN: "https://fictional.example" });
       expect(production.status).not.toBe(0);
       expect(JSON.parse(production.stdout).errors).toContain("PVF_AUTH: school identity adapter is not implemented; production remains blocked");

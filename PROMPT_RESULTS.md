@@ -230,3 +230,9 @@ Result: Moved trade actions after the six machine cards in document order. Tab a
 Prompt: Explicitly approve pushing the release candidate to `origin/main`.
 
 Result: Pushed the verified history through d1118ef to the configured GitHub repository and confirmed the remote main branch points to that exact commit. Existing development data and private files remain local. No deployment workflow is present in the repository, so connecting private hosting and PostgreSQL is the next staging action.
+
+## 2026-09-27 — Prepare Vercel and Supabase deployment
+
+Prompt: Continue deployment step 1 for Vercel hosting and Supabase PostgreSQL.
+
+Result: Added a Vercel-native container build and Fluid configuration, separated one-time migration/fictional-teacher setup from autoscaling runtime, supported Supabase Marketplace database variables and bounded each staging instance's connection pool. Typecheck, build, configuration verification and 78 regular tests pass. No provider account, resource, database or secret was created; linking the owner's Vercel, GitHub and Supabase projects is next.
