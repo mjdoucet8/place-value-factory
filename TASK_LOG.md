@@ -877,3 +877,11 @@ Added Dockerfile.vercel, Fluid vercel.json and .vercelignore. Container boot sta
 ## 2026-09-27 | MVP-DEPLOY-06 | HANDOFF / DONE | PA / BE / QA
 
 Owner authorized account linking, Supabase provisioning and deployment. Created Vercel project `rostersports/math-factory`, connected GitHub `mjdoucet8/place-value-factory`, accepted the owner-completed Supabase Marketplace terms, provisioned `supabase-charcoal-feather`, pulled environment keys without logging values, restricted local secret files to mode 0600, applied all forward migrations and provisioned one fictional teacher. Added guarded runtime variables and a fresh private receipt key in Vercel; the teacher password is not a runtime variable. The initial generic static preset build failed before release; switched the project to the Container preset with Fluid compute and reset build/output overrides. Final production container is Ready at `https://math-factory-one.vercel.app`. Live checks pass for health, teacher login, fictional class/student access issuance, student login and all 30 map levels; temporary test classes were archived. Durable private credentials: `/home/owner/.config/math-factory/staging-credentials.json`. Evidence: `docs/qa/VERCEL_SUPABASE_DEPLOYMENT_2026-09-27.md`. This is fictional staging only; production school identity and governance remain open.
+
+## 2026-09-27 | MVP-STUDENT-07 | HANDOFF / DONE | QA
+
+Created a persistent fictional `Demo Learner` login in the live `Fictional MVP Demo Class`. Verified the issued class code, username and PIN by starting a student session against the production deployment and loading all 30 factory levels. The class remains enabled for repeat owner testing.
+
+## 2026-09-27 | MVP-MAP-08 | HANDOFF / DONE | FE / QA
+
+Removed the student map's `Practice a skill` recommendation panel, its map-only callback and obsolete styling. Kept the existing practice action in Factory Progress and updated the pilot journey accordingly. TypeScript, production build, diff check and 78 regular tests pass. Deployed production `dpl_FQDvpc2MCG42ZFGQhBqZvvXyXHVs` to the stable alias and confirmed its shipped bundle contains none of the removed panel copy. The owner's pre-existing local development data remains untouched.

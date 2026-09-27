@@ -162,8 +162,8 @@ test("teacher issues access, student ships, and teacher reviews and revokes it",
   await page.screenshot({ path: "test-results/pilot-teacher-evidence.png", fullPage: true });
   await student.getByRole("button", { name: "Back to map" }).click();
   await expect(student.getByRole("button", { name: /View mission — Level 2/ })).toBeVisible();
-  await student.locator("summary").filter({ hasText: "Practice a skill" }).click();
-  await student.getByRole("button", { name: "Start practice" }).click();
+  await student.getByRole("button", { name: "Progress" }).click();
+  await student.getByRole("button", { name: /^Practice / }).click();
   for (let slot = 0; slot < 5; slot++) {
     let remaining = Number((await student.locator(".current-order strong").innerText()).replaceAll(",", ""));
     for (const [index, value] of [100000, 10000, 1000, 100, 10, 1].entries()) {

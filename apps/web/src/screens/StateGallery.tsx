@@ -52,7 +52,6 @@ export function StateGallery() {
         onSettings={noop}
         onProgress={noop}
         onResume={noop}
-        onPractice={noop}
         onSelectLevel={noop}
       />
     );

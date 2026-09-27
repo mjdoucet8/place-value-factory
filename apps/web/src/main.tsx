@@ -958,9 +958,6 @@ function App() {
         onSettings={() => void openSettings()}
         onProgress={() => navigate("progress")}
         onResume={() => navigate("game", { attempt })}
-        onPractice={() =>
-          void start(map?.highestUnlockedLevelId ?? "level-1", "practice")
-        }
         onSelectLevel={chooseLevel}
       />
     );

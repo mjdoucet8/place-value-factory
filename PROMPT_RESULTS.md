@@ -242,3 +242,15 @@ Result: Added a Vercel-native container build and Fluid configuration, separated
 Prompt: Connect the GitHub repository to Vercel, link Supabase, and continue after accepting the required Marketplace terms.
 
 Result: Created `rostersports/math-factory`, connected `mjdoucet8/place-value-factory`, provisioned and linked the `supabase-charcoal-feather` database, applied all forward migrations, and created one fictional staging teacher. Configured the guarded runtime and deployed the container at `https://math-factory-one.vercel.app`. Health, teacher login, fictional roster issuance, student login and all 30 map levels passed against the live service; temporary test classes were archived. Credentials remain private outside Git. Production with real identities remains blocked by design.
+
+## 2026-09-27 — Create a persistent fictional student login
+
+Prompt: Provide a student login for testing the deployed product.
+
+Result: Created the persistent fictional `Demo Learner` account in `Fictional MVP Demo Class` and verified its login against the live deployment. The account successfully loaded all 30 factory levels. The class remains active for repeat testing.
+
+## 2026-09-27 — Remove the map practice recommendation
+
+Prompt: Remove the Practice a Skill panel because level 1 serves as the tutorial and the panel adds unnecessary clutter.
+
+Result: Removed the practice recommendation panel and its map-only callback and styling. Practice remains available from the dedicated Progress screen. Updated the pilot journey to use that route, then passed TypeScript, the production build, all 78 regular tests and a live production-bundle check. Deployed the change to `https://math-factory-one.vercel.app`.

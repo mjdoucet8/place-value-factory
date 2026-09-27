@@ -10,7 +10,6 @@ type Props = {
   onSettings: () => void;
   onProgress: () => void;
   onResume: () => void;
-  onPractice: () => void;
   onSelectLevel: (level: SelectedLevel) => void;
 };
 
@@ -72,20 +71,6 @@ export function MapScreen(props: Props) {
           </p>
           <button onClick={props.onResume}>Resume saved mission</button>
         </section>
-      )}
-      {props.progress?.nextPracticeSkillId && (
-        <details className="practice-card">
-          <summary>Practice a skill</summary>
-          <h2>Practice recommendation</h2>
-          <p>
-            Build more evidence for{" "}
-            <strong>
-              {studentSkillLabel(props.progress.nextPracticeSkillId)}
-            </strong>{" "}
-            before your next stage opens.
-          </p>
-          <button onClick={props.onPractice}>Start practice</button>
-        </details>
       )}
       {lockedNotice ? (
         <p className="map-lock-notice" role="status">
