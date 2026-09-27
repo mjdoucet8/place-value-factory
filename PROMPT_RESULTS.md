@@ -236,3 +236,9 @@ Result: Pushed the verified history through d1118ef to the configured GitHub rep
 Prompt: Continue deployment step 1 for Vercel hosting and Supabase PostgreSQL.
 
 Result: Added a Vercel-native container build and Fluid configuration, separated one-time migration/fictional-teacher setup from autoscaling runtime, supported Supabase Marketplace database variables and bounded each staging instance's connection pool. Typecheck, build, configuration verification and 78 regular tests pass. No provider account, resource, database or secret was created; linking the owner's Vercel, GitHub and Supabase projects is next.
+
+## 2026-09-27 — Deploy fictional MVP with Vercel and Supabase
+
+Prompt: Connect the GitHub repository to Vercel, link Supabase, and continue after accepting the required Marketplace terms.
+
+Result: Created `rostersports/math-factory`, connected `mjdoucet8/place-value-factory`, provisioned and linked the `supabase-charcoal-feather` database, applied all forward migrations, and created one fictional staging teacher. Configured the guarded runtime and deployed the container at `https://math-factory-one.vercel.app`. Health, teacher login, fictional roster issuance, student login and all 30 map levels passed against the live service; temporary test classes were archived. Credentials remain private outside Git. Production with real identities remains blocked by design.

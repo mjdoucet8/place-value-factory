@@ -6,3 +6,8 @@ db/e2e-local-development.json
 apps/server/db/e2e-local-development.json
 test-results/
 playwright-report/
+.vercel
+.env*
+.codex/
+.agents/
+skills-lock.json
