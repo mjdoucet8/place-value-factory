@@ -254,3 +254,9 @@ Result: Created the persistent fictional `Demo Learner` account in `Fictional MV
 Prompt: Remove the Practice a Skill panel because level 1 serves as the tutorial and the panel adds unnecessary clutter.
 
 Result: Removed the practice recommendation panel and its map-only callback and styling. Practice remains available from the dedicated Progress screen. Updated the pilot journey to use that route, then passed TypeScript, the production build, all 78 regular tests and a live production-bundle check. Deployed the change to `https://math-factory-one.vercel.app`.
+
+## 2026-09-27 — Reposition the Shipping Station
+
+Prompt: Move the Shipping Station left of the route and above the bend so the path no longer runs through the building.
+
+Result: Shifted the Shipping Station artwork and label 78 pixels left and 28 pixels up in the factory-world layout while keeping its level nodes aligned to the route. The single-column mobile layout retains its centered placement. TypeScript, the production build and diff validation pass. Deployed the update to the stable production URL and confirmed the live API is healthy.

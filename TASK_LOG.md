@@ -885,3 +885,7 @@ Created a persistent fictional `Demo Learner` login in the live `Fictional MVP D
 ## 2026-09-27 | MVP-MAP-08 | HANDOFF / DONE | FE / QA
 
 Removed the student map's `Practice a skill` recommendation panel, its map-only callback and obsolete styling. Kept the existing practice action in Factory Progress and updated the pilot journey accordingly. TypeScript, production build, diff check and 78 regular tests pass. Deployed production `dpl_FQDvpc2MCG42ZFGQhBqZvvXyXHVs` to the stable alias and confirmed its shipped bundle contains none of the removed panel copy. The owner's pre-existing local development data remains untouched.
+
+## 2026-09-27 | MVP-MAP-09 | HANDOFF / DONE | FE / QA
+
+Moved the Shipping Station artwork and heading 78px left and 28px up in the desktop factory-world layout so the building clears the vertical path and sits above its bend. The level nodes remain aligned with the route, and the narrow single-column layout resets the offset. TypeScript, production build and diff checks pass. Production deployment `dpl_CKSkLg1qyeq361R2CZ9SHB6xZgDc` is Ready at the stable alias; `/api/healthz` returns `{ "status": "ok" }`. Existing local development data remains untouched.
