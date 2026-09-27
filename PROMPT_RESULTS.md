@@ -260,3 +260,9 @@ Result: Removed the practice recommendation panel and its map-only callback and 
 Prompt: Move the Shipping Station left of the route and above the bend so the path no longer runs through the building.
 
 Result: Shifted the Shipping Station artwork and label 78 pixels left and 28 pixels up in the factory-world layout while keeping its level nodes aligned to the route. The single-column mobile layout retains its centered placement. TypeScript, the production build and diff validation pass. Deployed the update to the stable production URL and confirmed the live API is healthy.
+
+## 2026-09-27 — Remove the mission introduction screen
+
+Prompt: Completely remove the pre-mission information screen and place simple instructions beside the factory during gameplay.
+
+Result: Removed the mission-introduction component, route, gallery fixture, styles and extra Start/Replay confirmation. Selecting or replaying a level now creates the attempt and opens gameplay directly. Added a compact How to play panel beside the current order, with a stacked responsive layout on small screens. Updated the browser and pilot journeys and refreshed the two intentional visual baselines. TypeScript, production build, 78 regular tests and 22 browser tests pass, with one environment-specific browser-zoom test skipped. Deployed the update to the stable production URL and verified the live bundle and API.

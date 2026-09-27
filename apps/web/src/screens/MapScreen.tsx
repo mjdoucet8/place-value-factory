@@ -6,6 +6,7 @@ import { useState } from "react";
 type Props = {
   map: any;
   progress: any;
+  starting: boolean;
   activeAttempt: any;
   onSettings: () => void;
   onProgress: () => void;
@@ -78,7 +79,11 @@ export function MapScreen(props: Props) {
         </p>
       ) : null}
       <div className="map-layout">
-        <div className="factory-route" aria-label="Five-zone factory route">
+        <div
+          className="factory-route"
+          aria-label="Five-zone factory route"
+          aria-busy={props.starting}
+        >
           <svg
             className="world-route"
             viewBox="0 0 1000 700"
@@ -151,6 +156,7 @@ export function MapScreen(props: Props) {
                                 level.id === currentId ? "step" : undefined
                               }
                               data-locked={level.status === "locked"}
+                              disabled={props.starting}
                               aria-label={`${level.status === "locked" ? "Locked" : level.status === "completed" ? "Replay mission" : "View mission"} — Level ${level.id.replace("level-", "")}: ${level.title}${level.status === "locked" ? `. ${level.prerequisiteSummary}` : ""}`}
                               onClick={() =>
                                 level.status === "locked"
@@ -195,6 +201,7 @@ export function MapScreen(props: Props) {
                             </small>
                             {level.status === "unlocked" ? (
                               <button
+                                disabled={props.starting}
                                 onClick={() =>
                                   props.onSelectLevel({
                                     ...level,
@@ -207,6 +214,7 @@ export function MapScreen(props: Props) {
                             ) : level.status === "completed" ? (
                               <button
                                 className="secondary"
+                                disabled={props.starting}
                                 onClick={() =>
                                   props.onSelectLevel({
                                     ...level,

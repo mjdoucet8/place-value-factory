@@ -70,7 +70,7 @@ test("quantity keyboard navigation and Enter ship work on a saved mission", asyn
   await page.goto("/");
   await page.getByRole("button", { name: "Student login" }).click();
   await page.getByRole("button", { name: /View mission/ }).first().click();
-  await page.getByRole("button", { name: /Start mission/ }).click();
+  await expect(page.getByText("CURRENT ORDER", { exact: true })).toBeVisible();
   const openQuantities = page.locator('.machines input[id^="quantity-"]:not([disabled])');
   await expect(page.getByRole("button", { name: "Ship order" })).toBeEnabled();
   await expect(openQuantities.first()).toBeEnabled();
@@ -101,8 +101,7 @@ test("student can finish five orders using keyboard controls and reach saved res
   await expect(page.getByRole("heading", { name: "Factory Map" })).toBeVisible();
   await page.getByRole("button", { name: /View mission/ }).first().focus();
   await page.keyboard.press("Enter");
-  await page.getByRole("button", { name: /Start mission/ }).focus();
-  await page.keyboard.press("Enter");
+  await expect(page.getByText("CURRENT ORDER", { exact: true })).toBeVisible();
   for (let slot = 0; slot < 5; slot++) {
     const target = Number((await page.locator(".current-order strong").innerText()).replaceAll(",", ""));
     await page.getByRole("button", { name: "Help" }).focus();

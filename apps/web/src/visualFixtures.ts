@@ -1,4 +1,3 @@
-import type { SelectedLevel } from "./models.js";
 import { LEVELS } from "../../../packages/config/src/index.js";
 
 const baseOrder = {
@@ -179,15 +178,6 @@ export const MAP_FIXTURE = {
   })),
 };
 
-export const INTRO_FIXTURE: SelectedLevel = {
-  id: "level-18",
-  title: "Shipping Challenge",
-  stage: 4,
-  status: "unlocked",
-  stars: 0,
-  prerequisiteSummary: "Ready",
-  zoneName: "Shipping",
-};
 export const PROGRESS_FIXTURE = {
   completedLevelIds: ["level-1", "level-2"],
   nextPracticeSkillId: "pv.hundreds",

@@ -1,13 +1,11 @@
 import { useRef, useState } from "react";
 import { GameScreen } from "./GameScreen.js";
 import { MapScreen } from "./MapScreen.js";
-import { LevelIntroScreen } from "./LevelIntroScreen.js";
 import { ProgressScreen } from "./ProgressScreen.js";
 import { ResultsScreen } from "./ResultsScreen.js";
 import { Mascot } from "../components/FactoryArt.js";
 import {
   GAME_FIXTURES,
-  INTRO_FIXTURE,
   MAP_FIXTURE,
   PROGRESS_FIXTURE,
   RESULTS_FIXTURES,
@@ -17,7 +15,6 @@ const noop = () => undefined;
 const states = [
   "map",
   "map-resume",
-  "level-intro",
   "progress",
   ...Object.keys(GAME_FIXTURES),
   "results-two",
@@ -46,6 +43,7 @@ export function StateGallery() {
       <MapScreen
         map={MAP_FIXTURE}
         progress={PROGRESS_FIXTURE}
+        starting={false}
         activeAttempt={
           state === "map-resume" ? GAME_FIXTURES.calm.attempt : null
         }
@@ -53,21 +51,6 @@ export function StateGallery() {
         onProgress={noop}
         onResume={noop}
         onSelectLevel={noop}
-      />
-    );
-  else if (state === "level-intro")
-    preview = (
-      <LevelIntroScreen
-        level={INTRO_FIXTURE}
-        settings={{
-          sound: false,
-          reducedMotion: false,
-          pressure: "calm",
-          textScale: "normal",
-        }}
-        starting={false}
-        onStart={noop}
-        onBack={noop}
       />
     );
   else if (state === "progress")

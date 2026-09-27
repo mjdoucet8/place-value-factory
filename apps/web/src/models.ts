@@ -1,7 +1,6 @@
 export type Screen =
   | "login"
   | "map"
-  | "level-intro"
   | "game"
   | "results"
   | "progress"

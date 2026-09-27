@@ -67,10 +67,7 @@ test("teacher issues access, student ships, and teacher reviews and revokes it",
     .getByRole("button", { name: /View mission|Replay mission/ })
     .first()
     .click();
-  await student
-    .getByRole("button", { name: /Start mission|Replay level/ })
-    .click();
-  await expect(student.getByText("CURRENT ORDER")).toBeVisible();
+  await expect(student.getByText("CURRENT ORDER", { exact: true })).toBeVisible();
   await student.screenshot({
     path: "test-results/pilot-gameplay.png",
     fullPage: true,
@@ -182,7 +179,7 @@ test("teacher issues access, student ships, and teacher reviews and revokes it",
   await expect(page.getByText("10 submitted orders · 10 accepted shipments")).toBeVisible();
   await student.getByRole("button", { name: "Back to map" }).click();
   await student.getByRole("button", { name: /Replay mission/ }).first().click();
-  await student.getByRole("button", { name: /Replay level/ }).click();
+  await expect(student.getByText("CURRENT ORDER", { exact: true })).toBeVisible();
   await student.route("**/responses", (route) => route.abort("connectionfailed"));
   let pendingTarget = Number((await student.locator(".current-order strong").innerText()).replaceAll(",", ""));
   for (const [index, value] of [100000, 10000, 1000, 100, 10, 1].entries()) {

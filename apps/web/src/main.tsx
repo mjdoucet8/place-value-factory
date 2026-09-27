@@ -9,7 +9,6 @@ import {
 } from "./models.js";
 import { LoginScreen } from "./screens/LoginScreen.js";
 import { MapScreen } from "./screens/MapScreen.js";
-import { LevelIntroScreen } from "./screens/LevelIntroScreen.js";
 import { ProgressScreen } from "./screens/ProgressScreen.js";
 import { SettingsScreen } from "./screens/SettingsScreen.js";
 import { ResultsScreen } from "./screens/ResultsScreen.js";
@@ -46,11 +45,9 @@ const deviceStorage = {
     }
   },
 };
-const pathFor = (screen: Screen, attempt?: any, level?: SelectedLevel) => {
+const pathFor = (screen: Screen, attempt?: any) => {
   if (screen === "login") return "/student/login";
   if (screen === "map") return "/games/place-value-factory";
-  if (screen === "level-intro")
-    return `/games/place-value-factory/levels/${level?.id ?? "level-1"}`;
   if (screen === "progress") return "/games/place-value-factory/progress";
   if (screen === "settings") return "/games/place-value-factory/settings";
   if (screen === "results")
@@ -94,7 +91,6 @@ function App() {
   });
   const [map, setMap] = useState<any>();
   const [progress, setProgress] = useState<any>();
-  const [selectedLevel, setSelectedLevel] = useState<SelectedLevel>();
   const [starting, setStarting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [pendingLocal, setPendingLocal] = useState(false);
@@ -119,14 +115,10 @@ function App() {
   const tabId = useRef(crypto.randomUUID()).current;
   const navigate = (
     next: Screen,
-    options: { replace?: boolean; attempt?: any; level?: SelectedLevel } = {},
+    options: { replace?: boolean; attempt?: any } = {},
   ) => {
     setScreen(next);
-    const path = pathFor(
-      next,
-      options.attempt ?? attempt,
-      options.level ?? selectedLevel,
-    );
+    const path = pathFor(next, options.attempt ?? attempt);
     window.history[options.replace ? "replaceState" : "pushState"](
       {},
       "",
@@ -171,7 +163,7 @@ function App() {
       else if (path.endsWith("/progress")) setScreen("progress");
       else if (path.endsWith("/settings")) setScreen("settings");
       else if (path.endsWith("/results")) setScreen("results");
-      else if (path.includes("/levels/")) setScreen("level-intro");
+      else if (path.includes("/levels/")) setScreen("map");
       else if (path.includes("/attempts/")) setScreen("game");
       else if (path.startsWith("/teacher/")) setScreen("teacher");
       else if (path.startsWith("/dev/")) setScreen("state-gallery");
@@ -251,9 +243,11 @@ function App() {
                 (item: any) => item.id === requestedLevelId,
               );
               if (level) {
-                const selected = { ...level, zoneName: zone.name };
-                setSelectedLevel(selected);
-                navigate("level-intro", { replace: true, level: selected });
+                await start(
+                  level.id,
+                  "path",
+                  loaded.map.profileRevision,
+                );
                 return;
               }
             }
@@ -536,10 +530,12 @@ function App() {
       setNotice((error as Error).message);
     }
   };
-  const start = async (
+  async function start(
     levelId = "level-1",
     kind: "path" | "practice" = "path",
-  ) => {
+    profileRevision = map?.profileRevision ?? 0,
+  ) {
+    if (starting) return;
     setStarting(true);
     const commandId = crypto.randomUUID();
     try {
@@ -548,7 +544,7 @@ function App() {
         headers: { "x-session": session, "idempotency-key": commandId },
         body: JSON.stringify({
           commandId,
-          profileRevision: map?.profileRevision ?? 0,
+          profileRevision,
           tabId,
           levelId,
           kind,
@@ -563,7 +559,7 @@ function App() {
     } finally {
       setStarting(false);
     }
-  };
+  }
   const ship = async () => {
     if (saving || pendingLocal) return;
     setSaving(true);
@@ -898,9 +894,8 @@ function App() {
     }
   };
   const chooseLevel = (level: SelectedLevel) => {
-    setSelectedLevel(level);
     setNotice("");
-    navigate("level-intro", { level });
+    void start(level.id);
   };
   const findLevel = (levelId: string): SelectedLevel | undefined => {
     for (const zone of map?.zones ?? []) {
@@ -952,6 +947,7 @@ function App() {
       <MapScreen
         map={map}
         progress={progress}
+        starting={starting}
         activeAttempt={
           attempt && attempt.status !== "completed" ? attempt : null
         }
@@ -959,16 +955,6 @@ function App() {
         onProgress={() => navigate("progress")}
         onResume={() => navigate("game", { attempt })}
         onSelectLevel={chooseLevel}
-      />
-    );
-  if (screen === "level-intro" && selectedLevel)
-    return (
-      <LevelIntroScreen
-        level={selectedLevel}
-        settings={settings}
-        starting={starting}
-        onStart={() => void start(selectedLevel.id)}
-        onBack={() => navigate("map")}
       />
     );
   if (screen === "progress")

@@ -26,10 +26,7 @@ async function startFirstMission(page: Page) {
     .getByRole("button", { name: /View mission|Replay mission/ })
     .first()
     .click();
-  await expect(page.getByRole("heading", { name: /Level \d+/ })).toBeVisible();
-  await page
-    .getByRole("button", { name: /Start mission|Replay level/ })
-    .click();
+  await expect(page.getByText("CURRENT ORDER", { exact: true })).toBeVisible();
 }
 
 test("student completes five saved orders, settings, and optional transfer; teacher sees evidence", async ({
@@ -42,7 +39,7 @@ test("student completes five saved orders, settings, and optional transfer; teac
     page.getByRole("heading", { name: "Factory Map" }),
   ).toBeVisible();
   await startFirstMission(page);
-  await expect(page.getByText("CURRENT ORDER")).toBeVisible();
+  await expect(page.getByText("CURRENT ORDER", { exact: true })).toBeVisible();
   await page.locator("#quantity-0").fill("2");
   await page.screenshot({
     path: "test-results/student-game.png",
@@ -74,7 +71,7 @@ test("student completes five saved orders, settings, and optional transfer; teac
     page.getByRole("heading", { name: "Level complete!" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Try the extra challenge" }).click();
-  await expect(page.getByText("CURRENT ORDER")).toBeVisible();
+  await expect(page.getByText("CURRENT ORDER", { exact: true })).toBeVisible();
   await fillCanonicalOrder(page);
   await page.getByRole("button", { name: "Ship order" }).click();
   await expect(page.getByText("third star saved")).toBeVisible();
@@ -171,7 +168,7 @@ test("a second tab takes over and the stale writer cannot ship", async ({
   await page.goto("/");
   await page.getByRole("button", { name: "Student login" }).click();
   await startFirstMission(page);
-  await expect(page.getByText("CURRENT ORDER")).toBeVisible();
+  await expect(page.getByText("CURRENT ORDER", { exact: true })).toBeVisible();
 
   const secondTab = await page.context().newPage();
   await secondTab.goto("/");
@@ -232,7 +229,7 @@ test("recovers a shipment whose server reply was dropped after commit", async ({
   )
     await page.getByRole("button", { name: "Resume saved mission" }).click();
   else await startFirstMission(page);
-  await expect(page.getByText("CURRENT ORDER")).toBeVisible();
+  await expect(page.getByText("CURRENT ORDER", { exact: true })).toBeVisible();
   const takeOver = page.getByRole("button", { name: "Take over this attempt" });
   if (await takeOver.isVisible()) await takeOver.click();
   const shipmentBefore = Number(
@@ -427,7 +424,6 @@ test("loads original art and keeps gallery controls responsive", async ({
   const fixtures = [
     "map",
     "map-resume",
-    "level-intro",
     "progress",
     "calm",
     "busy",

@@ -128,7 +128,16 @@ export function GameScreen(props: Props) {
           <strong>{order.target.toLocaleString()}</strong>
           <p>{objective}</p>
         </section>
-
+        <aside
+          className="play-instructions"
+          aria-labelledby="play-instructions-heading"
+        >
+          <h2 id="play-instructions-heading">How to play</h2>
+          <p>
+            Enter crate amounts, match the current order, then choose{" "}
+            <strong>Ship order</strong>.
+          </p>
+        </aside>
       </div>
       {(props.attempt.writerTabId !== props.tabId || props.pendingConflict) && (
         <aside className="takeover" role="status">
