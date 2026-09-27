@@ -861,3 +861,7 @@ Owner requests a quantity-first keyboard sequence: Tab from one enabled crate nu
 ## 2026-09-27 | MVP-TAB-03 | HANDOFF / DONE | FE / QA
 
 Moved the trade-action row after the six machine cards in document order, preserving click and keyboard behavior, enabled/disabled state and accessible button semantics. Tab now visits every enabled quantity field before reaching enabled trade actions; plus/minus controls remain outside sequential focus. Strengthened the browser test by enabling the first trade action, pressing Tab from its quantity field and asserting focus moves to the next enabled quantity field; Shift+Tab returns to the prior field. Focused keyboard test, typecheck and build passed; the final calm composition was inspected and its intentional 2% baseline change refreshed. No mathematics or representation behavior changed.
+
+## 2026-09-27 | MVP-STAGING-04 | UPDATE | PA
+
+Owner explicitly approved pushing the verified release candidate through d1118ef to the configured `origin/main`. Push succeeded (`34ed352..d1118ef`), and an independent remote-head read confirmed `refs/heads/main` at `d1118ef92c4204a737dd573b1bb4cc918e2f8485`. No tracked development data or private `.codex` files were included. The repository has no checked-in GitHub deployment workflow; hosting service and PostgreSQL connection remain the next external staging step.

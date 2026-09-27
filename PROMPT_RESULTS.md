@@ -224,3 +224,9 @@ Result: The preview had been restarted without its API process. Started the exis
 Prompt: Make Tab move from one crate number box directly to the next instead of stopping at Trade 1 for 10 smaller.
 
 Result: Moved trade actions after the six machine cards in document order. Tab and Shift+Tab now move directly between adjacent quantity fields, then continue to enabled trade actions so every control remains keyboard accessible. A focused browser test enables the formerly intervening trade action and confirms the field-to-field sequence.
+
+## 2026-09-27 — Push MVP release candidate
+
+Prompt: Explicitly approve pushing the release candidate to `origin/main`.
+
+Result: Pushed the verified history through d1118ef to the configured GitHub repository and confirmed the remote main branch points to that exact commit. Existing development data and private files remain local. No deployment workflow is present in the repository, so connecting private hosting and PostgreSQL is the next staging action.
