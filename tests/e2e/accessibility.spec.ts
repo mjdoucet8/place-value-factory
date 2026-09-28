@@ -91,14 +91,27 @@ test("quantity keyboard navigation and Enter ship work on a saved mission", asyn
   const sceneGeometry = () =>
     page.locator(".game-screen").evaluate((screen) => {
       const line = screen.querySelector<HTMLElement>(".production-line")!;
+      const backdrop = screen.querySelector<HTMLElement>(".game-backdrop")!;
+      const backdropStyle = getComputedStyle(backdrop);
+      const backdropRect = backdrop.getBoundingClientRect();
       return {
         screenHeight: screen.getBoundingClientRect().height,
         documentHeight: document.documentElement.scrollHeight,
         lineHeight: line.getBoundingClientRect().height,
         lineScrollWidth: line.scrollWidth,
+        backdropPosition: backdropStyle.position,
+        backdropImage: backdropStyle.backgroundImage,
+        backdropSize: backdropStyle.backgroundSize,
+        backdropRect: {
+          top: backdropRect.top,
+          left: backdropRect.left,
+          width: backdropRect.width,
+          height: backdropRect.height,
+        },
       };
     });
   const idleGeometry = await sceneGeometry();
+  expect(idleGeometry.backdropPosition).toBe("fixed");
   await openQuantities.last().press("Enter");
   await expect(page.locator(".production-line")).toHaveAttribute(
     "data-shipment-motion",

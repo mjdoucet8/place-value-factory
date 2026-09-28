@@ -332,3 +332,9 @@ Result: Found that the accepted-shipment message temporarily increased the page 
 Prompt: Remove the “Saved — shipment accepted.” message shown at the bottom during a successful shipment.
 
 Result: Removed the message from gameplay and the development fixture, along with its obsolete toast styling. Successful shipments now transition directly through the conveyor animation into the next order, while incorrect and recovery feedback remain intact. Updated browser coverage to assert the copy stays absent throughout the transition and deployed the change to the stable production URL.
+
+## 2026-09-28 — Keep the gameplay background completely static
+
+Prompt: Keep the background image completely static while shipped crates leave and new crates arrive.
+
+Result: Separated the factory artwork from the gameplay layout and anchored it to a fixed viewport backdrop. The conveyor and crates now animate above the artwork without moving or rescaling it. Extended the shipment regression to compare the backdrop itself through every animation phase, inspected the rendered state, passed TypeScript, the production build, 80 regular tests and all 23 browser scenarios, and deployed the fix to the stable production URL.

@@ -123,6 +123,7 @@ export function GameScreen(props: Props) {
         else if (event.target instanceof HTMLInputElement && /^quantity-[0-5]$/.test(event.target.id)) moveQuantityFocus(1);
       }}
     >
+      <div className="game-backdrop" aria-hidden="true" />
       <BusyFactoryScenery enabled={busyEnabled} />
       <header>
         <h1>
