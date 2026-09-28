@@ -338,3 +338,9 @@ Result: Removed the message from gameplay and the development fixture, along wit
 Prompt: Keep the background image completely static while shipped crates leave and new crates arrive.
 
 Result: Separated the factory artwork from the gameplay layout and anchored it to a fixed viewport backdrop. The conveyor and crates now animate above the artwork without moving or rescaling it. Extended the shipment regression to compare the backdrop itself through every animation phase, inspected the rendered state, passed TypeScript, the production build, 80 regular tests and all 23 browser scenarios, and deployed the fix to the stable production URL.
+
+## 2026-09-28 — Remove the remaining horizontal submission shift
+
+Prompt: Stop the entire gameplay screen from shifting slightly left when an answer is submitted.
+
+Result: Reserved a stable browser scrollbar gutter while gameplay is open, so temporary overflow changes cannot alter the width used to center the screen. Scoped the adjustment to gameplay and extended the shipment regression to verify the screen's horizontal position and viewport measurements remain identical through departure, arrival, and settling. Passed TypeScript, the production build, 80 regular tests and all 23 browser scenarios, then deployed the fix to the stable production URL.

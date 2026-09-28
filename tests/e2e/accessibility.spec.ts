@@ -94,9 +94,15 @@ test("quantity keyboard navigation and Enter ship work on a saved mission", asyn
       const backdrop = screen.querySelector<HTMLElement>(".game-backdrop")!;
       const backdropStyle = getComputedStyle(backdrop);
       const backdropRect = backdrop.getBoundingClientRect();
+      const screenRect = screen.getBoundingClientRect();
       return {
-        screenHeight: screen.getBoundingClientRect().height,
+        screenHeight: screenRect.height,
+        screenLeft: screenRect.left,
+        screenWidth: screenRect.width,
         documentHeight: document.documentElement.scrollHeight,
+        documentClientWidth: document.documentElement.clientWidth,
+        viewportWidth: window.innerWidth,
+        scrollbarGutter: getComputedStyle(document.documentElement).scrollbarGutter,
         lineHeight: line.getBoundingClientRect().height,
         lineScrollWidth: line.scrollWidth,
         backdropPosition: backdropStyle.position,
@@ -112,6 +118,7 @@ test("quantity keyboard navigation and Enter ship work on a saved mission", asyn
     });
   const idleGeometry = await sceneGeometry();
   expect(idleGeometry.backdropPosition).toBe("fixed");
+  expect(idleGeometry.scrollbarGutter).toBe("stable");
   await openQuantities.last().press("Enter");
   await expect(page.locator(".production-line")).toHaveAttribute(
     "data-shipment-motion",
