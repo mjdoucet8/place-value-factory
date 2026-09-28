@@ -1270,38 +1270,75 @@ td {
 .map-screen {
   max-width: 1366px;
 }
+.map-screen > header {
+  padding: 4px 14px;
+}
 .map-screen > header h1 {
   font-size: clamp(1.8rem, 3vw, 2.8rem);
+  margin: 2px 0;
+}
+.map-screen > header button {
+  min-height: 40px;
 }
 .map-tools {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: max-content minmax(280px, 1fr) max-content;
   align-items: center;
   gap: 12px;
-  flex-wrap: wrap;
-  margin: 18px 0;
+  margin: 10px 0;
 }
-.map-tools p {
+.map-tools .map-current-level {
   margin: 0;
   background: white;
   border-radius: 12px;
-  padding: 10px 16px;
+  padding: 8px 14px;
+  white-space: nowrap;
 }
 .map-tools [role="group"] {
   display: flex;
   gap: 8px;
+}
+.map-tools [role="group"] button {
+  min-height: 40px;
+  padding-inline: 14px;
 }
 .map-tools [aria-pressed="true"] {
   background: var(--navy);
   color: white;
 }
 .map-screen .map-welcome {
-  margin: 12px 0;
+  justify-self: center;
+  margin: 0;
   max-width: none;
+  min-width: 0;
+  padding: 4px 12px;
 }
 .map-screen .map-welcome .mascot {
-  width: 64px;
-  height: 64px;
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+}
+.map-screen .map-welcome p {
+  text-align: center;
+}
+.map-screen > .resume-banner {
+  align-items: center;
+  display: grid;
+  gap: 6px 18px;
+  grid-template-columns: max-content minmax(130px, 1fr) max-content;
+  margin: 10px 0 12px;
+  max-width: none;
+  padding: 10px 16px;
+}
+.map-screen > .resume-banner h2,
+.map-screen > .resume-banner p {
+  margin: 0;
+}
+.map-screen > .resume-banner h2 {
+  font-size: 1.1rem;
+}
+.map-screen > .resume-banner button {
+  min-height: 42px;
 }
 .map-layout {
   display: grid;
@@ -1507,6 +1544,17 @@ td {
   margin-top: 0;
 }
 @media (max-width: 1099px) {
+  .map-tools {
+    grid-template-columns: max-content 1fr;
+  }
+  .map-screen .map-welcome {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+  }
+  .map-tools [role="group"] {
+    justify-self: end;
+  }
   .map-layout {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -1515,6 +1563,31 @@ td {
   }
 }
 @media (max-width: 699px) {
+  .map-screen > header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .map-screen > header nav button {
+    flex: 1;
+  }
+  .map-tools {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .map-tools .map-current-level,
+  .map-tools [role="group"],
+  .map-screen .map-welcome {
+    grid-column: 1;
+    justify-self: stretch;
+  }
+  .map-screen .map-welcome {
+    grid-row: auto;
+  }
+  .map-tools [role="group"] button {
+    flex: 1;
+  }
+  .map-screen > .resume-banner {
+    grid-template-columns: minmax(0, 1fr);
+  }
   [data-map-view="world"] .factory-route {
     grid-template-columns: minmax(0, 1fr);
     gap: 30px;

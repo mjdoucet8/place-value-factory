@@ -36,11 +36,18 @@ export function MapScreen(props: Props) {
         </nav>
       </header>
       <div className="map-tools">
-        <p>
+        <p className="map-current-level">
           Current level{" "}
           <strong>{currentId?.replace("level-", "") ?? "1"}</strong> ·{" "}
           {props.map?.achievedTier ?? "Trainee"}
         </p>
+        <aside className="map-welcome" aria-label="Factory guide">
+          <Mascot pose="welcome" />
+          <p>
+            Choose an open level on the factory route to begin your next
+            mission.
+          </p>
+        </aside>
         <div role="group" aria-label="Map presentation">
           <button
             className="secondary"
@@ -58,12 +65,6 @@ export function MapScreen(props: Props) {
           </button>
         </div>
       </div>
-      <aside className="map-welcome" aria-label="Factory guide">
-        <Mascot pose="welcome" />
-        <p>
-          Choose an open level on the factory route to begin your next mission.
-        </p>
-      </aside>
       {props.activeAttempt && (
         <section className="resume-banner" aria-labelledby="resume-heading">
           <h2 id="resume-heading">Mission ready to resume</h2>

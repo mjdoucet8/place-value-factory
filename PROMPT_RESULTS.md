@@ -296,3 +296,9 @@ Result: Added a short accepted-shipment transition that carries all six crate co
 Prompt: Show a red flashing alert, like an emergency factory shutdown, when a student submits an incorrect answer.
 
 Result: Added two flashing red factory beacons, a pulsing red frame, and a high-contrast red feedback panel for incorrect shipments. The written correction is now announced as an alert, entered crate values stay available for correction, and Reduce motion turns off the flashing while retaining the visual warning. Inspected the rendered alert, then passed TypeScript, production build, 79 regular tests and 23 browser tests, with one environment-specific browser-zoom test skipped. Deployed to `https://math-factory-one.vercel.app` and verified the live alert styles and API health.
+
+## 2026-09-28 — Compact the factory map header
+
+Prompt: Reduce the map's vertical height, center the route guidance between the current-level summary and view buttons, and arrange the saved-mission content horizontally.
+
+Result: Combined the level summary, compact mascot guidance, and map-view controls into one balanced desktop row. Reduced map-header spacing and rebuilt the saved-mission panel as a 68-pixel horizontal strip, moving the factory route substantially higher on screen. Added responsive two-row and single-column fallbacks for narrower displays. Inspected desktop and mobile renders, refreshed the intentional map baseline, and added geometry checks for the requested order and banner height. TypeScript, production build, 79 regular tests and 23 browser tests pass, with one environment-specific browser-zoom test skipped. Deployed to `https://math-factory-one.vercel.app` and verified the live layout styles and API health.

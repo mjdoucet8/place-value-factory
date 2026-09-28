@@ -418,6 +418,16 @@ test("renders deterministic advanced-mode visual fixtures", async ({
   await expect(
     page.getByRole("button", { name: "Resume saved mission" }),
   ).toBeVisible();
+  const currentLevel = await page.locator(".map-current-level").boundingBox();
+  const guide = await page.locator(".map-welcome").boundingBox();
+  const mapButtons = await page
+    .getByRole("group", { name: "Map presentation" })
+    .boundingBox();
+  const resumeBanner = await page.locator(".resume-banner").boundingBox();
+  expect(currentLevel && guide && mapButtons && resumeBanner).toBeTruthy();
+  expect(currentLevel!.x + currentLevel!.width).toBeLessThan(guide!.x);
+  expect(guide!.x + guide!.width).toBeLessThan(mapButtons!.x);
+  expect(resumeBanner!.height).toBeLessThan(80);
   await page.goto("/dev/place-value-factory/states?fixture=map");
   await page.getByRole("button", { name: /Locked — Level 13:/ }).click();
   await expect(page.getByRole("status")).toContainText(
