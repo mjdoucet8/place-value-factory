@@ -7,6 +7,7 @@ import { useState } from "react";
 type Props = {
   map: any;
   progress: any;
+  unlockingZone?: string | null;
   starting: boolean;
   activeAttempt: any;
   onSettings: () => void;
@@ -120,8 +121,16 @@ export function MapScreen(props: Props) {
                 className="map"
                 data-zone={artName}
                 data-zone-state={zoneState}
+                data-zone-unlocking={
+                  props.unlockingZone === artName ? "true" : undefined
+                }
                 key={zone.id}
               >
+                {props.unlockingZone === artName ? (
+                  <span className="zone-unlock-badge" role="status">
+                    {zone.name} Station unlocked!
+                  </span>
+                ) : null}
                 <div className="zone-illustration" aria-hidden="true">
                   <FactoryArt
                     asset={`zone-${artName}`}

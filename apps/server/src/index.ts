@@ -647,6 +647,7 @@ export function createApiServer(
     const eligible = (level: (typeof LEVELS)[number]) =>
       level.ordinal <= highest + 1 &&
       (level.stage === 1 ||
+        level.stage === 2 ||
         level.ordinal !==
           LEVELS.find((item) => item.stage === level.stage)?.ordinal ||
         certifications.includes(stageCertificationIds[level.stage - 2]) ||
@@ -744,6 +745,7 @@ export function createApiServer(
     const nextUnlocked =
       next &&
       (next.stage === levelById(attempt.levelId)?.stage ||
+        next.stage === 2 ||
         allAttempts.some(
           (item) => item.awardedTier === stageDisplayTiers[next.stage - 2],
         ) ||
@@ -1337,6 +1339,7 @@ export function createApiServer(
             requestedLevel.id;
         const stageAccessAllowed =
           requestedLevel?.stage === 1 ||
+          requestedLevel?.stage === 2 ||
           !requestedLevel ||
           hasStageCertification(state, actor.id, requestedLevel.stage - 1) ||
           stageGate(requestedLevel.stage - 1, evidence, now()).satisfied ||

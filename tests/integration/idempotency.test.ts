@@ -51,6 +51,58 @@ function canonical(target: number) {
 }
 
 describe("fictional-data command safety", () => {
+  it("opens the Packing Station as soon as Level 4 is complete", async () => {
+    const attempts = Array.from({ length: 4 }, (_, index) => ({
+      id: `completed-level-${index + 1}`,
+      studentId: "student-ava",
+      levelId: `level-${index + 1}`,
+      seed: index + 1,
+      slot: 5,
+      completed: true,
+      status: "completed",
+      createdAt: new Date(Date.UTC(2026, 0, index + 1)).toISOString(),
+      revision: 5,
+      leaseEpoch: 1,
+      writerTabId: "completed-tab",
+      leaseExpiresAt: new Date(0).toISOString(),
+      receipts: [],
+      evidence: [],
+      supportEvents: [],
+      responses: [],
+      kind: "path",
+    }));
+    await writeFile(
+      join(dataDirectory, "development.json"),
+      JSON.stringify({
+        attempts,
+        certifications: {},
+        settings: {},
+        studentAccess: {},
+      }),
+    );
+
+    const map = await request("/games/place-value-factory/map");
+    expect(map.status).toBe(200);
+    expect(map.body.highestUnlockedLevelId).toBe("level-5");
+    expect(map.body.zones[1].levels[0]).toMatchObject({
+      id: "level-5",
+      status: "unlocked",
+    });
+
+    const start = await request(
+      "/games/place-value-factory/attempts",
+      {
+        commandId: "unlock-packing-start",
+        profileRevision: 4,
+        tabId: "packing-tab",
+        levelId: "level-5",
+      },
+      { ...studentHeaders, "idempotency-key": "unlock-packing-start" },
+    );
+    expect(start.status).toBe(201);
+    expect(start.body.levelId).toBe("level-5");
+  });
+
   it("uses saved cross-attempt evidence to start a bounded easy scaffold", async () => {
     const skills = [
       "pv.ones",

@@ -423,14 +423,26 @@ test("renders deterministic advanced-mode visual fixtures", async ({
   await expect(page.getByLabel("3 earned stars")).toBeVisible();
   await page.goto("/dev/place-value-factory/states?fixture=results-station");
   await expect(
-    page.getByRole("heading", { name: "Packing Station unlocked!" }),
+    page.getByRole("heading", { name: "Shipping Station Complete!" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Explore Packing Station" }),
+    page.getByRole("button", { name: "Unlock Packing Station" }),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Play next mission" }),
   ).toHaveCount(0);
+  await page.getByRole("button", { name: "Unlock Packing Station" }).click();
+  await expect(page).toHaveURL(/fixture=map-unlock/);
+  await expect(page.getByRole("status", { name: "" })).toContainText(
+    "Packing Station unlocked!",
+  );
+  const packingStation = page.locator('[data-zone="packing"]');
+  await expect(packingStation).toHaveAttribute("data-zone-state", "available");
+  await expect(packingStation).toHaveAttribute("data-zone-unlocking", "true");
+  await expect(packingStation.locator(".zone-building")).toHaveCSS(
+    "animation-name",
+    "station-unlock-reveal",
+  );
   await page.goto("/dev/place-value-factory/states?fixture=map-resume");
   await expect(
     page.getByRole("button", { name: "Resume saved mission" }),

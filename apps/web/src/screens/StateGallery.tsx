@@ -7,6 +7,7 @@ import { Mascot } from "../components/FactoryArt.js";
 import {
   GAME_FIXTURES,
   MAP_FIXTURE,
+  MAP_UNLOCK_FIXTURE,
   PROGRESS_FIXTURE,
   RESULTS_FIXTURES,
 } from "../visualFixtures.js";
@@ -14,6 +15,7 @@ import {
 const noop = () => undefined;
 const states = [
   "map",
+  "map-unlock",
   "map-resume",
   "progress",
   ...Object.keys(GAME_FIXTURES),
@@ -39,11 +41,12 @@ export function StateGallery() {
     window.history.replaceState({}, "", `?fixture=${value}`);
   };
   let preview;
-  if (state === "map" || state === "map-resume")
+  if (state === "map" || state === "map-unlock" || state === "map-resume")
     preview = (
       <MapScreen
-        map={MAP_FIXTURE}
+        map={state === "map-unlock" ? MAP_UNLOCK_FIXTURE : MAP_FIXTURE}
         progress={PROGRESS_FIXTURE}
+        unlockingZone={state === "map-unlock" ? "packing" : null}
         starting={false}
         activeAttempt={
           state === "map-resume" ? GAME_FIXTURES.calm.attempt : null
@@ -81,7 +84,11 @@ export function StateGallery() {
         onReplay={noop}
         onNext={noop}
         onProgress={noop}
-        onMap={noop}
+        onMap={
+          state === "results-station"
+            ? () => choose("map-unlock")
+            : noop
+        }
       />
     );
   else if (state === "loading")

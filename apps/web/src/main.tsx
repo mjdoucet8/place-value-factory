@@ -92,6 +92,7 @@ function App() {
   });
   const [map, setMap] = useState<any>();
   const [progress, setProgress] = useState<any>();
+  const [unlockingZone, setUnlockingZone] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [shipmentMotion, setShipmentMotion] = useState<
@@ -274,6 +275,11 @@ function App() {
       : "standard";
     document.documentElement.dataset.textScale = settings.textScale;
   }, [settings]);
+  useEffect(() => {
+    if (screen !== "map" || !unlockingZone) return;
+    const timer = window.setTimeout(() => setUnlockingZone(null), 2200);
+    return () => window.clearTimeout(timer);
+  }, [screen, unlockingZone]);
   useEffect(() => {
     if (screen === "game") {
       const saved = deviceStorage.read(
@@ -974,8 +980,9 @@ function App() {
       navigate("map");
     }
   };
-  const returnToMap = async () => {
+  const returnToMap = async (unlockedZone?: string) => {
     await loadMap();
+    setUnlockingZone(unlockedZone ?? null);
     navigate("map");
   };
   useEffect(() => {
@@ -1017,6 +1024,7 @@ function App() {
       <MapScreen
         map={map}
         progress={progress}
+        unlockingZone={unlockingZone}
         starting={starting}
         activeAttempt={
           attempt && attempt.status !== "completed" ? attempt : null

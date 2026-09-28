@@ -178,6 +178,34 @@ export const MAP_FIXTURE = {
   })),
 };
 
+export const MAP_UNLOCK_FIXTURE = {
+  ...MAP_FIXTURE,
+  profileRevision: 4,
+  highestUnlockedLevelId: "level-5",
+  achievedTier: "Trainee",
+  certifications: [],
+  zones: [...new Set(LEVELS.map((level) => level.zone))].map((name) => ({
+    id: name.toLowerCase(),
+    name,
+    levels: LEVELS.filter((level) => level.zone === name).map((level) => ({
+      id: level.id,
+      title: level.title,
+      stage: level.stage,
+      status:
+        level.ordinal <= 4
+          ? "completed"
+          : level.ordinal === 5
+            ? "unlocked"
+            : "locked",
+      stars: level.ordinal <= 4 ? 2 : 0,
+      prerequisiteSummary:
+        level.ordinal === 5
+          ? "Ready to practice"
+          : `Complete Level ${level.ordinal - 1} first`,
+    })),
+  })),
+};
+
 export const PROGRESS_FIXTURE = {
   completedLevelIds: ["level-1", "level-2"],
   nextPracticeSkillId: "pv.hundreds",

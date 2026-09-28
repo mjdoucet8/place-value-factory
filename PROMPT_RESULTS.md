@@ -314,3 +314,9 @@ Result: Successful ordinary takeovers now clear the transient notice instead of 
 Prompt: Fix the non-working next-mission button after Level 3 and add clear guidance after Level 4 when the Packing Station opens.
 
 Result: Fixed direct continuation by refreshing the student's map revision before starting the newly unlocked mission; the keyboard journey now completes Level 1 and successfully opens Level 2. Added station-boundary result panels after Levels 4, 9, 15, and 21. When the next station is unlocked, the panel announces it and offers an Explore Station map action; when an adaptive skill gate remains closed, it accurately directs the student to remaining practice. Inspected the Packing Station result and normalized fixture focus before screenshots. TypeScript, production build, 79 regular tests and 23 browser tests pass, with one environment-specific browser-zoom test skipped. Deployed to `https://math-factory-one.vercel.app` and verified the live continuation and station copy plus API health.
+
+## 2026-09-28 — Unlock Packing Station from the completion screen
+
+Prompt: Change the Level 4 result to “Shipping Station Complete,” make “Unlock Packing Station” the main button, return to the map when clicked, and animate Packing Station changing from grey to colour.
+
+Result: Completing Level 4 now opens Level 5 and Packing Station directly. The result screen uses the requested heading and primary action; clicking it reloads the map and plays a grayscale-to-colour station reveal with a glow and unlocked badge. Later station gates remain adaptive, and reduced-motion settings show the unlocked result without animation. Added API and browser regression coverage, visually inspected the result and reveal, passed TypeScript, production build, 80 regular tests and 23 browser tests, and deployed the update to the stable production URL.

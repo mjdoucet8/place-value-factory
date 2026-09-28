@@ -20,7 +20,7 @@ const canonical = (target: number) => {
 };
 
 describe.skipIf(!socket)("RC-07 real PostgreSQL progression journey", () => {
-  it("practices a real stage gate, unlocks Stage 2, earns transfer, and reconciles after restart", async () => {
+  it("opens Stage 2, practices its mastery gate, earns transfer, and reconciles after restart", async () => {
     if (!socket?.startsWith("/tmp/pvf-postgres-test-"))
       throw new Error("Requires owned disposable test socket");
     const admin = new Pool({ host: socket, database: "postgres" });
@@ -144,7 +144,7 @@ describe.skipIf(!socket)("RC-07 real PostgreSQL progression journey", () => {
         for (let level = 1; level <= 4; level++)
           await finishFive(await startAttempt(`level-${level}`));
         expect((await request("/profile")).body.highestUnlockedLevelId).toBe(
-          "level-4",
+          "level-5",
         );
 
         // Real practice attempts are separated by more than the signature
