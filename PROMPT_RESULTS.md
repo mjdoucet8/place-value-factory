@@ -344,3 +344,9 @@ Result: Separated the factory artwork from the gameplay layout and anchored it t
 Prompt: Stop the entire gameplay screen from shifting slightly left when an answer is submitted.
 
 Result: Reserved a stable browser scrollbar gutter while gameplay is open, so temporary overflow changes cannot alter the width used to center the screen. Scoped the adjustment to gameplay and extended the shipment regression to verify the screen's horizontal position and viewport measurements remain identical through departure, arrival, and settling. Passed TypeScript, the production build, 80 regular tests and all 23 browser scenarios, then deployed the fix to the stable production URL.
+
+## 2026-09-28 — Create 17 space-themed student accounts
+
+Prompt: Create 17 live Place Value Factory student accounts with simple, unique space-themed usernames and passwords, and provide a numbered Excel sheet containing the credentials.
+
+Result: Added 17 fictional students to the active demo class using unique space-themed usernames and six-digit PINs. Verified every credential against the live student login. Created a formatted Excel workbook with rows 1–17, the usernames, PINs, and class code; visually inspected it and confirmed all rows after re-importing the exported file. Credentials remain outside the repository.
