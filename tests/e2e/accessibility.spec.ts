@@ -104,11 +104,13 @@ test("quantity keyboard navigation and Enter ship work on a saved mission", asyn
     "data-shipment-motion",
     "departing",
   );
+  await expect(page.getByText("Saved — shipment accepted.")).toHaveCount(0);
   const departingGeometry = await sceneGeometry();
   await expect(page.locator(".production-line")).toHaveAttribute(
     "data-shipment-motion",
     "arriving",
   );
+  await expect(page.getByText("Saved — shipment accepted.")).toHaveCount(0);
   const arrivingGeometry = await sceneGeometry();
   await expect(page.getByText("Order 2 of 5")).toBeVisible();
   await expect(page.locator(".production-line")).toHaveAttribute(

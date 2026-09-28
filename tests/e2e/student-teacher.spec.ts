@@ -173,7 +173,8 @@ test("keeps play usable when browser storage cannot save a draft", async ({
   ).toBeVisible();
   await fillCanonicalOrder(page);
   await page.getByRole("button", { name: "Ship order" }).click();
-  await expect(page.getByText("Saved — shipment accepted.")).toBeVisible();
+  await expect(page.getByText("Order 2 of 5")).toBeVisible();
+  await expect(page.getByText("Saved — shipment accepted.")).toHaveCount(0);
 });
 
 test("saves directly with an explicit warning when IndexedDB is unavailable", async ({
@@ -511,7 +512,6 @@ test("loads original art and keeps gallery controls responsive", async ({
     "twoWays",
     "repack",
     "incorrect",
-    "correct",
     "pending",
     "offline",
     "storage",

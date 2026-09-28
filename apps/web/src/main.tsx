@@ -669,7 +669,7 @@ function App() {
       );
       setNotice(
         data.validation.feedbackCode === "SHIPMENT_CORRECT"
-          ? "Saved — shipment accepted."
+          ? ""
           : feedback(data.validation.feedbackCode),
       );
       if (data.validation.shipmentAccepted) {
@@ -687,7 +687,6 @@ function App() {
           setShipmentMotion("arriving");
           if (!settings.reducedMotion)
             await new Promise((resolve) => window.setTimeout(resolve, 650));
-          setNotice("");
           setShipmentMotion("idle");
         }
       } else {

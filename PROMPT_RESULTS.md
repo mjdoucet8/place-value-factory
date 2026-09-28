@@ -326,3 +326,9 @@ Result: Completing Level 4 now opens Level 5 and Packing Station directly. The r
 Prompt: Stop the background from shrinking while crates leave the conveyor and returning to size when new crates arrive.
 
 Result: Found that the accepted-shipment message temporarily increased the page height and forced the cover-sized factory artwork to rescale. Converted that message into a compact transition toast that does not affect layout, clears when the new crates settle, and paint-contained the moving crate row. Added a browser regression proving the game scene and conveyor geometry remain identical through all shipment phases. TypeScript, production build, 80 regular tests and 23 browser tests pass, and the fix is deployed to the stable production URL.
+
+## 2026-09-28 — Remove the accepted-shipment message
+
+Prompt: Remove the “Saved — shipment accepted.” message shown at the bottom during a successful shipment.
+
+Result: Removed the message from gameplay and the development fixture, along with its obsolete toast styling. Successful shipments now transition directly through the conveyor animation into the next order, while incorrect and recovery feedback remain intact. Updated browser coverage to assert the copy stays absent throughout the transition and deployed the change to the stable production URL.

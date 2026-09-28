@@ -118,11 +118,6 @@ export const GAME_FIXTURES: Record<
     attempt: baseAttempt,
     notice: "You need more crates.",
   },
-  correct: {
-    label: "Saved correct feedback",
-    attempt: baseAttempt,
-    notice: "Saved — shipment accepted.",
-  },
   pending: {
     label: "Saving and pending",
     attempt: baseAttempt,

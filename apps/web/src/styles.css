@@ -2089,22 +2089,6 @@ td {
   font-size: .75rem;
   padding: 5px;
 }
-.game-screen .accepted-notice {
-  bottom: 18px;
-  font-size: 1rem;
-  left: 50%;
-  margin: 0;
-  pointer-events: none;
-  position: fixed;
-  transform: translateX(-50%);
-  width: min(540px, calc(100vw - 32px));
-  z-index: 40;
-}
-.game-screen .accepted-notice .mascot {
-  height: 64px;
-  width: 64px;
-}
-
 /* Accepted shipments carry the current crates out before the next row enters. */
 @keyframes shipment-crates-depart {
   from { transform: translate3d(0, 0, 0) rotate(0); }
