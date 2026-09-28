@@ -206,6 +206,20 @@ export const PROGRESS_FIXTURE = {
   ],
 };
 export const RESULTS_FIXTURES = {
+  station: {
+    shipped: 5,
+    firstObjectiveCorrect: 5,
+    eventuallyCorrect: 5,
+    bestStreak: 5,
+    efficiency: 100,
+    bestLevelStars: 2,
+    transferStar: false,
+    newlyUnlockedLevelIds: ["level-5"],
+    newlyEarnedTier: "Packer",
+    skillStatuses: [
+      { skillId: "pv.thousands", status: "secure", sampleN: 5 },
+    ],
+  },
   two: {
     shipped: 5,
     firstObjectiveCorrect: 4,

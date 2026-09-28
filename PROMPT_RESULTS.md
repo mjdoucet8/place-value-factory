@@ -308,3 +308,9 @@ Result: Combined the level summary, compact mascot guidance, and map-view contro
 Prompt: Remove “This tab now controls the saved attempt.” because it is unnecessary.
 
 Result: Successful ordinary takeovers now clear the transient notice instead of showing the redundant confirmation. The controls become available as before; pending-work guidance, stale-tab protection, and takeover errors remain unchanged. Updated the two-tab regression and passed TypeScript, production build, 79 regular tests and 23 browser tests, with one environment-specific browser-zoom test skipped. Deployed to `https://math-factory-one.vercel.app` and confirmed the removed copy is absent from the live bundle while conflict guidance remains present.
+
+## 2026-09-28 — Fix next mission and station completion guidance
+
+Prompt: Fix the non-working next-mission button after Level 3 and add clear guidance after Level 4 when the Packing Station opens.
+
+Result: Fixed direct continuation by refreshing the student's map revision before starting the newly unlocked mission; the keyboard journey now completes Level 1 and successfully opens Level 2. Added station-boundary result panels after Levels 4, 9, 15, and 21. When the next station is unlocked, the panel announces it and offers an Explore Station map action; when an adaptive skill gate remains closed, it accurately directs the student to remaining practice. Inspected the Packing Station result and normalized fixture focus before screenshots. TypeScript, production build, 79 regular tests and 23 browser tests pass, with one environment-specific browser-zoom test skipped. Deployed to `https://math-factory-one.vercel.app` and verified the live continuation and station copy plus API health.

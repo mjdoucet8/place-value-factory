@@ -19,6 +19,7 @@ const states = [
   ...Object.keys(GAME_FIXTURES),
   "results-two",
   "results-three",
+  "results-station",
   "loading",
   "error",
   "empty",
@@ -61,14 +62,21 @@ export function StateGallery() {
         onBack={noop}
       />
     );
-  else if (state === "results-two" || state === "results-three")
+  else if (
+    state === "results-two" ||
+    state === "results-three" ||
+    state === "results-station"
+  )
     preview = (
       <ResultsScreen
         result={
-          state === "results-two"
-            ? RESULTS_FIXTURES.two
-            : RESULTS_FIXTURES.three
+          state === "results-station"
+            ? RESULTS_FIXTURES.station
+            : state === "results-two"
+              ? RESULTS_FIXTURES.two
+              : RESULTS_FIXTURES.three
         }
+        completedLevelId={state === "results-station" ? "level-4" : "level-18"}
         onTransfer={noop}
         onReplay={noop}
         onNext={noop}

@@ -4,6 +4,7 @@ import { formatNumber } from "../formatNumber.js";
 
 type Props = {
   result: any;
+  completedLevelId?: string;
   onTransfer: () => void;
   onReplay: () => void;
   onNext: () => void;
@@ -13,6 +14,7 @@ type Props = {
 
 export function ResultsScreen({
   result,
+  completedLevelId,
   onTransfer,
   onReplay,
   onNext,
@@ -21,6 +23,37 @@ export function ResultsScreen({
 }: Props) {
   const practice = result?.mainStars === 0;
   const stars = result?.bestLevelStars ?? 2;
+  const stationTransition = (
+    {
+      "level-4": {
+        completed: "Receiving Station",
+        next: "Packing Station",
+        nextLevelId: "level-5",
+      },
+      "level-9": {
+        completed: "Packing Station",
+        next: "Warehouse Station",
+        nextLevelId: "level-10",
+      },
+      "level-15": {
+        completed: "Warehouse Station",
+        next: "Shipping Station",
+        nextLevelId: "level-16",
+      },
+      "level-21": {
+        completed: "Shipping Station",
+        next: "Factory Lab",
+        nextLevelId: "level-22",
+      },
+    } as Record<
+      string,
+      { completed: string; next: string; nextLevelId: string }
+    >
+  )[completedLevelId ?? ""];
+  const stationUnlocked = Boolean(
+    stationTransition &&
+      result?.newlyUnlockedLevelIds?.includes(stationTransition.nextLevelId),
+  );
   return (
     <main className="results-screen">
       <FactoryArt asset="effect-celebration" className="celebration-effect" />
@@ -91,6 +124,20 @@ export function ResultsScreen({
         )}
       </div>
       <div className="results-next">
+        {!practice && stationTransition ? (
+          <section className="station-unlock" role="status">
+            <h2>
+              {stationUnlocked
+                ? `${stationTransition.next} unlocked!`
+                : `${stationTransition.completed} complete!`}
+            </h2>
+            <p>
+              {stationUnlocked
+                ? `Go back to the factory map to explore the new ${stationTransition.next} missions.`
+                : `Go back to the factory map to practice any remaining skills and unlock the ${stationTransition.next}.`}
+            </p>
+          </section>
+        ) : null}
         {practice ? (
           <p role="status">Practice builds your skills. Your map stars stay the same.</p>
         ) : result?.transferStar ? (
@@ -99,8 +146,8 @@ export function ResultsScreen({
           <button onClick={onTransfer}>Try the extra challenge</button>
         )}
         <div className="controls">
-          {result?.newlyUnlockedLevelIds?.length > 0 && (
-            <button onClick={onNext}>Play next level</button>
+          {result?.newlyUnlockedLevelIds?.length > 0 && !stationTransition && (
+            <button onClick={onNext}>Play next mission</button>
           )}
           <button className="secondary" onClick={onReplay}>
             Try again
@@ -109,7 +156,11 @@ export function ResultsScreen({
             View progress
           </button>
           <button className="secondary" onClick={onMap}>
-            Back to map
+            {stationUnlocked
+              ? `Explore ${stationTransition.next}`
+              : stationTransition
+                ? "Return to factory map"
+                : "Back to map"}
           </button>
         </div>
       </div>

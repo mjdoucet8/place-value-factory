@@ -954,6 +954,26 @@ function App() {
     }
     return undefined;
   };
+  const startNextMission = async () => {
+    const levelId = resultData?.newlyUnlockedLevelIds?.[0];
+    if (!levelId) return void returnToMap();
+    try {
+      const loaded = await loadMap();
+      const level = loaded.map.zones
+        .flatMap((zone: any) =>
+          zone.levels.map((item: any) => ({ ...item, zoneName: zone.name })),
+        )
+        .find((item: any) => item.id === levelId);
+      if (!level || level.status === "locked") {
+        navigate("map");
+        return;
+      }
+      await start(level.id, "path", loaded.map.profileRevision);
+    } catch (error) {
+      setNotice(`Could not open the next mission — ${(error as Error).message}`);
+      navigate("map");
+    }
+  };
   const returnToMap = async () => {
     await loadMap();
     navigate("map");
@@ -1030,16 +1050,13 @@ function App() {
     return (
       <ResultsScreen
         result={resultData}
+        completedLevelId={attempt?.levelId}
         onTransfer={() => void startTransfer()}
         onReplay={() => {
           const level = findLevel(attempt.levelId);
           if (level) chooseLevel(level);
         }}
-        onNext={() => {
-          const level = findLevel(resultData?.newlyUnlockedLevelIds?.[0]);
-          if (level) chooseLevel(level);
-          else void returnToMap();
-        }}
+        onNext={() => void startNextMission()}
         onProgress={() => navigate("progress")}
         onMap={() => void returnToMap()}
       />

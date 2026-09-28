@@ -126,6 +126,10 @@ test("keeps the handoff-faithful gallery baselines stable", async ({
         }),
       ),
     );
+    await page.locator(".fixture-toolbar select").evaluate((select) => {
+      (select as HTMLSelectElement).blur();
+      select.style.outline = "none";
+    });
     await expect(page).toHaveScreenshot(`handoff-${fixture}.png`, {
       animations: "disabled",
       fullPage: true,
@@ -417,6 +421,16 @@ test("renders deterministic advanced-mode visual fixtures", async ({
   }
   await page.goto("/dev/place-value-factory/states?fixture=results-three");
   await expect(page.getByLabel("3 earned stars")).toBeVisible();
+  await page.goto("/dev/place-value-factory/states?fixture=results-station");
+  await expect(
+    page.getByRole("heading", { name: "Packing Station unlocked!" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Explore Packing Station" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Play next mission" }),
+  ).toHaveCount(0);
   await page.goto("/dev/place-value-factory/states?fixture=map-resume");
   await expect(
     page.getByRole("button", { name: "Resume saved mission" }),

@@ -104,7 +104,7 @@ test("quantity keyboard navigation and Enter ship work on a saved mission", asyn
   );
 });
 
-test("student can finish five orders using keyboard controls and reach saved results", async ({ page }) => {
+test("student can finish five orders and open the next mission by keyboard", async ({ page }) => {
   const reset = await fetch("http://127.0.0.1:3102/__reset", { method: "POST" });
   expect(reset.status).toBe(204);
   await page.goto("/");
@@ -148,9 +148,10 @@ test("student can finish five orders using keyboard controls and reach saved res
     if (slot < 4) await expect(page.getByText(`Order ${slot + 2} of 5`)).toBeVisible();
   }
   await expect(page.getByRole("heading", { name: "Level complete!" })).toBeVisible();
-  await page.getByRole("button", { name: "Back to map" }).focus();
+  await page.getByRole("button", { name: "Play next mission" }).focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("heading", { name: "Factory Map" })).toBeVisible();
+  await expect(page.getByText("CURRENT ORDER", { exact: true })).toBeVisible();
+  await expect(page.getByText("Level 2", { exact: true })).toBeVisible();
 });
 
 test("login failure is announced and associated with credential fields", async ({ page }) => {
