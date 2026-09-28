@@ -88,6 +88,8 @@ export function GameScreen(props: Props) {
     props.busy &&
     Number(props.attempt.levelId?.replace("level-", "")) >= 13 &&
     !props.helpOpen;
+  const acceptedNotice = props.notice === "Saved — shipment accepted.";
+  const positiveNotice = /saved|accepted|correct/i.test(props.notice);
   const objective =
     order.distinctRepresentations === 2
       ? "Build two different crate representations of this target."
@@ -277,14 +279,11 @@ export function GameScreen(props: Props) {
         </section>
       )}
       {props.notice && (
-        <aside className="notice" role={props.factoryAlert ? "alert" : "status"}>
-          <Mascot
-            pose={
-              /saved|accepted|correct/i.test(props.notice)
-                ? "correct"
-                : "encourage"
-            }
-          />
+        <aside
+          className={`notice${acceptedNotice ? " accepted-notice" : ""}`}
+          role={props.factoryAlert ? "alert" : "status"}
+        >
+          <Mascot pose={positiveNotice ? "correct" : "encourage"} />
           <p>{props.notice}</p>
         </aside>
       )}

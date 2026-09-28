@@ -88,20 +88,38 @@ test("quantity keyboard navigation and Enter ship work on a saved mission", asyn
     remainder %= value;
     await page.locator(`#quantity-${index}`).fill(String(quantity));
   }
+  const sceneGeometry = () =>
+    page.locator(".game-screen").evaluate((screen) => {
+      const line = screen.querySelector<HTMLElement>(".production-line")!;
+      return {
+        screenHeight: screen.getBoundingClientRect().height,
+        documentHeight: document.documentElement.scrollHeight,
+        lineHeight: line.getBoundingClientRect().height,
+        lineScrollWidth: line.scrollWidth,
+      };
+    });
+  const idleGeometry = await sceneGeometry();
   await openQuantities.last().press("Enter");
   await expect(page.locator(".production-line")).toHaveAttribute(
     "data-shipment-motion",
     "departing",
   );
+  const departingGeometry = await sceneGeometry();
   await expect(page.locator(".production-line")).toHaveAttribute(
     "data-shipment-motion",
     "arriving",
   );
+  const arrivingGeometry = await sceneGeometry();
   await expect(page.getByText("Order 2 of 5")).toBeVisible();
   await expect(page.locator(".production-line")).toHaveAttribute(
     "data-shipment-motion",
     "idle",
   );
+  const settledGeometry = await sceneGeometry();
+  expect(departingGeometry).toEqual(idleGeometry);
+  expect(arrivingGeometry).toEqual(idleGeometry);
+  expect(settledGeometry).toEqual(idleGeometry);
+  await expect(page.getByText("Saved — shipment accepted.")).toHaveCount(0);
 });
 
 test("student can finish five orders and open the next mission by keyboard", async ({ page }) => {

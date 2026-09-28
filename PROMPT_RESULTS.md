@@ -320,3 +320,9 @@ Result: Fixed direct continuation by refreshing the student's map revision befor
 Prompt: Change the Level 4 result to “Shipping Station Complete,” make “Unlock Packing Station” the main button, return to the map when clicked, and animate Packing Station changing from grey to colour.
 
 Result: Completing Level 4 now opens Level 5 and Packing Station directly. The result screen uses the requested heading and primary action; clicking it reloads the map and plays a grayscale-to-colour station reveal with a glow and unlocked badge. Later station gates remain adaptive, and reduced-motion settings show the unlocked result without animation. Added API and browser regression coverage, visually inspected the result and reveal, passed TypeScript, production build, 80 regular tests and 23 browser tests, and deployed the update to the stable production URL.
+
+## 2026-09-28 — Keep the factory background steady during shipments
+
+Prompt: Stop the background from shrinking while crates leave the conveyor and returning to size when new crates arrive.
+
+Result: Found that the accepted-shipment message temporarily increased the page height and forced the cover-sized factory artwork to rescale. Converted that message into a compact transition toast that does not affect layout, clears when the new crates settle, and paint-contained the moving crate row. Added a browser regression proving the game scene and conveyor geometry remain identical through all shipment phases. TypeScript, production build, 80 regular tests and 23 browser tests pass, and the fix is deployed to the stable production URL.
