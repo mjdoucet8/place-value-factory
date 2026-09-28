@@ -780,7 +780,7 @@ function App() {
             "Unsaved crates are ready for review. Ship again when you are ready.",
           );
         }
-      } else setNotice("This tab now controls the saved attempt.");
+      } else setNotice("");
     } catch (error) {
       setNotice(`Could not take over — ${(error as Error).message}`);
     }

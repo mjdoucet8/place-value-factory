@@ -302,3 +302,9 @@ Result: Added two flashing red factory beacons, a pulsing red frame, and a high-
 Prompt: Reduce the map's vertical height, center the route guidance between the current-level summary and view buttons, and arrange the saved-mission content horizontally.
 
 Result: Combined the level summary, compact mascot guidance, and map-view controls into one balanced desktop row. Reduced map-header spacing and rebuilt the saved-mission panel as a 68-pixel horizontal strip, moving the factory route substantially higher on screen. Added responsive two-row and single-column fallbacks for narrower displays. Inspected desktop and mobile renders, refreshed the intentional map baseline, and added geometry checks for the requested order and banner height. TypeScript, production build, 79 regular tests and 23 browser tests pass, with one environment-specific browser-zoom test skipped. Deployed to `https://math-factory-one.vercel.app` and verified the live layout styles and API health.
+
+## 2026-09-28 — Remove the takeover confirmation message
+
+Prompt: Remove “This tab now controls the saved attempt.” because it is unnecessary.
+
+Result: Successful ordinary takeovers now clear the transient notice instead of showing the redundant confirmation. The controls become available as before; pending-work guidance, stale-tab protection, and takeover errors remain unchanged. Updated the two-tab regression and passed TypeScript, production build, 79 regular tests and 23 browser tests, with one environment-specific browser-zoom test skipped. Deployed to `https://math-factory-one.vercel.app` and confirmed the removed copy is absent from the live bundle while conflict guidance remains present.

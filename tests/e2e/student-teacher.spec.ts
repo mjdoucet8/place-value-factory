@@ -205,7 +205,10 @@ test("a second tab takes over and the stale writer cannot ship", async ({
     .click();
   await expect(
     secondTab.getByText("This tab now controls the saved attempt."),
-  ).toBeVisible();
+  ).toHaveCount(0);
+  await expect(
+    secondTab.getByRole("button", { name: "Take over this attempt" }),
+  ).toHaveCount(0);
   const shipmentBefore = Number(
     (await secondTab.locator("header span").innerText()).match(/\d+/)?.[0],
   );
