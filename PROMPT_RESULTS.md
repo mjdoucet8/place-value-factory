@@ -362,3 +362,8 @@ Result: Added recovery for a stale browser gameplay snapshot after the server ha
 Prompt: Remove the pipe and gauge, small conveyor, and crate from the paused mission page.
 
 Result: Removed all three decorative overlays and their responsive styles while preserving the factory background and centered pause controls. Updated the paused visual reference, added browser coverage for the removal, passed TypeScript, the production build, 80 regular tests and all 24 browser scenarios, and deployed the change to the stable production URL.
+
+
+## 2026-09-29 — Work on the Linear RC-07 tasks and update progress
+
+Prompt: Get to work on MAT-5 through MAT-8 and update Linear as work progresses. Result: audited newer implementation, fixed practice random-range mapping to the published specification, added independent golden regression, versioned new orders without rewriting history, verified all 30 levels/six certifications and teacher reporting, reconciled current evidence documents, and prepared a reviewed local checkpoint. Final verification: 81 regular tests; PostgreSQL 9 initial/3 restart; 24 standard browser/4 secure-pilot passes; typecheck/build/diff checks pass. Native zoom skipped by environment and broader release gates remain explicit. Existing development data preserved. Linear progress comments/statuses updated using sanitized summaries; detailed evidence retained locally. No deployment or remote push.

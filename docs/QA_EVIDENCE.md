@@ -1,5 +1,9 @@
 # Local QA evidence
 
+## 29 September 2026 — Linear RC-07 current evidence
+
+Current results and task-to-acceptance mapping: `docs/qa/LINEAR_RC07_2026-09-29.md`. Final regular suite: 81 passed/9 dedicated-harness skips; typecheck and build pass; focused math/blueprint/idempotency: 66 passed; isolated PostgreSQL: 9 initial tests and 3 restart tests passed, with 2 restart-inapplicable skips. Practice golden regression reproduces the old modulo-range error and passes after correction. Final browser rerun: 24 passed/1 native-zoom environment skip; secure pilot rerun: 4 passed. Current evidence is recorded in that report. Older entries below are historical.
+
 ## 26 September 2026 — stricter fictional pilot-readiness audit
 
 The prior local V1 candidate below is a historical checkpoint. The pilot-readiness pass adds a full 24-state/login/teacher visible-text contrast audit and selected review captures, a keyboard-only five-order journey, a five-order practice extension to the secure pilot, archive inventory/guarded expiry, and an independent deletion ledger replayed after restoring an older encrypted backup. Real PostgreSQL/restart, unit/type/build and browser checks remain separate commands. `docs/PILOT_VISUAL_REVIEW.md`, `docs/qa/RECOVERY_ACCESS_AUDIT_2026-09-26.md` and `docs/OPERATIONS.md` give reproducible scope and limits.

@@ -1,5 +1,9 @@
 # V1 acceptance ledger
 
+## 29 September 2026 — current RC-07 audit
+
+The original register below retains historical row states; it is superseded for this task's mathematical/progression/report scope by `docs/qa/LINEAR_RC07_2026-09-29.md` and `docs/V1_CURRENT_ACCEPTANCE.md`. ORDER-01..05, VALIDATE-01..05, ADAPT-01..06, REWARD-01..03, EFF-01..02 and REPORT-01..04 were freshly checked against current implementation and unit/HTTP/real-PostgreSQL evidence. A practice range-mapping defect was corrected to specification and independently regression-tested. Shared MAP/PROGRESS/RESULT/DATA/TECH/RECOVERY IDs are verified only at the scoped evidence level described in the report. Final browser and secure pilot checks passed; the report records their results and the reviewed local checkpoint scope. Broader owner/school/device/accessibility gates remain explicit.
+
 ## 26 September 2026 V1 local-candidate update
 
 The table below is the original register and its old `implementable` labels are historical. `docs/V1_CURRENT_ACCEPTANCE.md` is the current scope matrix. OPS-01..02 now have fictional-data encrypted backup/restore, class archive, retention/deletion, backup-expiry and restored-report evidence in `tests/integration/operations-real.test.ts`. SEC-01..03 have the secure PostgreSQL isolation/session/CSRF/config/throttle/cleanup tests and production dependency audit; PERF-01 has a 90-student/30-concurrent measurement in `docs/qa/CLASSROOM_LOAD_2026-09-26.md`. RECOVERY-01..07 and the locally available ACCESS-01..07 checks are mapped in `docs/qa/RECOVERY_ACCESS_AUDIT_2026-09-26.md`. RC-07 math/progression/report evidence remains under the next heading. Passing local checks do not close owner, school-policy, physical-device, assistive-technology or school-network gates.

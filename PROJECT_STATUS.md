@@ -1,5 +1,9 @@
 # Project status
 
+## Current: 29 September 2026 — Linear RC-07 revalidation
+
+MAT-5 through MAT-8 are locally complete; their Linear statuses are being synchronized. Corrected place-value practice to the specification's inclusive xorshift range mapping and added independent golden-vector coverage. New orders are marked xorshift32-v2; stored history is preserved. Final regular suite: 81 passed/9 dedicated-harness skips; typecheck/build pass; real PostgreSQL: 9 initial plus 3 restart checks pass. Final browser verification: 24 passed/1 native-zoom environment skip; secure pilot: 4 passed. Source/test/docs reviewed for a local checkpoint. See `docs/qa/LINEAR_RC07_2026-09-29.md`. Older sections below are historical; no deployment is made in this task.
+
 ## Current: 27 September 2026 — Vercel/Supabase fictional staging package prepared
 
 The GitHub-tracked MVP now has a Vercel container path (`Dockerfile.vercel`, Fluid configuration and build exclusions) that serves the existing web/API application on Vercel's assigned port. Autoscaling boot performs no migrations or identity provisioning. Runtime accepts Supabase Marketplace `POSTGRES_URL`, administrative setup prefers the non-pooling/direct URL, and staging limits each container to one PostgreSQL connection by default. The fictional-only and production school-identity guards remain intact. Typecheck, build, Vercel structure verification and 78 regular tests pass with 9 dedicated-harness skips. No Vercel/Supabase account, resource, database, region, secret or deployment was created. See `docs/qa/VERCEL_SUPABASE_PREP_2026-09-27.md`.

@@ -371,7 +371,8 @@ export function generatePracticeOrder(
         attempt === 0
           ? seed
           : xorshift32((seed ^ Math.imul(attempt, 0x9e3779b9)) >>> 0 || 1);
-      const digit = low + (xorshift32(candidateSeed) % (high - low + 1));
+      const digit =
+        low + Math.floor((xorshift32(candidateSeed) / 2 ** 32) * (high - low + 1));
       const order = practiceOrder(digit, String(candidateSeed));
       if (
         validateRepresentation(order, canonicalRepresentation(order.target))

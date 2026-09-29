@@ -1,5 +1,9 @@
 # Full locally verifiable V1 release candidate
 
+## 29 September 2026 — current RC-07 checkpoint
+
+The imported RC-07 queue is now revalidated against the newer implementation; current evidence and the next owner actions are in `docs/qa/LINEAR_RC07_2026-09-29.md`. Preserve the existing historical v2 performance pass and legacy v1 latency limitation separately. The older dependency queue and statements below are historical; they do not request rebuilding verified RC-07 features or authorize deployment in this task.
+
 ## Pilot-readiness checkpoint — 26 September 2026
 
 The earlier local V1 candidate remains a verified historical checkpoint. The stricter pilot milestone now has visual/keyboard review, fictional path-plus-practice pilot, deletion-after-older-restore and guarded archive expiry evidence, plus a provider-independent deployment decision package. Its sustained historical-load gate **fails** because full-detail 30-student full-year class reports exceed the 500 ms API p95 target. The retained three-process run measured 1,042 ms report p95 while student paths, counts, receipts, isolation and rewards passed. Keep PERF-01 open; see `docs/qa/CLASSROOM_LOAD_2026-09-26.md` and the pending `PILOT-REPORT-PERF` decision. After a compatible performance fix and full rerun, proceed through the owner/school and physical-device/AT/network gates in `docs/DEPLOYMENT_READINESS.md`. No classroom deployment is approved.

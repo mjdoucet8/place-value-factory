@@ -63,3 +63,8 @@ The slot table above records the specification. The current generator has 30 lev
 `tests/integration/rc07-progression-real.test.ts` completes all 30 path levels using HTTP student commands against isolated PostgreSQL, practices every missing gate skill through saved attempts, earns all six persistent stage certifications and Factory Master, ships a nonminimal Stage 4 representation, tests an advanced objective, transfers a star once, and checks response/order/report history after a database restart. It does not seed mastery. Immutable issued specs with version, seed and slot metadata are stored in `pvf_order`; an unanswered replay order, practice schedules and certifications survive a process/database restart. Browser recovery and local pilot checks are recorded in the project status and task log.
 
 The generator's fixed per-slot subset choices remain implementation choices under the V1 blueprint families. The milestone proves local fictional-data behavior. Physical classroom device, assistive-technology, school network and deployment approval remain later release gates.
+
+
+## 29 September 2026 — practice generator revalidation
+
+The existing 150-slot mapping remains unchanged. Stage 1 practice now uses the published inclusive floor-based mapping of the uint32 draw, rather than modulo reduction. Independent golden vectors cover all six places and three bands. New issuance is engineVersion xorshift32-v2; persisted historical order specs remain immutable. See `docs/qa/LINEAR_RC07_2026-09-29.md` for the regression and real progression/restart evidence.

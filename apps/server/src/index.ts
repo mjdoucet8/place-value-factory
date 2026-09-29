@@ -925,7 +925,7 @@ export function createApiServer(
       role,
       seed,
       configVersion: "v1-local",
-      engineVersion: "xorshift32-v1",
+      engineVersion: "xorshift32-v2",
       forbidden: DENOMINATIONS.filter(
         (place) => !generated.allowed.includes(place),
       ),

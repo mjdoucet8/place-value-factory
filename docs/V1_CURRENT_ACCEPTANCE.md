@@ -1,5 +1,9 @@
 # V1 current acceptance matrix — 27 September 2026
 
+## 29 September 2026 — current RC-07 revalidation
+
+The RC-07 rows below have fresh regular-test, real PostgreSQL/restart, and browser evidence in `docs/qa/LINEAR_RC07_2026-09-29.md`. Corrected practice range mapping to the published specification and versioned new issuance without rewriting stored history. The final results in that report govern this task; older test counts in the table are historical. Broader performance/operations/deployment/owner/school gates remain at their separately documented evidence level.
+
 Authority: original V1 specification in `Place_Value_Factory_Codex_Handoff/Math_Factory/docs/`; current files and fresh executions supersede dated prose in the older checklist. A named test is a location to verify, not an automatic pass. This matrix tracks the stricter pilot-readiness checkpoint after RC-07 and the local V1 candidate.
 
 | Scope / IDs | Current evidence | Remaining acceptance |

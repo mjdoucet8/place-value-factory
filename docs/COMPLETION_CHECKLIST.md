@@ -1,5 +1,15 @@
 # Place Value Factory V1 completion checklist
 
+## Current correction — 29 September 2026 Linear RC-07 verification
+
+- [x] Current-code audit and preservation of existing local development data.
+- [x] Independent specification regression for practice range mapping; correction with versioned new issuance.
+- [x] All 150 slots, 30-level earned progression, six certifications, rewards, transfer and real PostgreSQL restart verification.
+- [x] Shared teacher reporting, first/final answer evidence, filters, zero-evidence handling and authorization verified.
+- [x] Final standard/secure-pilot browser reruns, evidence reconciliation and reviewed source/test checkpoint; see `docs/qa/LINEAR_RC07_2026-09-29.md`.
+
+All older checklist sections below are historical. The approved v2 reporting performance target has historical passing evidence in `docs/qa/REPORTING_V2_PASS_2026-09-27.md`; the older full-detail v1 latency failure remains a separate documented limitation. No new load, deployment, school approval, device or manual assistive-technology claim is made here.
+
 Living source-of-truth audit, started 21 September 2026. A checked item means the implementation and its stated evidence exist locally; it does not claim school deployment or classroom readiness.
 
 ## Current pilot-readiness correction — 26 September 2026

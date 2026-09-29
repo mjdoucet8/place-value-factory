@@ -155,6 +155,35 @@ describe("RC-07 deterministic blueprint coverage", () => {
       expect(generateLevelOrder(levelId, seed, slot).target).toBe(target);
   });
 
+  it("maps the published practice stream into inclusive ranges for every place", () => {
+    // Golden digits derive from the published uint32 draws, not the generator.
+    const vectors = [
+      [1, [1, 1, 1]],
+      [270369, [1, 1, 1]],
+      [67634689, [2, 4, 6]],
+    ] as const;
+    const places = [
+      ["pv.ones", 1],
+      ["pv.tens", 10],
+      ["pv.hundreds", 100],
+      ["pv.thousands", 1000],
+      ["pv.tenThousands", 10000],
+      ["pv.hundredThousands", 100000],
+    ] as const;
+    const bands = ["easy", "medium", "hard"] as const;
+    for (const [seed, digits] of vectors)
+      for (const [skill, place] of places)
+        for (const [index, band] of bands.entries()) {
+          const order = generatePracticeOrder(skill, seed, 0, band, 4);
+          expect(order.target).toBe(digits[index] * place);
+          expect(order.primarySkill).toBe(skill);
+          expect(
+            validateRepresentation(order, canonicalRepresentation(order.target))
+              .shipmentAccepted,
+          ).toBe(true);
+        }
+  });
+
   it("independently checks each of 150 slots across bands and boundary seeds", () => {
     const seeds = [1, 0xffffffff, 71] as const;
     const bands = ["easy", "medium", "hard"] as const;
