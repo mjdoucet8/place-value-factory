@@ -835,6 +835,25 @@ function App() {
         navigate("map");
       } else setNotice("");
     } catch (error) {
+      if (
+        action === "pause" &&
+        error instanceof ApiError &&
+        error.code === "NOT_FOUND"
+      ) {
+        try {
+          await loadMap();
+          setAttempt(undefined);
+          setQuantities([0, 0, 0, 0, 0, 0]);
+          setQuantitiesB([0, 0, 0, 0, 0, 0]);
+          setUndo(null);
+          setNotice("");
+          navigate("map");
+          return;
+        } catch (mapError) {
+          setNotice(`Could not return to the map — ${(mapError as Error).message}`);
+          return;
+        }
+      }
       setNotice(`Could not ${action} — ${(error as Error).message}`);
     } finally {
       setSaving(false);

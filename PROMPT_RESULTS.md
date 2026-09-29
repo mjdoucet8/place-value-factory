@@ -350,3 +350,9 @@ Result: Reserved a stable browser scrollbar gutter while gameplay is open, so te
 Prompt: Create 17 live Place Value Factory student accounts with simple, unique space-themed usernames and passwords, and provide a numbered Excel sheet containing the credentials.
 
 Result: Added 17 fictional students to the active demo class using unique space-themed usernames and six-digit PINs. Verified every credential against the live student login. Created a formatted Excel workbook with rows 1–17, the usernames, PINs, and class code; visually inspected it and confirmed all rows after re-importing the exported file. Credentials remain outside the repository.
+
+## 2026-09-28 — Recover pause from a completed server attempt
+
+Prompt: Fix Pause mission showing “Attempt not found” instead of returning to the map.
+
+Result: Added recovery for a stale browser gameplay snapshot after the server has already completed the attempt. Pause now refreshes progression, clears the stale attempt, and returns to Factory Map without the error, while normal pause and resume behavior stays unchanged. Added browser coverage, passed TypeScript, the production build, 80 regular tests and all 24 browser scenarios, and deployed the fix to the stable production URL.

@@ -993,3 +993,11 @@ Create 17 fictional student accounts with unique, simple space-themed usernames 
 ## 2026-09-28 | MVP-ROSTER-24 | HANDOFF / DONE | BE / QA
 
 Created 17 new fictional student accounts in “Fictional MVP Demo Class” with unique space-themed usernames and six-digit PINs. Existing students were left unchanged. Verified all 17 credentials through the live student-session endpoint with zero failures. Created and visually inspected a one-sheet Excel workbook containing the class name, class code, and numbered username/PIN list; re-imported the exported workbook and confirmed all 17 credential rows. The credential workbook is stored outside the repository and no passwords or PINs were added to project logs or source control. Existing local development data remains untouched.
+
+## 2026-09-28 | MVP-PAUSE-25 | CLAIM | FE / QA
+
+Recover when Pause mission is selected from a browser state whose attempt has already completed on the server. Refresh progression, clear the stale attempt, and return the student to the map instead of displaying “Attempt not found.” Own the pause recovery branch, focused browser regression, and task/prompt records. Preserve ordinary pause/resume behavior and existing local data.
+
+## 2026-09-28 | MVP-PAUSE-25 | HANDOFF / DONE | FE / QA
+
+Pause mission now recovers when the browser holds a stale gameplay snapshot for an attempt that has already completed on the server. A NOT_FOUND pause response refreshes map progression, clears the stale attempt and crate editor state, and returns directly to Factory Map without displaying the error. Ordinary active-attempt pause and resume behavior remains unchanged. Added a browser regression for the exact 404 recovery while retaining the normal pause/resume scenario. Final evidence: TypeScript pass, production build pass, 80 regular tests pass with 9 dedicated-harness skips, 24 browser tests pass with one environment-specific zoom probe skipped, and diff check pass. Production deployment `dpl_4k4j64ukCHWx5UeddzMcEh4KFqGu` is Ready at `https://math-factory-one.vercel.app`; health is OK and the live client bundle contains the recovery branch. Existing local development data remains untouched.

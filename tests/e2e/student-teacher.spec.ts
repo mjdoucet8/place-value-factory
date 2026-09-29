@@ -155,6 +155,24 @@ test("resumes a paused mission after the page reloads", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("returns to the map when pause finds an already completed attempt", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Student login" }).click();
+  await startFirstMission(page);
+  await page.route("**/api/v1/games/place-value-factory/attempts/*/pause", async (route) => {
+    await route.fulfill({
+      status: 404,
+      contentType: "application/json",
+      body: JSON.stringify({
+        error: { code: "NOT_FOUND", message: "Attempt not found." },
+      }),
+    });
+  });
+  await page.getByRole("button", { name: "Pause mission" }).click();
+  await expect(page.getByRole("heading", { name: "Factory Map" })).toBeVisible();
+  await expect(page.getByText("Could not pause")).toHaveCount(0);
+});
+
 test("keeps play usable when browser storage cannot save a draft", async ({
   page,
 }) => {
