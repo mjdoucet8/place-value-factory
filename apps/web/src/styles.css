@@ -1769,39 +1769,6 @@ td {
   gap: 12px;
   justify-content: center;
 }
-.paused-factory-scene {
-  align-self: end;
-  height: min(46vh, 430px);
-  justify-self: center;
-  max-width: 1050px;
-  min-height: 320px;
-  position: relative;
-  width: 100%;
-  z-index: 1;
-}
-.paused-factory-scene .factory-art {
-  filter: drop-shadow(0 14px 12px rgb(10 32 85 / 34%));
-  position: absolute;
-}
-.paused-pipes {
-  bottom: -32px;
-  height: min(32vw, 350px);
-  left: 0;
-  width: min(32vw, 350px);
-}
-.paused-conveyor {
-  bottom: -65px;
-  height: min(42vw, 470px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(55vw, 620px);
-}
-.paused-shipment {
-  bottom: -38px;
-  height: min(29vw, 320px);
-  right: 0;
-  width: min(29vw, 320px);
-}
 @media (max-width: 699px) {
   .paused-screen {
     grid-template-rows: auto minmax(240px, 1fr);
@@ -1821,24 +1788,6 @@ td {
   .paused-actions {
     align-items: stretch;
     flex-direction: column;
-  }
-  .paused-factory-scene {
-    min-height: 240px;
-  }
-  .paused-pipes {
-    height: 180px;
-    left: -42px;
-    width: 180px;
-  }
-  .paused-conveyor {
-    bottom: -30px;
-    height: 250px;
-    width: 310px;
-  }
-  .paused-shipment {
-    height: 165px;
-    right: -38px;
-    width: 165px;
   }
   .header-help {
     margin-left: 0;

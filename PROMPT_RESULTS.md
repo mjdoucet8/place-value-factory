@@ -356,3 +356,9 @@ Result: Added 17 fictional students to the active demo class using unique space-
 Prompt: Fix Pause mission showing “Attempt not found” instead of returning to the map.
 
 Result: Added recovery for a stale browser gameplay snapshot after the server has already completed the attempt. Pause now refreshes progression, clears the stale attempt, and returns to Factory Map without the error, while normal pause and resume behavior stays unchanged. Added browser coverage, passed TypeScript, the production build, 80 regular tests and all 24 browser scenarios, and deployed the fix to the stable production URL.
+
+## 2026-09-28 — Remove the three pause-page props
+
+Prompt: Remove the pipe and gauge, small conveyor, and crate from the paused mission page.
+
+Result: Removed all three decorative overlays and their responsive styles while preserving the factory background and centered pause controls. Updated the paused visual reference, added browser coverage for the removal, passed TypeScript, the production build, 80 regular tests and all 24 browser scenarios, and deployed the change to the stable production URL.

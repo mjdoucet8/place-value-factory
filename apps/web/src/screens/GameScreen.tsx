@@ -1,9 +1,5 @@
 import { useRef, type Dispatch, type RefObject, type SetStateAction } from "react";
-import {
-  BusyFactoryScenery,
-  FactoryArt,
-  Mascot,
-} from "../components/FactoryArt.js";
+import { BusyFactoryScenery, Mascot } from "../components/FactoryArt.js";
 import { formatNumber } from "../formatNumber.js";
 import {
   MachineEditor,
@@ -75,11 +71,6 @@ export function GameScreen(props: Props) {
             </button>
           </div>
         </section>
-        <div className="paused-factory-scene" aria-hidden="true">
-          <FactoryArt asset="prop-pipes-gauge" className="paused-pipes" />
-          <FactoryArt asset="prop-conveyor" className="paused-conveyor" />
-          <FactoryArt asset="prop-shipment" className="paused-shipment" />
-        </div>
       </main>
     );
   const order = props.attempt.activeOrder;

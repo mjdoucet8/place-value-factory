@@ -149,6 +149,7 @@ test("resumes a paused mission after the page reloads", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Mission paused" }),
   ).toBeVisible();
+  await expect(page.locator(".paused-factory-scene")).toHaveCount(0);
   await page.getByRole("button", { name: "Resume mission" }).click();
   await expect(
     page.getByText("CURRENT ORDER", { exact: true }),
