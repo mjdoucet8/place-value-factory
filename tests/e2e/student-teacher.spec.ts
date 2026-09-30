@@ -449,7 +449,7 @@ test("renders deterministic advanced-mode visual fixtures", async ({
   page,
 }) => {
   const states = [
-    ["restricted", "Use only:"],
+    ["restricted", "Use only thousands (1 000) and tens (10)."],
     ["minimum", "Use the fewest crates"],
     ["exactTypes", "Use exactly 2 crate sizes"],
     ["twoWays", "Representation B"],

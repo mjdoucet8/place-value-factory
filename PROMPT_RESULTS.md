@@ -391,3 +391,9 @@ Result: The packing guide appears throughout Receiving Station (Levels 1–4) an
 Prompt: Completed Warehouse did not unlock Shipping Station.
 
 Result: Completed station boundaries consistently open the next station in map, results and attempt-start authorization, while certification evidence stays independent. Verified all four station boundaries and the primary Unlock Shipping Station button with its map colour reveal. TypeScript, build, 86 application tests and 26 browser scenarios pass; native zoom remains environment-skipped. Deployed to the stable MVP and confirmed the existing demo profile has Warehouse completed and Shipping unlocked without replaying or changing saved progress. Existing local data and unrelated work preserved.
+
+## 2026-09-30 — Name the allowed place values
+
+Prompt: Prefer “Use only hundreds (100) and ones (1).” to the numeric-only restriction.
+
+Result: Restricted-machine instructions now include lowercase place-value names and their formatted numbers, joined with “and”; this applies to every allowed combination. Mathematical constraints are unchanged. TypeScript, production build and the existing advanced-mode browser scenario pass. Published to the stable MVP after explicitly selecting the linked Vercel team. Existing local saved data and unrelated work preserved.

@@ -1,6 +1,7 @@
 import { useRef, type Dispatch, type RefObject, type SetStateAction } from "react";
 import { BusyFactoryScenery, Mascot } from "../components/FactoryArt.js";
 import { formatNumber } from "../formatNumber.js";
+import { PLACES } from "../models.js";
 import { levelById } from "../../../../packages/config/src/index.js";
 import {
   MachineEditor,
@@ -95,7 +96,15 @@ export function GameScreen(props: Props) {
           : order.canonicalRequired
             ? "Use normal place value: 0–9 crates of each size."
             : order.allowed.length < 6
-              ? `Use only: ${order.allowed.map((value: number) => formatNumber(value)).join(", ")}.`
+              ? `Use only ${new Intl.ListFormat("en", {
+                  style: "long",
+                  type: "conjunction",
+                }).format(
+                  order.allowed.map(
+                    (value: number) =>
+                      `${PLACES.find((place) => place.value === value)?.name.toLowerCase()} (${formatNumber(value)})`,
+                  ),
+                )}.`
               : "Build this target with the open machines.";
   return (
     <main
