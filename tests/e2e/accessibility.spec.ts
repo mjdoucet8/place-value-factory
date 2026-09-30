@@ -204,7 +204,7 @@ test("login failure is announced and associated with credential fields", async (
 });
 
 test("local quantity input reaches the displayed total within the browser target", async ({ page }) => {
-  await page.goto("/dev/place-value-factory/states?fixture=calm");
+  await page.goto("/dev/place-value-factory/states?fixture=packing-guide-first");
   await page.evaluate(() => {
     const input = document.querySelector<HTMLInputElement>("#quantity-0")!;
     const total = document.querySelector<HTMLElement>(".representation-monitor strong")!;

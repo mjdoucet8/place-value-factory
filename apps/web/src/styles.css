@@ -1944,6 +1944,7 @@ td {
   background: linear-gradient(145deg, #0b2260, #064191); border-radius: 20px;
   box-shadow: inset 0 0 0 3px #20d5ef, 0 7px 0 #16307a;
 }
+.game-screen .factory-console[data-packing-monitor="false"] { grid-template-columns: 1fr; }
 .game-screen .factory-console .representation-monitor strong { font-size: 2rem; color: #fff; }
 .game-screen .factory-console .controls {
   margin: 0; align-content: center; background: linear-gradient(#3475e0, #1646a6); border: 5px solid #80bdff;

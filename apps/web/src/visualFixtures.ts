@@ -44,6 +44,14 @@ export const GAME_FIXTURES: Record<
     pressure?: "calm" | "busy";
   }
 > = {
+  "packing-guide-first": {
+    label: "Later station first order with packing guide",
+    attempt: { ...baseAttempt, shippedSlots: 0 },
+  },
+  "packing-guide-tutorial": {
+    label: "Receiving tutorial later order with packing guide",
+    attempt: { ...baseAttempt, levelId: "level-4", shippedSlots: 4 },
+  },
   calm: { label: "Calm ordinary play", attempt: baseAttempt, pressure: "calm" },
   busy: { label: "Busy cosmetic play", attempt: baseAttempt, pressure: "busy" },
   restricted: {

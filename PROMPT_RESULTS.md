@@ -379,3 +379,9 @@ Result: The production student login now starts with the active fictional MVP cl
 Prompt: Correct the automatically populated class code, username, and hidden password so the fictional demo student can sign in immediately.
 
 Result: The production form now supplies one verified matching demo credential set and prevents stale password-manager values from replacing it. Secure staging startup reconciles only the exact fictional demo account when needed, preserving its progress and every other account. Added frontend and server regressions, passed TypeScript, the production build, 83 regular tests and all 24 browser scenarios, deployed to the stable production URL, and verified a fresh one-click live login reached the existing Factory Map without editing any field.
+
+## 2026-09-29 — Limit the packing guide to learning questions
+
+Prompt: Make the packing total and expression available only at the first station and on the first question of every level.
+
+Result: The packing guide appears throughout Receiving Station (Levels 1–4) and only on the first order of later levels; later orders and extra challenges hide it and expand the action controls. Added browser visibility coverage and first-order/tutorial fixtures, moved the existing total-response performance probe to an eligible first-order fixture, and inspected the updated gameplay visual reference. TypeScript, build and diff checks pass. All 25 applicable browser scenarios pass across the full run and corrected performance rerun; native browser zoom remains environment-skipped. Deployed to the stable MVP URL and confirmed production health and the served visibility rule.

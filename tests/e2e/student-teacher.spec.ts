@@ -108,6 +108,17 @@ test("student completes five saved orders, settings, and optional transfer; teac
   await teacher.close();
 });
 
+test("shows the packing guide only during Receiving or the first order", async ({ page }) => {
+  for (const fixture of ["packing-guide-tutorial", "packing-guide-first"]) {
+    await page.goto(`/dev/place-value-factory/states?fixture=${fixture}`);
+    await expect(page.getByRole("region", { name: "Current crate representation" })).toBeVisible();
+  }
+  await page.goto("/dev/place-value-factory/states?fixture=calm");
+  await expect(page.getByRole("region", { name: "Current crate representation" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Ship order" })).toBeVisible();
+  await expect(page.locator(".factory-console")).toHaveAttribute("data-packing-monitor", "false");
+});
+
 test("keeps the handoff-faithful gallery baselines stable", async ({
   page,
 }) => {

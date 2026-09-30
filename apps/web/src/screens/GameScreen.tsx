@@ -1,6 +1,7 @@
 import { useRef, type Dispatch, type RefObject, type SetStateAction } from "react";
 import { BusyFactoryScenery, Mascot } from "../components/FactoryArt.js";
 import { formatNumber } from "../formatNumber.js";
+import { levelById } from "../../../../packages/config/src/index.js";
 import {
   MachineEditor,
   RepresentationMonitor,
@@ -74,6 +75,10 @@ export function GameScreen(props: Props) {
       </main>
     );
   const order = props.attempt.activeOrder;
+  const showPackingMonitor =
+    props.attempt.status !== "completed" &&
+    (levelById(props.attempt.levelId)?.zone === "Receiving" ||
+      props.attempt.shippedSlots === 0);
   const locked = props.saving || props.pending;
   const busyEnabled =
     props.busy &&
@@ -220,12 +225,12 @@ export function GameScreen(props: Props) {
         setQuantities={props.setQuantities}
         setQuantitiesB={props.setQuantitiesB}
       />
-      <div className="factory-console">
-        <RepresentationMonitor
+      <div className="factory-console" data-packing-monitor={showPackingMonitor}>
+        {showPackingMonitor && <RepresentationMonitor
           quantities={props.quantities}
           quantitiesB={props.quantitiesB}
           twoWays={order.distinctRepresentations === 2}
-        />
+        />}
       <section className="controls">
         <button
           className="secondary"
