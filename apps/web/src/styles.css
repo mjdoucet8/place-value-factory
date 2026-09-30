@@ -2120,6 +2120,29 @@ td {
 }
 
 /* Fit the complete world into the space left by its actual header and banners. */
+.map-scenery {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.map-scenery .map-prop {
+  position: absolute;
+  width: 9%;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 4px #24578530);
+}
+.map-scenery .map-prop-incoming { left: 27%; top: 2%; width: 6%; }
+.map-scenery .map-prop-packing-stock { left: 62%; top: 3%; width: 7%; }
+.map-scenery .map-prop-receiving-stock { left: 6%; top: 48%; width: 11%; }
+.map-scenery .map-prop-utilities { left: 20%; top: 40%; width: 10%; }
+.map-scenery .map-prop-transfer-belt { left: 43%; top: 45%; width: 15%; }
+.map-scenery .map-prop-transfer-crate { left: 50%; top: 46%; width: 5%; }
+.map-scenery .map-prop-central-storage { left: 60%; top: 59%; width: 11%; }
+.map-scenery .map-prop-lab-tools { left: 20%; top: 60%; width: 5%; }
+.map-scenery .map-prop-outgoing-stock { left: 91%; top: 45%; width: 8%; }
+
 main.map-screen[data-map-view="world"] {
   display: flex;
   flex-direction: column;

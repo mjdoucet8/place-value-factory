@@ -122,6 +122,19 @@ export function MapScreen(props: Props) {
           aria-label="Five-zone factory route"
           aria-busy={props.starting}
         >
+          {view === "world" && (
+            <div className="map-scenery" aria-hidden="true">
+              <FactoryArt asset="prop-shipment" className="map-prop map-prop-incoming" />
+              <FactoryArt asset="prop-waiting-pallet" className="map-prop map-prop-packing-stock" />
+              <FactoryArt asset="prop-waiting-pallet" className="map-prop map-prop-receiving-stock" />
+              <FactoryArt asset="prop-pipes-gauge" className="map-prop map-prop-utilities" />
+              <FactoryArt asset="prop-conveyor" className="map-prop map-prop-transfer-belt" />
+              <FactoryArt asset="prop-shipment" className="map-prop map-prop-transfer-crate" />
+              <FactoryArt asset="cosmetic-shelves" className="map-prop map-prop-central-storage" />
+              <FactoryArt asset="prop-activity-light" className="map-prop map-prop-lab-tools" />
+              <FactoryArt asset="prop-waiting-pallet" className="map-prop map-prop-outgoing-stock" />
+            </div>
+          )}
           <svg
             className="world-route"
             viewBox="0 0 1000 700"
