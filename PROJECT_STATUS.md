@@ -1,5 +1,9 @@
 # Project status
 
+## Current: 30 September 2026 — Class code changed to doucet, live
+
+The existing shared fictional MVP class now uses `doucet`, and the live login form prefills the new code. Its class ID, all 18 students, credentials and saved progress are retained. Verified a fresh successful sign-in to the existing profile/map and checked the live form. Typecheck, the two existing login/credential tests and production build pass. Implementation `79da49a` is live as READY deployment `dpl_7Pno5YerdBp7c9HPY2bMgySgwzMp`; live bundle matches the tested build, health is OK, and bounded error scan is empty. Earlier sections below are historical.
+
 ## Current: 30 September 2026 — Settings replaced with logout, live
 
 Removed the Settings screen and replaced its map button with Log out. Logout revokes the cookie session, clears private UI state, prevents signed-out Back navigation and preserves saved progress and drafts. Pending/error/retry behavior is covered. Typecheck/build pass; 100 regular tests, 34 browser checks and 4 real PostgreSQL secure-pilot journeys pass (9 dedicated-harness and 1 native-zoom skips documented). Only the map visual reference changed. See `docs/qa/LOGOUT_2026-09-30.md`. Published implementation `5b81a2c` as READY deployment `dpl_Dpboh9pA99NagQAUNxkuPob4AUHr` at https://math-factory-one.vercel.app/. Live health is OK, served code matches the tested build, and bounded error scan returned no records. Earlier sections below are historical.
