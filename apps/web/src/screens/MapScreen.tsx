@@ -15,7 +15,9 @@ type Props = {
   unlockingZone?: string | null;
   starting: boolean;
   activeAttempt: any;
-  onSettings: () => void;
+  loggingOut: boolean;
+  logoutError?: string;
+  onLogout: () => void;
   onProgress: () => void;
   onResume: () => void;
   onSelectLevel: (level: SelectedLevel) => void;
@@ -71,14 +73,27 @@ export function MapScreen(props: Props) {
       <header>
         <h1>Factory Map</h1>
         <nav aria-label="Student tools">
-          <button className="secondary" onClick={props.onProgress}>
+          <button
+            className="secondary"
+            disabled={props.starting}
+            onClick={props.onProgress}
+          >
             Progress
           </button>
-          <button className="secondary" onClick={props.onSettings}>
-            Settings
+          <button
+            className="secondary"
+            disabled={props.starting}
+            onClick={props.onLogout}
+          >
+            {props.loggingOut ? "Logging out…" : "Log out"}
           </button>
         </nav>
       </header>
+      {props.logoutError && (
+        <p className="map-lock-notice" role="alert">
+          {props.logoutError}
+        </p>
+      )}
       <div className="map-tools">
         <p className="map-current-level">
           Current level{" "}
@@ -116,7 +131,9 @@ export function MapScreen(props: Props) {
             Level {props.activeAttempt.levelId?.replace("level-", "")} ·
             shipment {formatNumber(props.activeAttempt.shippedSlots + 1)} of 5
           </p>
-          <button onClick={props.onResume}>Resume saved mission</button>
+          <button disabled={props.starting} onClick={props.onResume}>
+            Resume saved mission
+          </button>
         </section>
       )}
       {lockedNotice ? (

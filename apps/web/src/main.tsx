@@ -10,7 +10,6 @@ import {
 import { LoginScreen } from "./screens/LoginScreen.js";
 import { MapScreen } from "./screens/MapScreen.js";
 import { ProgressScreen } from "./screens/ProgressScreen.js";
-import { SettingsScreen } from "./screens/SettingsScreen.js";
 import { ResultsScreen } from "./screens/ResultsScreen.js";
 import { TeacherWorkspace } from "./screens/TeacherWorkspace.js";
 import { api, ApiError } from "./api.js";
@@ -51,7 +50,6 @@ const pathFor = (screen: Screen, attempt?: any) => {
   if (screen === "login") return "/student/login";
   if (screen === "map") return "/games/place-value-factory";
   if (screen === "progress") return "/games/place-value-factory/progress";
-  if (screen === "settings") return "/games/place-value-factory/settings";
   if (screen === "results")
     return `/games/place-value-factory/attempts/${attempt?.attemptId ?? "current"}/results`;
   if (screen === "game")
@@ -97,6 +95,8 @@ function App() {
   const [unlockingZone, setUnlockingZone] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
   const [shipmentMotion, setShipmentMotion] = useState<
     "idle" | "departing" | "arriving"
   >("idle");
@@ -166,9 +166,17 @@ function App() {
   useEffect(() => {
     const onPopState = () => {
       const path = window.location.pathname;
+      if (!session && !path.startsWith("/dev/")) {
+        navigate("login", { replace: true });
+        return;
+      }
+      if (loggingOut) {
+        navigate("map", { replace: true });
+        return;
+      }
       if (path === "/student/login") setScreen("login");
       else if (path.endsWith("/progress")) setScreen("progress");
-      else if (path.endsWith("/settings")) setScreen("settings");
+      else if (path.endsWith("/settings")) navigate("map", { replace: true });
       else if (path.endsWith("/results")) setScreen("results");
       else if (path.includes("/levels/")) setScreen("map");
       else if (path.includes("/attempts/")) setScreen("game");
@@ -178,7 +186,7 @@ function App() {
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
-  }, []);
+  }, [session, loggingOut]);
   useEffect(() => {
     if (window.location.pathname.startsWith("/dev/")) return;
     void api("/auth/session")
@@ -261,8 +269,6 @@ function App() {
           }
           if (requestedPath.endsWith("/progress"))
             navigate("progress", { replace: true });
-          else if (requestedPath.endsWith("/settings"))
-            navigate("settings", { replace: true });
           else navigate("map", { replace: true });
         }
       })
@@ -477,37 +483,57 @@ function App() {
     setProgress(nextProgress);
     return { map: nextMap, progress: nextProgress };
   };
-  const openSettings = async () => {
+  const logout = async () => {
+    if (loggingOut || starting) return;
+    setLoggingOut(true);
+    setLogoutError("");
     try {
-      const profile = await api("/profile", {
-        headers: { "x-session": session },
+      await api("/auth/session", { method: "DELETE" });
+      // Saved missions, drafts and pending shipments remain available on sign-in.
+      setSession("");
+      setAttempt(undefined);
+      setMap(undefined);
+      setProgress(undefined);
+      setResultData(undefined);
+      setQuantities([0, 0, 0, 0, 0, 0]);
+      setQuantitiesB([0, 0, 0, 0, 0, 0]);
+      setUndo(null);
+      setNotice("");
+      setHelp("");
+      setHelpOpen(false);
+      setPendingLocal(false);
+      setPendingConflict(false);
+      setStorageUnavailable(false);
+      setSaving(false);
+      setShipmentMotion("idle");
+      setUnlockingZone(null);
+      setFactoryAlert(false);
+      if (factoryAlertTimer.current !== null)
+        window.clearTimeout(factoryAlertTimer.current);
+      reconciled.current.clear();
+      restoredHelp.current = "";
+      setUsername("");
+      setPin("");
+      setTeacherUsername("");
+      setTeacherPassword("");
+      setShowPin(false);
+      setSettings({
+        sound: false,
+        reducedMotion: false,
+        pressure: "calm",
+        textScale: "normal",
       });
-      setSettings(profile.settings);
-      navigate("settings");
-    } catch (error) {
-      setNotice(`Could not load settings — ${(error as Error).message}`);
-    }
-  };
-  const saveSettings = async () => {
-    try {
-      await api("/profile/settings", {
-        method: "PATCH",
-        headers: { "x-session": session },
-        body: JSON.stringify({ settings }),
-      });
-      document.documentElement.dataset.textScale = settings.textScale;
-      document.documentElement.dataset.motion = settings.reducedMotion
-        ? "reduced"
-        : "standard";
-      setNotice(
-        "Settings saved. They never change the math, stars, or mastery.",
+      navigate("login", { replace: true });
+    } catch {
+      setLogoutError(
+        "Could not log out. Please check your connection and try again.",
       );
-      navigate("map");
-    } catch (error) {
-      setNotice(`Could not save settings — ${(error as Error).message}`);
+    } finally {
+      setLoggingOut(false);
     }
   };
   const login = async (teacher = false) => {
+    setNotice("");
     try {
       const signedIn = await api(
         teacher ? "/auth/teacher/session" : "/auth/student/session",
@@ -1018,7 +1044,7 @@ function App() {
     saving,
   ]);
   if (screen === "state-gallery") return <StateGallery />;
-  if (screen === "login")
+  if (screen === "login" || !session)
     return (
       <LoginScreen
         classCode={classCode}
@@ -1044,11 +1070,13 @@ function App() {
         map={map}
         progress={progress}
         unlockingZone={unlockingZone}
-        starting={starting}
+        starting={starting || loggingOut}
+        loggingOut={loggingOut}
+        logoutError={logoutError}
         activeAttempt={
           attempt && attempt.status !== "completed" ? attempt : null
         }
-        onSettings={() => void openSettings()}
+        onLogout={() => void logout()}
         onProgress={() => navigate("progress")}
         onResume={() => navigate("game", { attempt })}
         onSelectLevel={chooseLevel}
@@ -1061,15 +1089,6 @@ function App() {
         onPractice={() =>
           void start(map?.highestUnlockedLevelId ?? "level-1", "practice")
         }
-        onBack={() => navigate("map")}
-      />
-    );
-  if (screen === "settings")
-    return (
-      <SettingsScreen
-        settings={settings}
-        onChange={setSettings}
-        onSave={() => void saveSettings()}
         onBack={() => navigate("map")}
       />
     );

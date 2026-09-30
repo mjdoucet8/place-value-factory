@@ -54,7 +54,8 @@ export function StateGallery() {
         activeAttempt={
           state === "map-resume" ? GAME_FIXTURES.calm.attempt : null
         }
-        onSettings={noop}
+        loggingOut={false}
+        onLogout={noop}
         onProgress={noop}
         onResume={noop}
         onSelectLevel={noop}

@@ -159,6 +159,22 @@ test("teacher issues access, student ships, and teacher reviews and revokes it",
   await page.screenshot({ path: "test-results/pilot-teacher-evidence.png", fullPage: true });
   await student.getByRole("button", { name: "Back to map" }).click();
   await expect(student.getByRole("button", { name: /View mission — Level 2/ })).toBeVisible();
+  const previousSession = (await student.context().cookies()).find(cookie => cookie.name === "pvf_session")!;
+  await student.getByRole("button", { name: "Log out", exact: true }).click();
+  await expect(student.getByRole("button", { name: "Student login" })).toBeVisible();
+  expect((await student.request.get("/api/v1/auth/session")).status()).toBe(401);
+  // A copied old cookie must fail too: the server session was revoked.
+  expect((await student.request.get("/api/v1/auth/session", {
+    headers: { cookie: `pvf_session=${previousSession.value}` },
+  })).status()).toBe(401);
+  expect((await student.request.delete("/api/v1/auth/session", {
+    headers: { origin: new URL(student.url()).origin, cookie: `pvf_session=${previousSession.value}` },
+  })).status()).toBe(204);
+  await student.getByLabel("Class code").fill(code);
+  await student.getByLabel("Username", { exact: true }).fill("pilot-learner");
+  await student.getByLabel("Six-digit PIN").fill(pin);
+  await student.getByRole("button", { name: "Student login" }).click();
+  await expect(student.getByRole("button", { name: /View mission — Level 2/ })).toBeVisible();
   await student.getByRole("button", { name: "Progress" }).click();
   await student.getByRole("button", { name: /^Practice / }).click();
   for (let slot = 0; slot < 5; slot++) {

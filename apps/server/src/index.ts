@@ -1097,16 +1097,14 @@ export function createApiServer(
           "Please refresh your session before making changes.",
         );
       if (
-        identity &&
-        actor &&
         request.method === "DELETE" &&
         url.pathname === "/api/v1/auth/session"
       ) {
-        await identity.logout(request);
+        if (identity && actor) await identity.logout(request);
         return send(response, 204, undefined, {
           "set-cookie": sessionCookie(
             "",
-            origin!.protocol === "https:",
+            origin?.protocol === "https:",
           ).replace("Max-Age=28800", "Max-Age=0"),
         });
       }

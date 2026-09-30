@@ -29,7 +29,7 @@ async function startFirstMission(page: Page) {
   await expect(page.getByText("CURRENT ORDER", { exact: true })).toBeVisible();
 }
 
-test("student completes five saved orders, settings, and optional transfer; teacher sees evidence", async ({
+test("student completes five saved orders and optional transfer, then logs back in; teacher sees evidence", async ({
   page,
   browser,
 }) => {
@@ -83,9 +83,13 @@ test("student completes five saved orders, settings, and optional transfer; teac
   await page.getByRole("button", { name: "Ship order" }).click();
   await expect(page.getByText("third star saved")).toBeVisible();
   await page.getByRole("button", { name: "Back to map" }).click();
-  await page.getByRole("button", { name: "Settings" }).click();
-  await page.getByLabel("Reduce motion").check();
-  await page.getByRole("button", { name: "Save settings" }).click();
+  await expect(page.locator('[data-level-id="level-1"] .node-stars')).toHaveAttribute("aria-label", "3 earned stars");
+  await page.getByRole("button", { name: "Log out", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Student login" })).toBeVisible();
+  await page.getByLabel("Username", { exact: true }).fill("ava");
+  await page.getByLabel("Six-digit PIN").fill("123456");
+  await page.getByRole("button", { name: "Student login" }).click();
+  await expect(page.locator('[data-level-id="level-1"] .node-stars')).toHaveAttribute("aria-label", "3 earned stars");
   await expect(
     page.getByRole("heading", { name: "Factory Map" }),
   ).toBeVisible();

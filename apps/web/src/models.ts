@@ -5,7 +5,6 @@ export type Screen =
   | "results"
   | "progress"
   | "teacher"
-  | "settings"
   | "state-gallery";
 
 export type Settings = {

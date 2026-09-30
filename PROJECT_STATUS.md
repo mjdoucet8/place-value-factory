@@ -1,5 +1,9 @@
 # Project status
 
+## Current: 30 September 2026 — Settings replaced with logout, verified locally
+
+Removed the Settings screen and replaced its map button with Log out. Logout revokes the cookie session, clears private UI state, prevents signed-out Back navigation and preserves saved progress and drafts. Pending/error/retry behavior is covered. Typecheck/build pass; 100 regular tests, 34 browser checks and 4 real PostgreSQL secure-pilot journeys pass (9 dedicated-harness and 1 native-zoom skips documented). Only the map visual reference changed. See `docs/qa/LOGOUT_2026-09-30.md`. Publication pending; earlier sections below are historical.
+
 ## Current: 30 September 2026 — All-level question variety improvements live
 
 Reviewed all 30 five-slot question blueprints and audited 128 seeded runs per level before/after. Levels 1–21 retain their existing behavior; Lab levels now vary active places and allowed machines inside the same objective/type-count/exchange constraints. Level 24 has five different two-place patterns. New Lab issuance is versioned xorshift32-v4; persisted active orders and evidence remain unchanged. Regular tests: 100 passed/9 dedicated-harness skips. Real PostgreSQL: 9 passed plus 3 after restart (2 inapplicable skips). Browser suite: 31 passed/1 existing native-zoom environment skip. Typecheck/build/diff checks pass. See `docs/qa/QUESTION_VARIETY_2026-09-30.md` for the full 30-level review and preserved difficulty constraints. Published implementation `2260479` as READY deployment `dpl_B1L24G24GtbJXwBRAwG2kFP4pEL7` at https://math-factory-one.vercel.app/. Live page and server health return 200; bounded startup error scan returned no records. Earlier sections below are historical.

@@ -450,3 +450,9 @@ Result: Implemented the approved scenery with all five station anchors and conne
 **Prompt:** Review each level's questions, keeping the difficulty while varying place values instead of repeatedly using the same machines.
 
 **Result:** Audited all 30 five-question blueprints. Preserved the purposeful variety/focused conversions in Levels 1–21 and improved repetitive Lab sets. Level 24 now spans five different two-place pairs; gapped, two-way and repacking levels rotate equivalent patterns. Mixed reviews vary patterns across replays. Objective counts, exchange steps, ranges, scoring and saved history remain protected. Verified 100 regular tests, 9 real-database tests plus 3 restart checks, and 31 browser checks; existing harness/native-zoom skips documented. Build and typecheck pass. Published at https://math-factory-one.vercel.app/ as READY deployment dpl_B1L24G24GtbJXwBRAwG2kFP4pEL7. Live health passes; bounded error scan returned no records. Current saved questions remain unchanged; newly generated Lab questions use the improved patterns.
+
+## 2026-09-30 — Replace Settings with Log out
+
+**Prompt:** Remove the unused Settings screen and button, replacing the button with logout.
+
+**Result:** Removed the screen and added working session logout to the map header, including safe history behavior and retry feedback. Saved stars, missions, draft quantities and preferences remain intact. Typecheck/build pass; 100 regular tests, 34 browser checks and 4 secure PostgreSQL pilot journeys pass. Updated and inspected the map screenshot. Publication pending. Existing local saved data preserved.

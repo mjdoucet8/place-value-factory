@@ -39,7 +39,7 @@ test("reviews all gallery fixtures, assets and reflow at desktop and narrow widt
         ),
         `${state} at ${width}px`,
       ).toBe(true);
-      if (page.url().includes("fixture=calm")) {
+      if (page.url().includes("fixture=packing-guide-first")) {
         await page.locator("#quantity-0").fill("2");
         await expect(
           page.getByLabel("Total 200 000", { exact: true }),
