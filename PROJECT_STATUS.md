@@ -1,5 +1,9 @@
 # Project status
 
+## Current: 30 September 2026 — All-level question variety review verified
+
+Reviewed all 30 five-slot question blueprints and audited 128 seeded runs per level before/after. Levels 1–21 retain their existing behavior; Lab levels now vary active places and allowed machines inside the same objective/type-count/exchange constraints. Level 24 has five different two-place patterns. New Lab issuance is versioned xorshift32-v4; persisted active orders and evidence remain unchanged. Regular tests: 100 passed/9 dedicated-harness skips. Real PostgreSQL: 9 passed plus 3 after restart (2 inapplicable skips). Browser suite: 31 passed/1 existing native-zoom environment skip. Typecheck/build/diff checks pass. See `docs/qa/QUESTION_VARIETY_2026-09-30.md` for the full 30-level review and preserved difficulty constraints. Publication pending; earlier sections below are historical.
+
 ## Current: 30 September 2026 — Approved gameplay equipment live
 
 The approved dispenser/crate artwork is integrated as twelve independent transparent image files. Live quantity fields fit the ivory panels and move with their crates while dispensers stay fixed; shipment travel clears wide viewports and existing save sequencing/reduced motion remain intact. Typecheck/build and 31 browser checks pass, with one existing native-zoom environment skip. Only the gameplay visual baseline changed. See `docs/qa/GAMEPLAY_ART_2026-09-30.md` and `docs/GAMEPLAY_ARTWORK_V4.json`. Published implementation `f4f6e9d` as READY deployment `dpl_5txKDodqadGuFpJzcHomaxCiH4Y6` at https://math-factory-one.vercel.app/. Live health is OK, the updated build is served and all twelve live art hashes match the tested files. The bounded deployment error scan returned no records. Earlier status sections below are historical.

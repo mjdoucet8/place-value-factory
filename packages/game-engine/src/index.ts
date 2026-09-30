@@ -7,6 +7,7 @@ import {
 } from "../../contracts/src/index.js";
 import {
   DIGIT_RANGES,
+  LAB_PATTERNS,
   LEVELS,
   LEVEL_ONE_SLOTS,
   STAGE_ONE_PLACES,
@@ -638,6 +639,13 @@ function constructLevelOrder(
   if (!challengeMode) throw new Error("CONFIG_INVALID");
   const digit = (draw: number) =>
     seededRange(seed, level.ordinal, slotIndex, 1, 9, draw);
+  const targetFrom = (places: readonly Denomination[]) =>
+    places.reduce((sum, place, index) => sum + place * digit(index), 0);
+  const reviewPattern = (patterns: readonly (readonly Denomination[])[]) =>
+    patterns[
+      seededRange(seed, level.ordinal, slotIndex, 0, patterns.length - 1, 20)
+    ];
+  const engineVersion = "xorshift32-v4";
   const primarySkill =
     challengeMode === "exactTypes"
       ? "reason.exactTypes"
@@ -649,19 +657,21 @@ function constructLevelOrder(
   if (challengeMode === "exactTypes") {
     const exactTypes =
       level.ordinal === 24 || (level.ordinal >= 29 && slotIndex === 1) ? 2 : 3;
-    const target =
-      exactTypes === 2
-        ? (level.ordinal === 30
-            ? 100000
-            : level.ordinal === 24
-              ? 1000
-              : 10000) *
-            digit(0) +
-          digit(1)
-        : (level.ordinal === 30 ? 100000 : 10000) * digit(0) +
-          100 * digit(1) +
-          10 * digit(2) +
-          digit(3);
+    const places =
+      level.ordinal === 24
+        ? LAB_PATTERNS.exactTwo[slotIndex]
+        : level.ordinal === 25
+          ? LAB_PATTERNS.exactThree[slotIndex]
+          : reviewPattern(
+              exactTypes === 2
+                ? level.ordinal === 30
+                  ? LAB_PATTERNS.masterExactTwo
+                  : LAB_PATTERNS.mixedExactTwo
+                : level.ordinal === 30
+                  ? LAB_PATTERNS.masterExactThree
+                  : LAB_PATTERNS.mixedExactThree,
+            );
+    const target = targetFrom(places);
     return {
       id: `${levelId}-${seed}-${slotIndex}`,
       target,
@@ -671,52 +681,69 @@ function constructLevelOrder(
       exactTypes,
       distinctRepresentations: 1,
       difficultyBand,
+      engineVersion,
       primarySkill,
       mode: "exactTypes",
     };
   }
   if (challengeMode === "twoWays") {
-    const target =
+    const allowed: readonly Denomination[] =
       level.ordinal === 27
-        ? digit(0) * 1000 + digit(1) * 100
-        : (level.ordinal === 30 ? 100000 : level.ordinal === 29 ? 10000 : 100) *
-          digit(0);
+        ? LAB_PATTERNS.twoWaysRestricted[slotIndex]
+        : DENOMINATIONS;
+    const places =
+      level.ordinal === 27
+        ? slotIndex === 4
+          ? allowed.slice(1)
+          : allowed.slice(0, 2)
+        : level.ordinal === 26
+          ? LAB_PATTERNS.twoWays[slotIndex]
+          : level.ordinal === 30
+            ? ([100000] as const)
+            : ([10000] as const);
+    const target = targetFrom(places);
     return {
       id: `${levelId}-${seed}-${slotIndex}`,
       target,
-      allowed: level.ordinal === 27 ? [1000, 100, 10] : DENOMINATIONS,
+      allowed,
       canonicalRequired: false,
       minimumRequired: false,
       exactTypes: null,
       distinctRepresentations: 2,
       difficultyBand,
+      engineVersion,
       primarySkill,
       mode: "twoWays",
     };
   }
-  const allowed: Denomination[] =
+  const allowed: readonly Denomination[] =
     level.ordinal === 23 || level.ordinal === 28
-      ? [1000, 100, 1]
+      ? LAB_PATTERNS.gapped[slotIndex]
       : challengeMode === "restricted"
-        ? level.ordinal === 30
-          ? [100000, 1000, 10, 1]
-          : [10000, 100, 1]
-        : [...DENOMINATIONS];
+        ? reviewPattern(
+            level.ordinal === 30
+              ? LAB_PATTERNS.masterRestricted
+              : LAB_PATTERNS.mixedRestricted,
+          )
+        : DENOMINATIONS;
   const target =
-    level.ordinal === 23
-      ? 1000 * digit(0) + 100 * digit(1) + digit(2)
-      : level.ordinal === 28
-        ? 1000 * digit(0) + 100 * digit(1) + 10 * digit(2) + digit(3)
-        : challengeMode === "restricted"
-          ? level.ordinal === 30
-            ? 100000 * digit(0) + 1000 * digit(1) + 10 * digit(2) + digit(3)
-            : 10000 * digit(0) + 100 * digit(1) + digit(2)
+    level.ordinal === 22
+      ? targetFrom(LAB_PATTERNS.minimum[slotIndex])
+      : level.ordinal === 23 || challengeMode === "restricted"
+        ? targetFrom(allowed)
+        : level.ordinal === 28
+          ? targetFrom(
+              DENOMINATIONS.filter(
+                (place) =>
+                  place <= allowed[0] && place >= allowed[allowed.length - 1],
+              ),
+            )
           : seededRange(
               seed,
               level.ordinal,
               slotIndex,
-              level.ordinal === 30 ? 100000 : level.ordinal === 22 ? 100 : 1000,
-              level.ordinal === 22 ? 99999 : 999999,
+              level.ordinal === 30 ? 100000 : 1000,
+              999999,
             );
   return {
     id: `${levelId}-${seed}-${slotIndex}`,
@@ -727,6 +754,7 @@ function constructLevelOrder(
     exactTypes: null,
     distinctRepresentations: 1,
     difficultyBand,
+    engineVersion,
     primarySkill,
     mode: challengeMode,
     ...(challengeMode === "repack"
@@ -791,21 +819,29 @@ export function orderSignature(order: OrderSpec): string {
 
 /** Server/test witness helper; it is never sent to a learner as an answer. */
 export function witnessFor(order: OrderSpec): Representation {
-  if (order.exactTypes === 2) {
-    const tens = Math.floor(order.target / 10);
-    return [0, 0, 0, 0, tens, order.target % 10] as Representation;
-  }
-  if (order.exactTypes === 3) {
-    const hundreds = Math.floor(order.target / 100);
-    const remainder = order.target % 100;
-    return [
-      0,
-      0,
-      0,
-      hundreds,
-      Math.floor(remainder / 10),
-      remainder % 10,
-    ] as Representation;
+  if (order.exactTypes !== null) {
+    // At most 20 subsets. Reserve one crate of each selected type, then
+    // distribute the remainder. This handles internal AND trailing zeros;
+    // the old tens/ones-only witness silently excluded those valid targets.
+    for (let mask = 1; mask < 64; mask++) {
+      const selected = DENOMINATIONS.filter((_, index) => mask & (1 << index));
+      if (
+        selected.length !== order.exactTypes ||
+        selected.some((place) => !order.allowed.includes(place))
+      )
+        continue;
+      let remaining =
+        order.target - selected.reduce((sum, place) => sum + place, 0);
+      if (remaining < 0 || remaining % selected[selected.length - 1] !== 0)
+        continue;
+      return DENOMINATIONS.map((place) => {
+        if (!selected.includes(place)) return 0;
+        const extra = Math.floor(remaining / place);
+        remaining %= place;
+        return 1 + extra;
+      }) as unknown as Representation;
+    }
+    throw new Error("CONFIG_INVALID");
   }
   return DENOMINATIONS.map((denomination) => {
     if (!order.allowed.includes(denomination)) return 0;

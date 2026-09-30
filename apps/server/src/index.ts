@@ -929,9 +929,10 @@ export function createApiServer(
       role,
       seed,
       configVersion: "v1-local",
-      engineVersion: generated.id.startsWith("level-18-")
-        ? "xorshift32-v3"
-        : "xorshift32-v2",
+      engineVersion: generated.engineVersion ??
+        (generated.id.startsWith("level-18-")
+          ? "xorshift32-v3"
+          : "xorshift32-v2"),
       forbidden: DENOMINATIONS.filter(
         (place) => !generated.allowed.includes(place),
       ),

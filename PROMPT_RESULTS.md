@@ -444,3 +444,9 @@ Result: Implemented the approved scenery with all five station anchors and conne
 **Prompt:** Recreate gameplay using the approved artwork, keeping crates in separate art files so they can roll off the conveyor.
 
 **Result:** Implemented twelve independent transparent dispenser/crate images and fitted live quantity panels, labels and buttons to the crate fronts. Crates and their controls roll out together after accepted saves; dispensers remain stationary. Six-digit counts, narrow-screen access, closed machines and reduced motion are verified. Typecheck/build pass; 31 browser checks pass with one existing native-zoom environment skip. Only the gameplay visual baseline changed. Published successfully at https://math-factory-one.vercel.app/ as READY deployment dpl_5txKDodqadGuFpJzcHomaxCiH4Y6. Live health, updated bundle/styles and all twelve artwork hashes verified.
+
+## 2026-09-30 — Review every level for comparable difficulty and question variety
+
+**Prompt:** Review each level's questions, keeping the difficulty while varying place values instead of repeatedly using the same machines.
+
+**Result:** Audited all 30 five-question blueprints. Preserved the purposeful variety/focused conversions in Levels 1–21 and improved repetitive Lab sets. Level 24 now spans five different two-place pairs; gapped, two-way and repacking levels rotate equivalent patterns. Mixed reviews vary patterns across replays. Objective counts, exchange steps, ranges, scoring and saved history remain protected. Verified 100 regular tests, 9 real-database tests plus 3 restart checks, and 31 browser checks; existing harness/native-zoom skips documented. Build and typecheck pass. Local work complete; publication pending.

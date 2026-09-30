@@ -411,7 +411,9 @@ describe("minimum oracle", () => {
             validateRepresentation(order, witness, second).shipmentAccepted,
           ).toBe(true);
           if (level === 27) {
-            expect(order.allowed).toEqual([1000, 100, 10]);
+            expect(order.allowed).toHaveLength(3);
+            expect(order.allowed[0] / order.allowed[1]).toBe(10);
+            expect(order.allowed[1] / order.allowed[2]).toBe(10);
             expect(second).not.toBeNull();
           }
           if (level === 28) {

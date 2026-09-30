@@ -1,3 +1,5 @@
+export { LAB_PATTERNS } from "./question-patterns.js";
+
 import type { Denomination } from "../../contracts/src/index.js";
 
 /** Public credentials for the shared fictional MVP walkthrough account. */

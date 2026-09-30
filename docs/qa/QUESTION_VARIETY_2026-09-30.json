@@ -1,0 +1,5231 @@
+{
+  "baselineCommit": "f154c84",
+  "runsPerLevel": 128,
+  "questionsPerRun": 5,
+  "band": "hard",
+  "seedFormula": "xorshift32((imul(run + 1, 0x9e3779b9) ^ imul(slot + 1, 0x85ebca6b)) >>> 0 || 1)",
+  "before": [
+    {
+      "level": 1,
+      "title": "First Shipments",
+      "modes": [
+        "standard"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "1",
+        "10",
+        "100"
+      ],
+      "minPatterns": 3,
+      "maxPatterns": 3,
+      "minCrates": 1,
+      "maxCrates": 9,
+      "minTarget": 1,
+      "maxTarget": 900,
+      "example": [
+        {
+          "target": 1,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 30,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 400,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 8,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 10,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10",
+          "mode": "standard",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 2,
+      "title": "Tall Crates",
+      "modes": [
+        "standard"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "1000",
+        "10000",
+        "100000"
+      ],
+      "minPatterns": 3,
+      "maxPatterns": 3,
+      "minCrates": 1,
+      "maxCrates": 9,
+      "minTarget": 1000,
+      "maxTarget": 900000,
+      "example": [
+        {
+          "target": 9000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 70000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 600000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 2000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 90000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000",
+          "mode": "standard",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 3,
+      "title": "Mixed Machines",
+      "modes": [
+        "standard"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "100000",
+        "100",
+        "1",
+        "10",
+        "1000"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 1,
+      "maxCrates": 9,
+      "minTarget": 1,
+      "maxTarget": 900000,
+      "example": [
+        {
+          "target": 600000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 900,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 8,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 50,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 7000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000",
+          "mode": "standard",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "title": "Receiving Review",
+      "modes": [
+        "standard"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "10000",
+        "100000",
+        "1",
+        "10",
+        "100"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 1,
+      "maxCrates": 9,
+      "minTarget": 1,
+      "maxTarget": 900000,
+      "example": [
+        {
+          "target": 10000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 400000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 5,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 80,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 100,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100",
+          "mode": "standard",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 5,
+      "title": "Two Digits",
+      "modes": [
+        "standard"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "1000,10",
+        "100,1",
+        "10,1",
+        "1000,1",
+        "100,10"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 6,
+      "maxCrates": 14,
+      "minTarget": 15,
+      "maxTarget": 9050,
+      "example": [
+        {
+          "target": 5010,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000,10",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 703,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 84,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 3008,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 510,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100,10",
+          "mode": "standard",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 6,
+      "title": "Three Digits",
+      "modes": [
+        "standard"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "10000,100,1",
+        "1000,10,1",
+        "100,10,1",
+        "10000,1000,10",
+        "1000,100,1"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 7,
+      "maxCrates": 23,
+      "minTarget": 151,
+      "maxTarget": 95090,
+      "example": [
+        {
+          "target": 70206,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,100,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 9059,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000,10,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 848,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100,10,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 49050,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,1000,10",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 7307,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000,100,1",
+          "mode": "standard",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 7,
+      "title": "Full Number Builds",
+      "modes": [
+        "standard"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "10000,1000,100,1",
+        "100000,10000,1000,10,1",
+        "100000,10000,1000,100,10,1",
+        "100000,1000,100,1",
+        "100000,10000,100,10,1"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 13,
+      "maxCrates": 39,
+      "minTarget": 15106,
+      "maxTarget": 959483,
+      "example": [
+        {
+          "target": 62702,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,1000,100,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 849058,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,10,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 738495,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 509409,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,1000,100,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 620735,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,100,10,1",
+          "mode": "standard",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 8,
+      "title": "Zero Detectives",
+      "modes": [
+        "standard"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "100000,1000,10",
+        "10000,100,1",
+        "100000,10000,100,1",
+        "1000,10",
+        "100000,1000,100,1"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 6,
+      "maxCrates": 27,
+      "minTarget": 1050,
+      "maxTarget": 950904,
+      "example": [
+        {
+          "target": 803070,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,1000,10",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 60105,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,100,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 720702,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,100,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 1050,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000,10",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 804803,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,1000,100,1",
+          "mode": "standard",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 9,
+      "title": "Zero Review",
+      "modes": [
+        "standard"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "100000,1000,100",
+        "10000,1000,10",
+        "100000,1000,10,1",
+        "10000,100,1",
+        "100000,10000,1000,100,10,1"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 7,
+      "maxCrates": 39,
+      "minTarget": 10501,
+      "maxTarget": 959483,
+      "example": [
+        {
+          "target": 408300,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,1000,100",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 26010,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,1000,10",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 307026,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,1000,10,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 50106,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,100,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 483759,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "standard",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 10,
+      "title": "Hundred-Thousands Exchange",
+      "modes": [
+        "single"
+      ],
+      "allowed": [
+        "10000"
+      ],
+      "patterns": [
+        "100000,10000",
+        "100000"
+      ],
+      "minPatterns": 1,
+      "maxPatterns": 1,
+      "minCrates": 70,
+      "maxCrates": 99,
+      "minTarget": 700000,
+      "maxTarget": 990000,
+      "example": [
+        {
+          "target": 970000,
+          "allowed": [
+            10000
+          ],
+          "active": "100000,10000",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 900000,
+          "allowed": [
+            10000
+          ],
+          "active": "100000",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 860000,
+          "allowed": [
+            10000
+          ],
+          "active": "100000,10000",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 770000,
+          "allowed": [
+            10000
+          ],
+          "active": "100000,10000",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 980000,
+          "allowed": [
+            10000
+          ],
+          "active": "100000,10000",
+          "mode": "single",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 11,
+      "title": "Ten-Thousands Exchange",
+      "modes": [
+        "single"
+      ],
+      "allowed": [
+        "1000"
+      ],
+      "patterns": [
+        "10000,1000",
+        "10000"
+      ],
+      "minPatterns": 1,
+      "maxPatterns": 1,
+      "minCrates": 70,
+      "maxCrates": 99,
+      "minTarget": 70000,
+      "maxTarget": 99000,
+      "example": [
+        {
+          "target": 92000,
+          "allowed": [
+            1000
+          ],
+          "active": "10000,1000",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 98000,
+          "allowed": [
+            1000
+          ],
+          "active": "10000,1000",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 95000,
+          "allowed": [
+            1000
+          ],
+          "active": "10000,1000",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 82000,
+          "allowed": [
+            1000
+          ],
+          "active": "10000,1000",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 91000,
+          "allowed": [
+            1000
+          ],
+          "active": "10000,1000",
+          "mode": "single",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 12,
+      "title": "Thousands Exchange",
+      "modes": [
+        "single"
+      ],
+      "allowed": [
+        "100"
+      ],
+      "patterns": [
+        "1000,100",
+        "1000"
+      ],
+      "minPatterns": 1,
+      "maxPatterns": 1,
+      "minCrates": 70,
+      "maxCrates": 99,
+      "minTarget": 7000,
+      "maxTarget": 9900,
+      "example": [
+        {
+          "target": 8600,
+          "allowed": [
+            100
+          ],
+          "active": "1000,100",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 9300,
+          "allowed": [
+            100
+          ],
+          "active": "1000,100",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 9700,
+          "allowed": [
+            100
+          ],
+          "active": "1000,100",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 8000,
+          "allowed": [
+            100
+          ],
+          "active": "1000",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 8500,
+          "allowed": [
+            100
+          ],
+          "active": "1000,100",
+          "mode": "single",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 13,
+      "title": "Hundreds Exchange",
+      "modes": [
+        "single"
+      ],
+      "allowed": [
+        "10"
+      ],
+      "patterns": [
+        "100,10",
+        "100"
+      ],
+      "minPatterns": 1,
+      "maxPatterns": 1,
+      "minCrates": 70,
+      "maxCrates": 99,
+      "minTarget": 700,
+      "maxTarget": 990,
+      "example": [
+        {
+          "target": 960,
+          "allowed": [
+            10
+          ],
+          "active": "100,10",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 870,
+          "allowed": [
+            10
+          ],
+          "active": "100,10",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 910,
+          "allowed": [
+            10
+          ],
+          "active": "100,10",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 700,
+          "allowed": [
+            10
+          ],
+          "active": "100",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 950,
+          "allowed": [
+            10
+          ],
+          "active": "100,10",
+          "mode": "single",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 14,
+      "title": "Tens Exchange",
+      "modes": [
+        "single"
+      ],
+      "allowed": [
+        "1"
+      ],
+      "patterns": [
+        "10,1",
+        "10"
+      ],
+      "minPatterns": 1,
+      "maxPatterns": 1,
+      "minCrates": 70,
+      "maxCrates": 99,
+      "minTarget": 70,
+      "maxTarget": 99,
+      "example": [
+        {
+          "target": 89,
+          "allowed": [
+            1
+          ],
+          "active": "10,1",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 97,
+          "allowed": [
+            1
+          ],
+          "active": "10,1",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 93,
+          "allowed": [
+            1
+          ],
+          "active": "10,1",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 84,
+          "allowed": [
+            1
+          ],
+          "active": "10,1",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 90,
+          "allowed": [
+            1
+          ],
+          "active": "10",
+          "mode": "single",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 15,
+      "title": "Multi-Step Exchange",
+      "modes": [
+        "single"
+      ],
+      "allowed": [
+        "1000",
+        "100",
+        "10",
+        "1"
+      ],
+      "patterns": [
+        "100000,10000,1000",
+        "10000,1000",
+        "1000,100,10",
+        "100,10,1",
+        "10000,100",
+        "100,10",
+        "10000,1000,100",
+        "1000,100",
+        "100000,10000",
+        "100,1",
+        "100000,1000",
+        "1000,10",
+        "100000",
+        "100",
+        "10000"
+      ],
+      "minPatterns": 4,
+      "maxPatterns": 4,
+      "minCrates": 700,
+      "maxCrates": 999,
+      "minTarget": 700,
+      "maxTarget": 997000,
+      "example": [
+        {
+          "target": 773000,
+          "allowed": [
+            1000
+          ],
+          "active": "100000,10000,1000",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 84000,
+          "allowed": [
+            100
+          ],
+          "active": "10000,1000",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 7990,
+          "allowed": [
+            10
+          ],
+          "active": "1000,100,10",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 968,
+          "allowed": [
+            1
+          ],
+          "active": "100,10,1",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 763000,
+          "allowed": [
+            1000
+          ],
+          "active": "100000,10000,1000",
+          "mode": "single",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 16,
+      "title": "Small Allowed Sets",
+      "modes": [
+        "restricted"
+      ],
+      "allowed": [
+        "100,1",
+        "1000,10"
+      ],
+      "patterns": [
+        "100,1",
+        "1000,10"
+      ],
+      "minPatterns": 2,
+      "maxPatterns": 2,
+      "minCrates": 5,
+      "maxCrates": 13,
+      "minTarget": 105,
+      "maxTarget": 7050,
+      "example": [
+        {
+          "target": 208,
+          "allowed": [
+            100,
+            1
+          ],
+          "active": "100,1",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 1050,
+          "allowed": [
+            1000,
+            10
+          ],
+          "active": "1000,10",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 206,
+          "allowed": [
+            100,
+            1
+          ],
+          "active": "100,1",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 5010,
+          "allowed": [
+            1000,
+            10
+          ],
+          "active": "1000,10",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 207,
+          "allowed": [
+            100,
+            1
+          ],
+          "active": "100,1",
+          "mode": "restricted",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 17,
+      "title": "Mixed Allowed Sets",
+      "modes": [
+        "restricted"
+      ],
+      "allowed": [
+        "10000,100,1",
+        "100000,1000,10"
+      ],
+      "patterns": [
+        "10000,100,1",
+        "100000,1000,10"
+      ],
+      "minPatterns": 2,
+      "maxPatterns": 2,
+      "minCrates": 6,
+      "maxCrates": 15,
+      "minTarget": 10401,
+      "maxTarget": 603060,
+      "example": [
+        {
+          "target": 20602,
+          "allowed": [
+            10000,
+            100,
+            1
+          ],
+          "active": "10000,100,1",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 104010,
+          "allowed": [
+            100000,
+            1000,
+            10
+          ],
+          "active": "100000,1000,10",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 20501,
+          "allowed": [
+            10000,
+            100,
+            1
+          ],
+          "active": "10000,100,1",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 401040,
+          "allowed": [
+            100000,
+            1000,
+            10
+          ],
+          "active": "100000,1000,10",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 30502,
+          "allowed": [
+            10000,
+            100,
+            1
+          ],
+          "active": "10000,100,1",
+          "mode": "restricted",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 18,
+      "title": "Shipping Challenge",
+      "modes": [
+        "restricted"
+      ],
+      "allowed": [
+        "10000,100,1",
+        "100000,1000,10",
+        "100000,10000,1",
+        "10000,100,10,1",
+        "1000,100,10,1"
+      ],
+      "patterns": [
+        "100000,10000,1000,100,10,1",
+        "100000,10000,1000,100,10"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 37,
+      "maxCrates": 9597,
+      "minTarget": 151620,
+      "maxTarget": 959483,
+      "example": [
+        {
+          "target": 529521,
+          "allowed": [
+            10000,
+            100,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 161530,
+          "allowed": [
+            100000,
+            1000,
+            10
+          ],
+          "active": "100000,10000,1000,100,10",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 272625,
+          "allowed": [
+            100000,
+            10000,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 516173,
+          "allowed": [
+            10000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 483859,
+          "allowed": [
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "restricted",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 19,
+      "title": "One Closed Machine",
+      "modes": [
+        "forbidden"
+      ],
+      "allowed": [
+        "100000,1000,100,10,1",
+        "100000,10000,100,10,1",
+        "100000,10000,1000,10,1",
+        "100000,10000,1000,100,1"
+      ],
+      "patterns": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "minPatterns": 4,
+      "maxPatterns": 4,
+      "minCrates": 25,
+      "maxCrates": 80,
+      "minTarget": 141415,
+      "maxTarget": 636362,
+      "example": [
+        {
+          "target": 526263,
+          "allowed": [
+            100000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "forbidden",
+          "exactTypes": null
+        },
+        {
+          "target": 414152,
+          "allowed": [
+            100000,
+            10000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "forbidden",
+          "exactTypes": null
+        },
+        {
+          "target": 425241,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "forbidden",
+          "exactTypes": null
+        },
+        {
+          "target": 141425,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "forbidden",
+          "exactTypes": null
+        },
+        {
+          "target": 526363,
+          "allowed": [
+            100000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "forbidden",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 20,
+      "title": "Two Closed Machines",
+      "modes": [
+        "forbidden"
+      ],
+      "allowed": [
+        "10000,1000,10,1",
+        "100000,1000,10,1",
+        "100000,10000,100,1",
+        "10000,100,10,1",
+        "100000,1000,100,1"
+      ],
+      "patterns": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 34,
+      "maxCrates": 134,
+      "minTarget": 141415,
+      "maxTarget": 636362,
+      "example": [
+        {
+          "target": 458123,
+          "allowed": [
+            10000,
+            1000,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "forbidden",
+          "exactTypes": null
+        },
+        {
+          "target": 363635,
+          "allowed": [
+            100000,
+            1000,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "forbidden",
+          "exactTypes": null
+        },
+        {
+          "target": 362536,
+          "allowed": [
+            100000,
+            10000,
+            100,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "forbidden",
+          "exactTypes": null
+        },
+        {
+          "target": 636353,
+          "allowed": [
+            10000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "forbidden",
+          "exactTypes": null
+        },
+        {
+          "target": 252414,
+          "allowed": [
+            100000,
+            1000,
+            100,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "forbidden",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 21,
+      "title": "Repacking Bay",
+      "modes": [
+        "repack"
+      ],
+      "allowed": [
+        "10000,1000,10,1",
+        "100000,1000,100,10,1",
+        "100000,10000,100,1",
+        "100000,10000,1000,1",
+        "1000,100,10,1"
+      ],
+      "patterns": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 25,
+      "maxCrates": 647,
+      "minTarget": 141415,
+      "maxTarget": 636362,
+      "example": [
+        {
+          "target": 414152,
+          "allowed": [
+            10000,
+            1000,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "repack",
+          "exactTypes": null
+        },
+        {
+          "target": 635263,
+          "allowed": [
+            100000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "repack",
+          "exactTypes": null
+        },
+        {
+          "target": 636352,
+          "allowed": [
+            100000,
+            10000,
+            100,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "repack",
+          "exactTypes": null
+        },
+        {
+          "target": 253536,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "repack",
+          "exactTypes": null
+        },
+        {
+          "target": 414151,
+          "allowed": [
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "repack",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 22,
+      "title": "Fewest Crates",
+      "modes": [
+        "minimum"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "10000,1000,100,10,1",
+        "10000,1000,100,1",
+        "10000,100,10,1",
+        "10000,1000,1",
+        "1000,100,10,1",
+        "10000,1000,10,1",
+        "10000,100",
+        "1000,100,10",
+        "1000,10,1",
+        "10000,1000,10",
+        "10000,100,1",
+        "10000,1000,100,10",
+        "10000,10,1",
+        "100,10,1",
+        "10000,1000,100",
+        "1000,100,1",
+        "10000,100,10"
+      ],
+      "minPatterns": 1,
+      "maxPatterns": 5,
+      "minCrates": 4,
+      "maxCrates": 39,
+      "minTarget": 231,
+      "maxTarget": 99650,
+      "example": [
+        {
+          "target": 53853,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,1000,100,10,1",
+          "mode": "minimum",
+          "exactTypes": null
+        },
+        {
+          "target": 75308,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,1000,100,1",
+          "mode": "minimum",
+          "exactTypes": null
+        },
+        {
+          "target": 88907,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,1000,100,1",
+          "mode": "minimum",
+          "exactTypes": null
+        },
+        {
+          "target": 32177,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,1000,100,10,1",
+          "mode": "minimum",
+          "exactTypes": null
+        },
+        {
+          "target": 50564,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,100,10,1",
+          "mode": "minimum",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 23,
+      "title": "Fewest with Gaps",
+      "modes": [
+        "minimum"
+      ],
+      "allowed": [
+        "1000,100,1"
+      ],
+      "patterns": [
+        "1000,100,1"
+      ],
+      "minPatterns": 1,
+      "maxPatterns": 1,
+      "minCrates": 7,
+      "maxCrates": 23,
+      "minTarget": 1501,
+      "maxTarget": 9509,
+      "example": [
+        {
+          "target": 5904,
+          "allowed": [
+            1000,
+            100,
+            1
+          ],
+          "active": "1000,100,1",
+          "mode": "minimum",
+          "exactTypes": null
+        },
+        {
+          "target": 2702,
+          "allowed": [
+            1000,
+            100,
+            1
+          ],
+          "active": "1000,100,1",
+          "mode": "minimum",
+          "exactTypes": null
+        },
+        {
+          "target": 1601,
+          "allowed": [
+            1000,
+            100,
+            1
+          ],
+          "active": "1000,100,1",
+          "mode": "minimum",
+          "exactTypes": null
+        },
+        {
+          "target": 6207,
+          "allowed": [
+            1000,
+            100,
+            1
+          ],
+          "active": "1000,100,1",
+          "mode": "minimum",
+          "exactTypes": null
+        },
+        {
+          "target": 5904,
+          "allowed": [
+            1000,
+            100,
+            1
+          ],
+          "active": "1000,100,1",
+          "mode": "minimum",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 24,
+      "title": "Two Crate Types",
+      "modes": [
+        "exactTypes"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "1000,1"
+      ],
+      "minPatterns": 1,
+      "maxPatterns": 1,
+      "minCrates": 105,
+      "maxCrates": 905,
+      "minTarget": 1005,
+      "maxTarget": 9005,
+      "example": [
+        {
+          "target": 9004,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000,1",
+          "mode": "exactTypes",
+          "exactTypes": 2
+        },
+        {
+          "target": 6002,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000,1",
+          "mode": "exactTypes",
+          "exactTypes": 2
+        },
+        {
+          "target": 5001,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000,1",
+          "mode": "exactTypes",
+          "exactTypes": 2
+        },
+        {
+          "target": 2007,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000,1",
+          "mode": "exactTypes",
+          "exactTypes": 2
+        },
+        {
+          "target": 8004,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000,1",
+          "mode": "exactTypes",
+          "exactTypes": 2
+        }
+      ]
+    },
+    {
+      "level": 25,
+      "title": "Three Crate Types",
+      "modes": [
+        "exactTypes"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "10000,100,10,1"
+      ],
+      "minPatterns": 1,
+      "maxPatterns": 1,
+      "minCrates": 112,
+      "maxCrates": 918,
+      "minTarget": 10516,
+      "maxTarget": 90594,
+      "example": [
+        {
+          "target": 60151,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,100,10,1",
+          "mode": "exactTypes",
+          "exactTypes": 3
+        },
+        {
+          "target": 80483,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,100,10,1",
+          "mode": "exactTypes",
+          "exactTypes": 3
+        },
+        {
+          "target": 90594,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,100,10,1",
+          "mode": "exactTypes",
+          "exactTypes": 3
+        },
+        {
+          "target": 30848,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,100,10,1",
+          "mode": "exactTypes",
+          "exactTypes": 3
+        },
+        {
+          "target": 60161,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,100,10,1",
+          "mode": "exactTypes",
+          "exactTypes": 3
+        }
+      ]
+    },
+    {
+      "level": 26,
+      "title": "Two Ways",
+      "modes": [
+        "twoWays"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "100"
+      ],
+      "minPatterns": 1,
+      "maxPatterns": 1,
+      "minCrates": 1,
+      "maxCrates": 9,
+      "minTarget": 100,
+      "maxTarget": 900,
+      "example": [
+        {
+          "target": 300,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100",
+          "mode": "twoWays",
+          "exactTypes": null
+        },
+        {
+          "target": 100,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100",
+          "mode": "twoWays",
+          "exactTypes": null
+        },
+        {
+          "target": 200,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100",
+          "mode": "twoWays",
+          "exactTypes": null
+        },
+        {
+          "target": 600,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100",
+          "mode": "twoWays",
+          "exactTypes": null
+        },
+        {
+          "target": 300,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100",
+          "mode": "twoWays",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 27,
+      "title": "Two Ways with Gaps",
+      "modes": [
+        "twoWays"
+      ],
+      "allowed": [
+        "1000,100,10"
+      ],
+      "patterns": [
+        "1000,100"
+      ],
+      "minPatterns": 1,
+      "maxPatterns": 1,
+      "minCrates": 6,
+      "maxCrates": 14,
+      "minTarget": 1500,
+      "maxTarget": 9500,
+      "example": [
+        {
+          "target": 4900,
+          "allowed": [
+            1000,
+            100,
+            10
+          ],
+          "active": "1000,100",
+          "mode": "twoWays",
+          "exactTypes": null
+        },
+        {
+          "target": 2600,
+          "allowed": [
+            1000,
+            100,
+            10
+          ],
+          "active": "1000,100",
+          "mode": "twoWays",
+          "exactTypes": null
+        },
+        {
+          "target": 1500,
+          "allowed": [
+            1000,
+            100,
+            10
+          ],
+          "active": "1000,100",
+          "mode": "twoWays",
+          "exactTypes": null
+        },
+        {
+          "target": 7200,
+          "allowed": [
+            1000,
+            100,
+            10
+          ],
+          "active": "1000,100",
+          "mode": "twoWays",
+          "exactTypes": null
+        },
+        {
+          "target": 4900,
+          "allowed": [
+            1000,
+            100,
+            10
+          ],
+          "active": "1000,100",
+          "mode": "twoWays",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 28,
+      "title": "Repack Efficiently",
+      "modes": [
+        "repack"
+      ],
+      "allowed": [
+        "1000,100,1"
+      ],
+      "patterns": [
+        "1000,100,10,1"
+      ],
+      "minPatterns": 1,
+      "maxPatterns": 1,
+      "minCrates": 22,
+      "maxCrates": 108,
+      "minTarget": 1516,
+      "maxTarget": 9594,
+      "example": [
+        {
+          "target": 7372,
+          "allowed": [
+            1000,
+            100,
+            1
+          ],
+          "active": "1000,100,10,1",
+          "mode": "repack",
+          "exactTypes": null
+        },
+        {
+          "target": 9594,
+          "allowed": [
+            1000,
+            100,
+            1
+          ],
+          "active": "1000,100,10,1",
+          "mode": "repack",
+          "exactTypes": null
+        },
+        {
+          "target": 8473,
+          "allowed": [
+            1000,
+            100,
+            1
+          ],
+          "active": "1000,100,10,1",
+          "mode": "repack",
+          "exactTypes": null
+        },
+        {
+          "target": 4959,
+          "allowed": [
+            1000,
+            100,
+            1
+          ],
+          "active": "1000,100,10,1",
+          "mode": "repack",
+          "exactTypes": null
+        },
+        {
+          "target": 7262,
+          "allowed": [
+            1000,
+            100,
+            1
+          ],
+          "active": "1000,100,10,1",
+          "mode": "repack",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 29,
+      "title": "Mixed Lab",
+      "modes": [
+        "minimum",
+        "exactTypes",
+        "twoWays",
+        "restricted"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1",
+        "10000,100,1"
+      ],
+      "patterns": [
+        "10000,1000,100,10,1",
+        "10000,1",
+        "10000,100,10,1",
+        "10000",
+        "10000,100,1",
+        "100000,10000,1000,100,10,1",
+        "10000,1000,100,10",
+        "100000,10000,1000,100,1",
+        "100000,10000,1000,100,10",
+        "100000,10000,1000,10,1",
+        "100000,10000,100,10,1",
+        "100000,1000,100,10,1",
+        "100000,10000,1000,10",
+        "1000,100,10,1",
+        "100000,10000,1000,1",
+        "10000,1000,100",
+        "100000,10000,10,1",
+        "1000,100,10"
+      ],
+      "minPatterns": 2,
+      "maxPatterns": 2,
+      "minCrates": 1,
+      "maxCrates": 9005,
+      "minTarget": 6880,
+      "maxTarget": 989274,
+      "example": [
+        {
+          "target": 45479,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,1000,100,10,1",
+          "mode": "minimum",
+          "exactTypes": null
+        },
+        {
+          "target": 30008,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,1",
+          "mode": "exactTypes",
+          "exactTypes": 2
+        },
+        {
+          "target": 40959,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,100,10,1",
+          "mode": "exactTypes",
+          "exactTypes": 3
+        },
+        {
+          "target": 80000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000",
+          "mode": "twoWays",
+          "exactTypes": null
+        },
+        {
+          "target": 10501,
+          "allowed": [
+            10000,
+            100,
+            1
+          ],
+          "active": "10000,100,1",
+          "mode": "restricted",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 30,
+      "title": "Factory Master Review",
+      "modes": [
+        "minimum",
+        "exactTypes",
+        "twoWays",
+        "restricted"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1",
+        "100000,1000,10,1"
+      ],
+      "patterns": [
+        "100000,10000,1000,100,10",
+        "100000,1",
+        "100000,100,10,1",
+        "100000",
+        "100000,1000,10,1",
+        "100000,1000,100,10,1",
+        "100000,10000,1000,100,10,1",
+        "100000,10000,1000,100",
+        "100000,10000,100,10,1",
+        "100000,10000,100,1",
+        "100000,10000,1000,100,1",
+        "100000,10000,1000,10,1",
+        "100000,10000,10,1",
+        "100000,100,1",
+        "100000,10000,1000,10",
+        "100000,10000,1000,1",
+        "100000,1000,100,1"
+      ],
+      "minPatterns": 2,
+      "maxPatterns": 2,
+      "minCrates": 1,
+      "maxCrates": 90005,
+      "minTarget": 100000,
+      "maxTarget": 993779,
+      "example": [
+        {
+          "target": 594330,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10",
+          "mode": "minimum",
+          "exactTypes": null
+        },
+        {
+          "target": 700003,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,1",
+          "mode": "exactTypes",
+          "exactTypes": 2
+        },
+        {
+          "target": 900495,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,100,10,1",
+          "mode": "exactTypes",
+          "exactTypes": 3
+        },
+        {
+          "target": 400000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000",
+          "mode": "twoWays",
+          "exactTypes": null
+        },
+        {
+          "target": 501061,
+          "allowed": [
+            100000,
+            1000,
+            10,
+            1
+          ],
+          "active": "100000,1000,10,1",
+          "mode": "restricted",
+          "exactTypes": null
+        }
+      ]
+    }
+  ],
+  "after": [
+    {
+      "level": 1,
+      "title": "First Shipments",
+      "modes": [
+        "standard"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "1",
+        "10",
+        "100"
+      ],
+      "minPatterns": 3,
+      "maxPatterns": 3,
+      "minCrates": 1,
+      "maxCrates": 9,
+      "minTarget": 1,
+      "maxTarget": 900,
+      "example": [
+        {
+          "target": 1,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 30,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 400,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 8,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 10,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10",
+          "mode": "standard",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 2,
+      "title": "Tall Crates",
+      "modes": [
+        "standard"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "1000",
+        "10000",
+        "100000"
+      ],
+      "minPatterns": 3,
+      "maxPatterns": 3,
+      "minCrates": 1,
+      "maxCrates": 9,
+      "minTarget": 1000,
+      "maxTarget": 900000,
+      "example": [
+        {
+          "target": 9000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 70000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 600000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 2000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 90000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000",
+          "mode": "standard",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 3,
+      "title": "Mixed Machines",
+      "modes": [
+        "standard"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "100000",
+        "100",
+        "1",
+        "10",
+        "1000"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 1,
+      "maxCrates": 9,
+      "minTarget": 1,
+      "maxTarget": 900000,
+      "example": [
+        {
+          "target": 600000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 900,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 8,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 50,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 7000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000",
+          "mode": "standard",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "title": "Receiving Review",
+      "modes": [
+        "standard"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "10000",
+        "100000",
+        "1",
+        "10",
+        "100"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 1,
+      "maxCrates": 9,
+      "minTarget": 1,
+      "maxTarget": 900000,
+      "example": [
+        {
+          "target": 10000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 400000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 5,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 80,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 100,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100",
+          "mode": "standard",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 5,
+      "title": "Two Digits",
+      "modes": [
+        "standard"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "1000,10",
+        "100,1",
+        "10,1",
+        "1000,1",
+        "100,10"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 6,
+      "maxCrates": 14,
+      "minTarget": 15,
+      "maxTarget": 9050,
+      "example": [
+        {
+          "target": 5010,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000,10",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 703,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 84,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 3008,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 510,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100,10",
+          "mode": "standard",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 6,
+      "title": "Three Digits",
+      "modes": [
+        "standard"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "10000,100,1",
+        "1000,10,1",
+        "100,10,1",
+        "10000,1000,10",
+        "1000,100,1"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 7,
+      "maxCrates": 23,
+      "minTarget": 151,
+      "maxTarget": 95090,
+      "example": [
+        {
+          "target": 70206,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,100,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 9059,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000,10,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 848,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100,10,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 49050,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,1000,10",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 7307,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000,100,1",
+          "mode": "standard",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 7,
+      "title": "Full Number Builds",
+      "modes": [
+        "standard"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "10000,1000,100,1",
+        "100000,10000,1000,10,1",
+        "100000,10000,1000,100,10,1",
+        "100000,1000,100,1",
+        "100000,10000,100,10,1"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 13,
+      "maxCrates": 39,
+      "minTarget": 15106,
+      "maxTarget": 959483,
+      "example": [
+        {
+          "target": 62702,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,1000,100,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 849058,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,10,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 738495,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 509409,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,1000,100,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 620735,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,100,10,1",
+          "mode": "standard",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 8,
+      "title": "Zero Detectives",
+      "modes": [
+        "standard"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "100000,1000,10",
+        "10000,100,1",
+        "100000,10000,100,1",
+        "1000,10",
+        "100000,1000,100,1"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 6,
+      "maxCrates": 27,
+      "minTarget": 1050,
+      "maxTarget": 950904,
+      "example": [
+        {
+          "target": 803070,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,1000,10",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 60105,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,100,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 720702,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,100,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 1050,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000,10",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 804803,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,1000,100,1",
+          "mode": "standard",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 9,
+      "title": "Zero Review",
+      "modes": [
+        "standard"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "100000,1000,100",
+        "10000,1000,10",
+        "100000,1000,10,1",
+        "10000,100,1",
+        "100000,10000,1000,100,10,1"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 7,
+      "maxCrates": 39,
+      "minTarget": 10501,
+      "maxTarget": 959483,
+      "example": [
+        {
+          "target": 408300,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,1000,100",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 26010,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,1000,10",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 307026,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,1000,10,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 50106,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,100,1",
+          "mode": "standard",
+          "exactTypes": null
+        },
+        {
+          "target": 483759,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "standard",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 10,
+      "title": "Hundred-Thousands Exchange",
+      "modes": [
+        "single"
+      ],
+      "allowed": [
+        "10000"
+      ],
+      "patterns": [
+        "100000,10000",
+        "100000"
+      ],
+      "minPatterns": 1,
+      "maxPatterns": 1,
+      "minCrates": 70,
+      "maxCrates": 99,
+      "minTarget": 700000,
+      "maxTarget": 990000,
+      "example": [
+        {
+          "target": 970000,
+          "allowed": [
+            10000
+          ],
+          "active": "100000,10000",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 900000,
+          "allowed": [
+            10000
+          ],
+          "active": "100000",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 860000,
+          "allowed": [
+            10000
+          ],
+          "active": "100000,10000",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 770000,
+          "allowed": [
+            10000
+          ],
+          "active": "100000,10000",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 980000,
+          "allowed": [
+            10000
+          ],
+          "active": "100000,10000",
+          "mode": "single",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 11,
+      "title": "Ten-Thousands Exchange",
+      "modes": [
+        "single"
+      ],
+      "allowed": [
+        "1000"
+      ],
+      "patterns": [
+        "10000,1000",
+        "10000"
+      ],
+      "minPatterns": 1,
+      "maxPatterns": 1,
+      "minCrates": 70,
+      "maxCrates": 99,
+      "minTarget": 70000,
+      "maxTarget": 99000,
+      "example": [
+        {
+          "target": 92000,
+          "allowed": [
+            1000
+          ],
+          "active": "10000,1000",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 98000,
+          "allowed": [
+            1000
+          ],
+          "active": "10000,1000",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 95000,
+          "allowed": [
+            1000
+          ],
+          "active": "10000,1000",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 82000,
+          "allowed": [
+            1000
+          ],
+          "active": "10000,1000",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 91000,
+          "allowed": [
+            1000
+          ],
+          "active": "10000,1000",
+          "mode": "single",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 12,
+      "title": "Thousands Exchange",
+      "modes": [
+        "single"
+      ],
+      "allowed": [
+        "100"
+      ],
+      "patterns": [
+        "1000,100",
+        "1000"
+      ],
+      "minPatterns": 1,
+      "maxPatterns": 1,
+      "minCrates": 70,
+      "maxCrates": 99,
+      "minTarget": 7000,
+      "maxTarget": 9900,
+      "example": [
+        {
+          "target": 8600,
+          "allowed": [
+            100
+          ],
+          "active": "1000,100",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 9300,
+          "allowed": [
+            100
+          ],
+          "active": "1000,100",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 9700,
+          "allowed": [
+            100
+          ],
+          "active": "1000,100",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 8000,
+          "allowed": [
+            100
+          ],
+          "active": "1000",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 8500,
+          "allowed": [
+            100
+          ],
+          "active": "1000,100",
+          "mode": "single",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 13,
+      "title": "Hundreds Exchange",
+      "modes": [
+        "single"
+      ],
+      "allowed": [
+        "10"
+      ],
+      "patterns": [
+        "100,10",
+        "100"
+      ],
+      "minPatterns": 1,
+      "maxPatterns": 1,
+      "minCrates": 70,
+      "maxCrates": 99,
+      "minTarget": 700,
+      "maxTarget": 990,
+      "example": [
+        {
+          "target": 960,
+          "allowed": [
+            10
+          ],
+          "active": "100,10",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 870,
+          "allowed": [
+            10
+          ],
+          "active": "100,10",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 910,
+          "allowed": [
+            10
+          ],
+          "active": "100,10",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 700,
+          "allowed": [
+            10
+          ],
+          "active": "100",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 950,
+          "allowed": [
+            10
+          ],
+          "active": "100,10",
+          "mode": "single",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 14,
+      "title": "Tens Exchange",
+      "modes": [
+        "single"
+      ],
+      "allowed": [
+        "1"
+      ],
+      "patterns": [
+        "10,1",
+        "10"
+      ],
+      "minPatterns": 1,
+      "maxPatterns": 1,
+      "minCrates": 70,
+      "maxCrates": 99,
+      "minTarget": 70,
+      "maxTarget": 99,
+      "example": [
+        {
+          "target": 89,
+          "allowed": [
+            1
+          ],
+          "active": "10,1",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 97,
+          "allowed": [
+            1
+          ],
+          "active": "10,1",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 93,
+          "allowed": [
+            1
+          ],
+          "active": "10,1",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 84,
+          "allowed": [
+            1
+          ],
+          "active": "10,1",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 90,
+          "allowed": [
+            1
+          ],
+          "active": "10",
+          "mode": "single",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 15,
+      "title": "Multi-Step Exchange",
+      "modes": [
+        "single"
+      ],
+      "allowed": [
+        "1000",
+        "100",
+        "10",
+        "1"
+      ],
+      "patterns": [
+        "100000,10000,1000",
+        "10000,1000",
+        "1000,100,10",
+        "100,10,1",
+        "10000,100",
+        "100,10",
+        "10000,1000,100",
+        "1000,100",
+        "100000,10000",
+        "100,1",
+        "100000,1000",
+        "1000,10",
+        "100000",
+        "100",
+        "10000"
+      ],
+      "minPatterns": 4,
+      "maxPatterns": 4,
+      "minCrates": 700,
+      "maxCrates": 999,
+      "minTarget": 700,
+      "maxTarget": 997000,
+      "example": [
+        {
+          "target": 773000,
+          "allowed": [
+            1000
+          ],
+          "active": "100000,10000,1000",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 84000,
+          "allowed": [
+            100
+          ],
+          "active": "10000,1000",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 7990,
+          "allowed": [
+            10
+          ],
+          "active": "1000,100,10",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 968,
+          "allowed": [
+            1
+          ],
+          "active": "100,10,1",
+          "mode": "single",
+          "exactTypes": null
+        },
+        {
+          "target": 763000,
+          "allowed": [
+            1000
+          ],
+          "active": "100000,10000,1000",
+          "mode": "single",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 16,
+      "title": "Small Allowed Sets",
+      "modes": [
+        "restricted"
+      ],
+      "allowed": [
+        "100,1",
+        "1000,10"
+      ],
+      "patterns": [
+        "100,1",
+        "1000,10"
+      ],
+      "minPatterns": 2,
+      "maxPatterns": 2,
+      "minCrates": 5,
+      "maxCrates": 13,
+      "minTarget": 105,
+      "maxTarget": 7050,
+      "example": [
+        {
+          "target": 208,
+          "allowed": [
+            100,
+            1
+          ],
+          "active": "100,1",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 1050,
+          "allowed": [
+            1000,
+            10
+          ],
+          "active": "1000,10",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 206,
+          "allowed": [
+            100,
+            1
+          ],
+          "active": "100,1",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 5010,
+          "allowed": [
+            1000,
+            10
+          ],
+          "active": "1000,10",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 207,
+          "allowed": [
+            100,
+            1
+          ],
+          "active": "100,1",
+          "mode": "restricted",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 17,
+      "title": "Mixed Allowed Sets",
+      "modes": [
+        "restricted"
+      ],
+      "allowed": [
+        "10000,100,1",
+        "100000,1000,10"
+      ],
+      "patterns": [
+        "10000,100,1",
+        "100000,1000,10"
+      ],
+      "minPatterns": 2,
+      "maxPatterns": 2,
+      "minCrates": 6,
+      "maxCrates": 15,
+      "minTarget": 10401,
+      "maxTarget": 603060,
+      "example": [
+        {
+          "target": 20602,
+          "allowed": [
+            10000,
+            100,
+            1
+          ],
+          "active": "10000,100,1",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 104010,
+          "allowed": [
+            100000,
+            1000,
+            10
+          ],
+          "active": "100000,1000,10",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 20501,
+          "allowed": [
+            10000,
+            100,
+            1
+          ],
+          "active": "10000,100,1",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 401040,
+          "allowed": [
+            100000,
+            1000,
+            10
+          ],
+          "active": "100000,1000,10",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 30502,
+          "allowed": [
+            10000,
+            100,
+            1
+          ],
+          "active": "10000,100,1",
+          "mode": "restricted",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 18,
+      "title": "Shipping Challenge",
+      "modes": [
+        "restricted"
+      ],
+      "allowed": [
+        "10000,100,1",
+        "100000,1000,10",
+        "100000,10000,1",
+        "10000,100,10,1",
+        "1000,100,10,1"
+      ],
+      "patterns": [
+        "100000,10000,1000,100,10,1",
+        "100000,10000,1000,100,10"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 37,
+      "maxCrates": 9597,
+      "minTarget": 151620,
+      "maxTarget": 959483,
+      "example": [
+        {
+          "target": 529521,
+          "allowed": [
+            10000,
+            100,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 161530,
+          "allowed": [
+            100000,
+            1000,
+            10
+          ],
+          "active": "100000,10000,1000,100,10",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 272625,
+          "allowed": [
+            100000,
+            10000,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 516173,
+          "allowed": [
+            10000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "restricted",
+          "exactTypes": null
+        },
+        {
+          "target": 483859,
+          "allowed": [
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "restricted",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 19,
+      "title": "One Closed Machine",
+      "modes": [
+        "forbidden"
+      ],
+      "allowed": [
+        "100000,1000,100,10,1",
+        "100000,10000,100,10,1",
+        "100000,10000,1000,10,1",
+        "100000,10000,1000,100,1"
+      ],
+      "patterns": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "minPatterns": 4,
+      "maxPatterns": 4,
+      "minCrates": 25,
+      "maxCrates": 80,
+      "minTarget": 141415,
+      "maxTarget": 636362,
+      "example": [
+        {
+          "target": 526263,
+          "allowed": [
+            100000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "forbidden",
+          "exactTypes": null
+        },
+        {
+          "target": 414152,
+          "allowed": [
+            100000,
+            10000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "forbidden",
+          "exactTypes": null
+        },
+        {
+          "target": 425241,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "forbidden",
+          "exactTypes": null
+        },
+        {
+          "target": 141425,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "forbidden",
+          "exactTypes": null
+        },
+        {
+          "target": 526363,
+          "allowed": [
+            100000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "forbidden",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 20,
+      "title": "Two Closed Machines",
+      "modes": [
+        "forbidden"
+      ],
+      "allowed": [
+        "10000,1000,10,1",
+        "100000,1000,10,1",
+        "100000,10000,100,1",
+        "10000,100,10,1",
+        "100000,1000,100,1"
+      ],
+      "patterns": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 34,
+      "maxCrates": 134,
+      "minTarget": 141415,
+      "maxTarget": 636362,
+      "example": [
+        {
+          "target": 458123,
+          "allowed": [
+            10000,
+            1000,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "forbidden",
+          "exactTypes": null
+        },
+        {
+          "target": 363635,
+          "allowed": [
+            100000,
+            1000,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "forbidden",
+          "exactTypes": null
+        },
+        {
+          "target": 362536,
+          "allowed": [
+            100000,
+            10000,
+            100,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "forbidden",
+          "exactTypes": null
+        },
+        {
+          "target": 636353,
+          "allowed": [
+            10000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "forbidden",
+          "exactTypes": null
+        },
+        {
+          "target": 252414,
+          "allowed": [
+            100000,
+            1000,
+            100,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "forbidden",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 21,
+      "title": "Repacking Bay",
+      "modes": [
+        "repack"
+      ],
+      "allowed": [
+        "10000,1000,10,1",
+        "100000,1000,100,10,1",
+        "100000,10000,100,1",
+        "100000,10000,1000,1",
+        "1000,100,10,1"
+      ],
+      "patterns": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 25,
+      "maxCrates": 647,
+      "minTarget": 141415,
+      "maxTarget": 636362,
+      "example": [
+        {
+          "target": 414152,
+          "allowed": [
+            10000,
+            1000,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "repack",
+          "exactTypes": null
+        },
+        {
+          "target": 635263,
+          "allowed": [
+            100000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "repack",
+          "exactTypes": null
+        },
+        {
+          "target": 636352,
+          "allowed": [
+            100000,
+            10000,
+            100,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "repack",
+          "exactTypes": null
+        },
+        {
+          "target": 253536,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "repack",
+          "exactTypes": null
+        },
+        {
+          "target": 414151,
+          "allowed": [
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10,1",
+          "mode": "repack",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 22,
+      "title": "Fewest Crates",
+      "modes": [
+        "minimum"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "10000,1000,100,10,1",
+        "10000,1000,100,1",
+        "10000,1000,10,1",
+        "10000,100,10,1",
+        "10000,1000,100,10"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 13,
+      "maxCrates": 35,
+      "minTarget": 10516,
+      "maxTarget": 95948,
+      "example": [
+        {
+          "target": 51616,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,1000,100,10,1",
+          "mode": "minimum",
+          "exactTypes": null
+        },
+        {
+          "target": 73804,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,1000,100,1",
+          "mode": "minimum",
+          "exactTypes": null
+        },
+        {
+          "target": 94095,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,1000,10,1",
+          "mode": "minimum",
+          "exactTypes": null
+        },
+        {
+          "target": 30838,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,100,10,1",
+          "mode": "minimum",
+          "exactTypes": null
+        },
+        {
+          "target": 51620,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,1000,100,10",
+          "mode": "minimum",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 23,
+      "title": "Fewest with Gaps",
+      "modes": [
+        "minimum"
+      ],
+      "allowed": [
+        "1000,100,1",
+        "10000,1000,10",
+        "10000,100,10",
+        "100000,10000,100",
+        "100000,1000,100"
+      ],
+      "patterns": [
+        "1000,100,1",
+        "10000,1000,10",
+        "10000,100,10",
+        "100000,10000,100",
+        "100000,1000,100"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 7,
+      "maxCrates": 23,
+      "minTarget": 1501,
+      "maxTarget": 950900,
+      "example": [
+        {
+          "target": 5904,
+          "allowed": [
+            1000,
+            100,
+            1
+          ],
+          "active": "1000,100,1",
+          "mode": "minimum",
+          "exactTypes": null
+        },
+        {
+          "target": 27020,
+          "allowed": [
+            10000,
+            1000,
+            10
+          ],
+          "active": "10000,1000,10",
+          "mode": "minimum",
+          "exactTypes": null
+        },
+        {
+          "target": 10610,
+          "allowed": [
+            10000,
+            100,
+            10
+          ],
+          "active": "10000,100,10",
+          "mode": "minimum",
+          "exactTypes": null
+        },
+        {
+          "target": 620700,
+          "allowed": [
+            100000,
+            10000,
+            100
+          ],
+          "active": "100000,10000,100",
+          "mode": "minimum",
+          "exactTypes": null
+        },
+        {
+          "target": 509400,
+          "allowed": [
+            100000,
+            1000,
+            100
+          ],
+          "active": "100000,1000,100",
+          "mode": "minimum",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 24,
+      "title": "Two Crate Types",
+      "modes": [
+        "exactTypes"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "1000,1",
+        "10000,10",
+        "1000,100",
+        "10000,100",
+        "10000,1000"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 6,
+      "maxCrates": 14,
+      "minTarget": 1005,
+      "maxTarget": 95000,
+      "example": [
+        {
+          "target": 9004,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000,1",
+          "mode": "exactTypes",
+          "exactTypes": 2
+        },
+        {
+          "target": 60020,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,10",
+          "mode": "exactTypes",
+          "exactTypes": 2
+        },
+        {
+          "target": 5100,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000,100",
+          "mode": "exactTypes",
+          "exactTypes": 2
+        },
+        {
+          "target": 20700,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,100",
+          "mode": "exactTypes",
+          "exactTypes": 2
+        },
+        {
+          "target": 84000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,1000",
+          "mode": "exactTypes",
+          "exactTypes": 2
+        }
+      ]
+    },
+    {
+      "level": 25,
+      "title": "Three Crate Types",
+      "modes": [
+        "exactTypes"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "10000,100,10,1",
+        "100000,1000,100,10",
+        "10000,1000,10,1",
+        "100000,10000,100,10",
+        "100000,1000,10,1"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 22,
+      "maxCrates": 9072,
+      "minTarget": 10516,
+      "maxTarget": 950940,
+      "example": [
+        {
+          "target": 60151,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,100,10,1",
+          "mode": "exactTypes",
+          "exactTypes": 3
+        },
+        {
+          "target": 804830,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,1000,100,10",
+          "mode": "exactTypes",
+          "exactTypes": 3
+        },
+        {
+          "target": 95094,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,1000,10,1",
+          "mode": "exactTypes",
+          "exactTypes": 3
+        },
+        {
+          "target": 380480,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,100,10",
+          "mode": "exactTypes",
+          "exactTypes": 3
+        },
+        {
+          "target": 601061,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,1000,10,1",
+          "mode": "exactTypes",
+          "exactTypes": 3
+        }
+      ]
+    },
+    {
+      "level": 26,
+      "title": "Two Ways",
+      "modes": [
+        "twoWays"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1"
+      ],
+      "patterns": [
+        "100",
+        "10000",
+        "10",
+        "100000",
+        "1000"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 1,
+      "maxCrates": 9,
+      "minTarget": 10,
+      "maxTarget": 900000,
+      "example": [
+        {
+          "target": 300,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100",
+          "mode": "twoWays",
+          "exactTypes": null
+        },
+        {
+          "target": 10000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000",
+          "mode": "twoWays",
+          "exactTypes": null
+        },
+        {
+          "target": 20,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10",
+          "mode": "twoWays",
+          "exactTypes": null
+        },
+        {
+          "target": 600000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000",
+          "mode": "twoWays",
+          "exactTypes": null
+        },
+        {
+          "target": 3000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "1000",
+          "mode": "twoWays",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 27,
+      "title": "Two Ways with Gaps",
+      "modes": [
+        "twoWays"
+      ],
+      "allowed": [
+        "1000,100,10",
+        "100000,10000,1000",
+        "100,10,1",
+        "10000,1000,100"
+      ],
+      "patterns": [
+        "1000,100",
+        "100000,10000",
+        "100,10",
+        "10000,1000"
+      ],
+      "minPatterns": 4,
+      "maxPatterns": 4,
+      "minCrates": 6,
+      "maxCrates": 14,
+      "minTarget": 150,
+      "maxTarget": 950000,
+      "example": [
+        {
+          "target": 4900,
+          "allowed": [
+            1000,
+            100,
+            10
+          ],
+          "active": "1000,100",
+          "mode": "twoWays",
+          "exactTypes": null
+        },
+        {
+          "target": 260000,
+          "allowed": [
+            100000,
+            10000,
+            1000
+          ],
+          "active": "100000,10000",
+          "mode": "twoWays",
+          "exactTypes": null
+        },
+        {
+          "target": 150,
+          "allowed": [
+            100,
+            10,
+            1
+          ],
+          "active": "100,10",
+          "mode": "twoWays",
+          "exactTypes": null
+        },
+        {
+          "target": 72000,
+          "allowed": [
+            10000,
+            1000,
+            100
+          ],
+          "active": "10000,1000",
+          "mode": "twoWays",
+          "exactTypes": null
+        },
+        {
+          "target": 490,
+          "allowed": [
+            1000,
+            100,
+            10
+          ],
+          "active": "100,10",
+          "mode": "twoWays",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 28,
+      "title": "Repack Efficiently",
+      "modes": [
+        "repack"
+      ],
+      "allowed": [
+        "1000,100,1",
+        "10000,1000,10",
+        "10000,100,10",
+        "100000,10000,100",
+        "100000,1000,100"
+      ],
+      "patterns": [
+        "1000,100,10,1",
+        "10000,1000,100,10",
+        "100000,10000,1000,100"
+      ],
+      "minPatterns": 5,
+      "maxPatterns": 5,
+      "minCrates": 22,
+      "maxCrates": 108,
+      "minTarget": 1516,
+      "maxTarget": 959400,
+      "example": [
+        {
+          "target": 7372,
+          "allowed": [
+            1000,
+            100,
+            1
+          ],
+          "active": "1000,100,10,1",
+          "mode": "repack",
+          "exactTypes": null
+        },
+        {
+          "target": 95940,
+          "allowed": [
+            10000,
+            1000,
+            10
+          ],
+          "active": "10000,1000,100,10",
+          "mode": "repack",
+          "exactTypes": null
+        },
+        {
+          "target": 84730,
+          "allowed": [
+            10000,
+            100,
+            10
+          ],
+          "active": "10000,1000,100,10",
+          "mode": "repack",
+          "exactTypes": null
+        },
+        {
+          "target": 495900,
+          "allowed": [
+            100000,
+            10000,
+            100
+          ],
+          "active": "100000,10000,1000,100",
+          "mode": "repack",
+          "exactTypes": null
+        },
+        {
+          "target": 726200,
+          "allowed": [
+            100000,
+            1000,
+            100
+          ],
+          "active": "100000,10000,1000,100",
+          "mode": "repack",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 29,
+      "title": "Mixed Lab",
+      "modes": [
+        "minimum",
+        "exactTypes",
+        "twoWays",
+        "restricted"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1",
+        "10000,1000,1",
+        "10000,100,10",
+        "10000,100,1",
+        "10000,1000,10",
+        "10000,10,1"
+      ],
+      "patterns": [
+        "10000,1000,100,10,1",
+        "10000,1000",
+        "10000,1000,100,10",
+        "10000",
+        "10000,1000,1",
+        "100000,10000,1000,100,10,1",
+        "10000,100,10",
+        "10000,1",
+        "10000,100,10,1",
+        "10000,100",
+        "10000,1000,10,1",
+        "100000,10000,1000,100,1",
+        "10000,10",
+        "10000,1000,100,1",
+        "10000,100,1",
+        "10000,1000,10",
+        "10000,10,1",
+        "100000,10000,1000,100,10",
+        "100000,10000,1000,10,1",
+        "100000,10000,100,10,1",
+        "100000,1000,100,10,1",
+        "100000,10000,1000,10",
+        "1000,100,10,1",
+        "100000,10000,1000,1",
+        "10000,1000,100",
+        "100000,10000,10,1",
+        "1000,100,10"
+      ],
+      "minPatterns": 2,
+      "maxPatterns": 2,
+      "minCrates": 1,
+      "maxCrates": 918,
+      "minTarget": 6880,
+      "maxTarget": 989274,
+      "example": [
+        {
+          "target": 45479,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,1000,100,10,1",
+          "mode": "minimum",
+          "exactTypes": null
+        },
+        {
+          "target": 38000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,1000",
+          "mode": "exactTypes",
+          "exactTypes": 2
+        },
+        {
+          "target": 49590,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000,1000,100,10",
+          "mode": "exactTypes",
+          "exactTypes": 3
+        },
+        {
+          "target": 80000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "10000",
+          "mode": "twoWays",
+          "exactTypes": null
+        },
+        {
+          "target": 15001,
+          "allowed": [
+            10000,
+            1000,
+            1
+          ],
+          "active": "10000,1000,1",
+          "mode": "restricted",
+          "exactTypes": null
+        }
+      ]
+    },
+    {
+      "level": 30,
+      "title": "Factory Master Review",
+      "modes": [
+        "minimum",
+        "exactTypes",
+        "twoWays",
+        "restricted"
+      ],
+      "allowed": [
+        "100000,10000,1000,100,10,1",
+        "100000,1000,10,1",
+        "100000,10000,10,1",
+        "100000,10000,100,1",
+        "100000,10000,1000,10",
+        "100000,1000,100,1"
+      ],
+      "patterns": [
+        "100000,10000,1000,100,10",
+        "100000,100",
+        "100000,10000,100,10",
+        "100000",
+        "100000,1000,10,1",
+        "100000,1000,100,10,1",
+        "100000,10",
+        "100000,10000,1000,100,10,1",
+        "100000,1000",
+        "100000,10000,1000,100",
+        "100000,10000,10,1",
+        "100000,1",
+        "100000,100,10,1",
+        "100000,10000,100,1",
+        "100000,10000",
+        "100000,1000,100,1",
+        "100000,10000,1000,10",
+        "100000,10000,100,10,1",
+        "100000,10000,1000,100,1",
+        "100000,10000,1000,10,1",
+        "100000,100,1",
+        "100000,10000,1000,1"
+      ],
+      "minPatterns": 2,
+      "maxPatterns": 2,
+      "minCrates": 1,
+      "maxCrates": 9522,
+      "minTarget": 100000,
+      "maxTarget": 993779,
+      "example": [
+        {
+          "target": 594330,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,1000,100,10",
+          "mode": "minimum",
+          "exactTypes": null
+        },
+        {
+          "target": 700300,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,100",
+          "mode": "exactTypes",
+          "exactTypes": 2
+        },
+        {
+          "target": 940950,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000,10000,100,10",
+          "mode": "exactTypes",
+          "exactTypes": 3
+        },
+        {
+          "target": 400000,
+          "allowed": [
+            100000,
+            10000,
+            1000,
+            100,
+            10,
+            1
+          ],
+          "active": "100000",
+          "mode": "twoWays",
+          "exactTypes": null
+        },
+        {
+          "target": 501061,
+          "allowed": [
+            100000,
+            1000,
+            10,
+            1
+          ],
+          "active": "100000,1000,10,1",
+          "mode": "restricted",
+          "exactTypes": null
+        }
+      ]
+    }
+  ]
+}

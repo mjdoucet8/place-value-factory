@@ -4,6 +4,7 @@ import { join } from "node:path";
 import type { AddressInfo } from "node:net";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createApiServer } from "../../apps/server/src/index.js";
+import { alternateWitnessFor, witnessFor } from "../../packages/game-engine/src/index.js";
 
 const studentHeaders = {
   "content-type": "application/json",
@@ -106,7 +107,7 @@ describe("fictional-data command safety", () => {
     expect(start.status).toBe(201);
     expect(start.body.levelId).toBe(`level-${boundary + 1}`);
     expect(start.body.activeOrder.engineVersion).toBe(
-      boundary === 17 ? "xorshift32-v3" : "xorshift32-v2",
+      boundary === 21 ? "xorshift32-v4" : boundary === 17 ? "xorshift32-v3" : "xorshift32-v2",
     );
   });
 
@@ -902,3 +903,126 @@ describe("fictional-data command safety", () => {
     });
   });
 });
+
+it.each([22, 23, 24, 25, 26, 27, 28])(
+  "issues five varied saved questions at Level %i and preserves older active specs",
+  async (level) => {
+    const dataPath = join(dataDirectory, "development.json");
+    await writeFile(
+      dataPath,
+      JSON.stringify({
+        attempts: Array.from({ length: level - 1 }, (_, index) => ({
+          id: `completed-level-${index + 1}`,
+          studentId: "student-ava",
+          levelId: `level-${index + 1}`,
+          seed: index + 1,
+          slot: 5,
+          completed: true,
+          status: "completed",
+          kind: "path",
+          createdAt: new Date(Date.UTC(2026, 0, index + 1)).toISOString(),
+          revision: 5,
+          leaseEpoch: 1,
+          writerTabId: "completed-tab",
+          leaseExpiresAt: new Date(0).toISOString(),
+          receipts: [],
+          evidence: [],
+          supportEvents: [],
+          responses: [],
+        })),
+        certifications: {},
+        settings: {},
+        studentAccess: {},
+      }),
+    );
+    const startKey = `variety-${level}`;
+    const started = await request(
+      "/games/place-value-factory/attempts",
+      {
+        commandId: startKey,
+        profileRevision: level - 1,
+        tabId: "variety-tab",
+        levelId: `level-${level}`,
+      },
+      { ...studentHeaders, "idempotency-key": startKey },
+    );
+    expect(started.status).toBe(201);
+    let snapshot = started.body;
+    expect(snapshot.activeOrder.engineVersion).toBe("xorshift32-v4");
+    let legacySpec: any = null;
+    if (level === 24) {
+      // A persisted v2 question stays authoritative after the generator changes.
+      const stored = JSON.parse(await readFile(dataPath, "utf8"));
+      const attempt = stored.attempts.find(
+        (item: any) => item.id === snapshot.attemptId,
+      );
+      legacySpec = {
+        ...attempt.activeOrder,
+        target: 6002,
+        seed: 1,
+        engineVersion: "xorshift32-v2",
+      };
+      attempt.activeOrder = legacySpec;
+      attempt.issuedOrders.find(
+        (entry: any) => entry.spec.id === legacySpec.id,
+      ).spec = legacySpec;
+      await writeFile(dataPath, JSON.stringify(stored));
+      const resumed = await request(
+        `/games/place-value-factory/attempts/${snapshot.attemptId}`,
+      );
+      expect(resumed.status).toBe(200);
+      snapshot = resumed.body;
+      expect(snapshot.activeOrder).toMatchObject({
+        id: legacySpec.id,
+        target: 6002,
+        engineVersion: "xorshift32-v2",
+      });
+    }
+    const patterns = new Set<string>();
+    for (let slot = 0; slot < 5; slot++) {
+      const order = snapshot.activeOrder;
+      expect(order.engineVersion).toBe(
+        legacySpec && slot === 0 ? "xorshift32-v2" : "xorshift32-v4",
+      );
+      expect(order).not.toHaveProperty("seed");
+      expect(order).not.toHaveProperty("witness");
+      patterns.add(
+        [23, 27, 28].includes(level)
+          ? order.allowed.join(",")
+          : canonical(order.target)
+              .map((value) => (value > 0 ? 1 : 0))
+              .join(""),
+      );
+      const key = `variety-${level}-ship-${slot}`;
+      const result = await request(
+        `/games/place-value-factory/attempts/${snapshot.attemptId}/orders/${order.id}/responses`,
+        {
+          commandId: key,
+          expectedRevision: snapshot.revision,
+          leaseEpoch: snapshot.leaseEpoch,
+          tabId: "variety-tab",
+          representationA: witnessFor(order),
+          representationB: alternateWitnessFor(order),
+          activeMs: 0,
+        },
+        { ...studentHeaders, "idempotency-key": key },
+      );
+      expect(result.status).toBe(200);
+      expect(result.body.validation.shipmentAccepted).toBe(true);
+      snapshot = result.body.snapshot;
+    }
+    expect(patterns.size).toBe(level === 27 ? 4 : 5);
+    expect(snapshot.status).toBe("completed");
+    if (legacySpec) {
+      const stored = JSON.parse(await readFile(dataPath, "utf8"));
+      const attempt = stored.attempts.find(
+        (item: any) => item.id === snapshot.attemptId,
+      );
+      expect(
+        attempt.issuedOrders.find(
+          (entry: any) => entry.spec.id === legacySpec.id,
+        ).spec,
+      ).toEqual(legacySpec);
+    }
+  },
+);

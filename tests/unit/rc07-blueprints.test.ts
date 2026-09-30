@@ -149,7 +149,8 @@ describe("RC-07 deterministic blueprint coverage", () => {
       ["level-10", 1, 0, 220000],
       ["level-24", 1, 0, 6002],
       ["level-30", 1, 0, 823465],
-      ["level-30", 1, 4, 106016],
+      // v4 review draw selects [100000, 1000, 100, 1], digits [1, 6, 1, 6].
+      ["level-30", 1, 4, 106106],
     ] as const;
     for (const [levelId, seed, slot, target] of golden)
       expect(generateLevelOrder(levelId, seed, slot).target).toBe(target);

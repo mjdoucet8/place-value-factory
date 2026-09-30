@@ -265,9 +265,11 @@ describe.skipIf(!socket)("RC-07 real PostgreSQL progression journey", () => {
             slotIndex: slot,
             role: "main",
             configVersion: "v1-local",
-            engineVersion: snapshot.levelId === "level-18"
-              ? "xorshift32-v3"
-              : "xorshift32-v2",
+            engineVersion: Number(snapshot.levelId.slice(6)) >= 22
+              ? "xorshift32-v4"
+              : snapshot.levelId === "level-18"
+                ? "xorshift32-v3"
+                : "xorshift32-v2",
             seed: expect.any(Number),
           });
         const transferRows = await pool.query(
