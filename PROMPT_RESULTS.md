@@ -368,6 +368,11 @@ Result: Removed all three decorative overlays and their responsive styles while 
 
 Prompt: Get to work on MAT-5 through MAT-8 and update Linear as work progresses. Result: audited newer implementation, fixed practice random-range mapping to the published specification, added independent golden regression, versioned new orders without rewriting history, verified all 30 levels/six certifications and teacher reporting, reconciled current evidence documents, and prepared a reviewed local checkpoint. Final verification: 81 regular tests; PostgreSQL 9 initial/3 restart; 24 standard browser/4 secure-pilot passes; typecheck/build/diff checks pass. Native zoom skipped by environment and broader release gates remain explicit. Existing development data preserved. Linear progress comments/statuses updated using sanitized summaries; detailed evidence retained locally. No deployment or remote push.
 
+
+## 2026-09-29 — Determine and add the next Linear task lists
+
+Prompt: Determine the next lists of tasks and add them to Linear. Result: reviewed current RC-07 closure, acceptance matrix, pilot/operations/visual/deployment guides and the existing Linear project. Added ten Backlog issues, MAT-14 through MAT-23, across RC-08 fictional pilot readiness and school release prerequisites. Tasks cover current performance, browser/accessibility compatibility, release traceability, owner visual review, recovery/monitoring, physical device/AT/network trials, school decisions, approved identity integration, retention/custody, and final classroom-pilot approval. Completion criteria and dependency links are recorded; dates/assignees remain unset. Recommended next: MAT-14. No implementation, deployment or live student-data action was performed. A transient failure on final issue creation was checked for duplicates before a successful retry. Detailed backlog copy is in the project chat's artifacts/Linear-Next-Tasks.md.
+
 ## 2026-09-29 — Prefill the MVP class code
 
 Prompt: Automatically fill the class code on the student login for the MVP, as the browser already fills the username and password.
@@ -403,3 +408,9 @@ Result: Restricted-machine instructions now include lowercase place-value names 
 Prompt: Level 18 starts with a flexible place-value challenge but the remaining questions do not require it.
 
 Result: Kept the original opening exemplar and allowed crate sets; every later Level 18 question now has nonzero unavailable places, forcing flexible regrouping while retaining whole-crate solvability and difficulty bands. New Level 18 issuance is marked xorshift32-v3; persisted active questions and saved answers remain unchanged. Independent mathematical regression reproduced the old failure and now passes for every slot at all three bands. All 87 application tests, TypeScript and production build pass; dedicated PostgreSQL harness tests remain skipped in the regular suite. Deployed to the stable MVP. Existing local saved data and unrelated work preserved.
+
+## 2026-09-30 — Commit and push all project progress
+
+Prompt: Commit all progress to Git and push everything to GitHub.
+
+Result: Reviewed outstanding changes and outgoing history, committed the remaining project records, and prepared all implementation checkpoints for the existing GitHub main branch. Local runtime student data and credentials remain excluded from the commit and preserved on disk. Latest implementation tests remain passing; no application code changed in this checkpoint.
