@@ -1,5 +1,9 @@
 # Project status
 
+## Current: 30 September 2026 — Approved gameplay equipment verified locally
+
+The approved dispenser/crate artwork is integrated as twelve independent transparent image files. Live quantity fields fit the ivory panels and move with their crates while dispensers stay fixed; shipment travel clears wide viewports and existing save sequencing/reduced motion remain intact. Typecheck/build and 31 browser checks pass, with one existing native-zoom environment skip. Only the gameplay visual baseline changed. See `docs/qa/GAMEPLAY_ART_2026-09-30.md` and `docs/GAMEPLAY_ARTWORK_V4.json`. Production publication pending; earlier status sections below are historical.
+
 ## Current: 30 September 2026 — Approved connected map live
 
 The owner-approved generated campus now renders in the live map component with 30 semantic level buttons and server-derived stars, locks, current level and completion medals. Artwork and controls share one uniformly scaled coordinate space; all five stations and connections remain visible, and Level list provides full-size access. Typecheck/build and 28 browser checks pass, plus the focused earned-reward/keyboard check. Native browser zoom remains environment-skipped. Only the map visual baseline changed. See `docs/qa/COHESIVE_MAP_2026-09-30.md`. After explicit owner approval in this chat, deployment dpl_9sA8nvMiJNxsrB38T7oQPNgkq1JN is READY at https://math-factory-one.vercel.app/. Live page/health/artwork return 200; the artwork hash matches the tested local asset and the updated JavaScript/styles are served. The bounded new-deployment error-log query returned no error records. Earlier status sections below are historical.

@@ -438,3 +438,9 @@ Result: Added nine decorative factory props using the existing illustration asse
 Prompt: Recreate the exact generated factory campus map in Place Value Factory.
 
 Result: Implemented the approved scenery with all five station anchors and connections, aligned 30 live levels and state-driven labels/locks/stars, preserved whole-map fitting and full-size Level list, and removed scattered world-map props. Typecheck/build pass; 28 browser checks and the focused earned-reward/keyboard check pass, with one existing native-zoom environment skip. Inspected desktop/mobile and refreshed only the map visual baseline. Implemented and published after the owner explicitly approved the live update. Deployment dpl_9sA8nvMiJNxsrB38T7oQPNgkq1JN is READY; live health is 200, the served artwork matches the tested asset byte-for-byte, and the updated bundle/styles are live. Existing saved data preserved.
+
+## 2026-09-30 — Implement approved gameplay art with separate moving crates
+
+**Prompt:** Recreate gameplay using the approved artwork, keeping crates in separate art files so they can roll off the conveyor.
+
+**Result:** Implemented twelve independent transparent dispenser/crate images and fitted live quantity panels, labels and buttons to the crate fronts. Crates and their controls roll out together after accepted saves; dispensers remain stationary. Six-digit counts, narrow-screen access, closed machines and reduced motion are verified. Typecheck/build pass; 31 browser checks pass with one existing native-zoom environment skip. Only the gameplay visual baseline changed. Local implementation complete; production publication pending.

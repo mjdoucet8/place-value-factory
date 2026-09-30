@@ -1,0 +1,163 @@
+{
+  "tool": "Built-in image_gen",
+  "reference": "Owner-approved gameplay concept, 2026-09-30",
+  "packaging": "Pixel-identical lossless WebP export; true RGBA alpha preserved. Transparent padding is bounded by CSS display frames; source pixels are not cropped or retouched.",
+  "assets": [
+    {
+      "kind": "dispenser",
+      "color": "purple",
+      "path": "/home/owner/.codex/generated_images/01a0f437-b7ce-7a70-a907-d745e5bfee04/exec-e1135780-dd24-4f25-a3f8-517c1bd0d0be.png",
+      "prompt": "Use case: precise-object-edit. This is a production game sprite color variant. Preserve the supplied dispenser sprite EXACTLY: same pixel dimensions, transparent canvas, object position, scale, silhouette, camera, framing, highlights, bolt placement, golden pipes, steel fittings, BLANK dark navy plaque, hopper and nozzle. Change ONLY the blue painted casing and blue painted hopper to rich violet purple (#7541D7). Keep gold parts gold, steel parts steel and navy display navy. Do not add text, numbers, buttons, crates, background or any new object. Preserve true alpha transparency. Return the complete identically framed sprite.",
+      "file": "apps/web/public/assets/art-v4/dispenser-purple.webp",
+      "sha256": "a7ed3e56f292b4ea6e259a8f7dea9f549d5496257d1b15ba0ff96c5aa612b61e",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 712334
+    },
+    {
+      "kind": "dispenser",
+      "color": "blue",
+      "path": "/home/owner/.codex/generated_images/01a0f437-b7ce-7a70-a907-d745e5bfee04/exec-f64017db-2d9b-4285-a754-a155cbd840d1.png",
+      "prompt": "Use case: background-extraction. Input is the approved gameplay art reference. Create ONE standalone transparent game sprite: extract and faithfully recreate only the BLUE dispenser, second from left, ABOVE the blue crate. Preserve its attractive dimensional painted blue metal housing, beveled corners, silver bolts, dark navy inset rectangular number plaque, golden pipe curving down the right, small top fittings, two short steel support struts and centered tapered blue hopper with silver nozzle and tiny gold outlet tip. Same nearly front-on camera with slight top/right depth, lighting from upper left. Do NOT include the crate below, conveyor, background, station heading, UI controls or any other object. Remove the '10 000' digits: the navy rectangular plaque must be completely BLANK and clean for a live HTML number. No letters, text, digits or symbols anywhere. Square transparent canvas, centered single complete dispenser, tight comfortable padding, high quality game production sprite with crisp clean alpha edges. The nozzle ends at the bottom of the sprite; no long legs extending below it. Match the reference exactly in style and shape. Real alpha transparency, no colored backdrop or checkerboard pattern.",
+      "file": "apps/web/public/assets/art-v4/dispenser-blue.webp",
+      "sha256": "8b0b53817ed6a9832a44046dac365a47a68aaa5627d866114a799670e0603411",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 744974
+    },
+    {
+      "kind": "dispenser",
+      "color": "green",
+      "path": "/home/owner/.codex/generated_images/01a0f437-b7ce-7a70-a907-d745e5bfee04/exec-ac7549f8-8cc6-493d-8d9f-23bf7461eb45.png",
+      "prompt": "Use case: precise-object-edit. This is a production game sprite color variant. Preserve the supplied dispenser sprite EXACTLY: same pixel dimensions, transparent canvas, object position, scale, silhouette, camera, framing, highlights, bolt placement, golden pipes, steel fittings, BLANK dark navy plaque, hopper and nozzle. Change ONLY the blue painted casing and blue painted hopper to emerald green (#11863D). Keep gold parts gold, steel parts steel and navy display navy. Do not add text, numbers, buttons, crates, background or any new object. Preserve true alpha transparency. Return the complete identically framed sprite.",
+      "file": "apps/web/public/assets/art-v4/dispenser-green.webp",
+      "sha256": "6eb5e3b3130cdbdd3ab25dcc353ce827082f54e4e752cb862810c5d84662da4a",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 699292
+    },
+    {
+      "kind": "dispenser",
+      "color": "amber",
+      "path": "/home/owner/.codex/generated_images/01a0f437-b7ce-7a70-a907-d745e5bfee04/exec-2b2d8260-8a3d-49d8-9aff-e037a3bdf62e.png",
+      "prompt": "Use case: precise-object-edit. This is a production game sprite color variant. Preserve the supplied dispenser sprite EXACTLY: same pixel dimensions, transparent canvas, object position, scale, silhouette, camera, framing, highlights, bolt placement, golden pipes, steel fittings, BLANK dark navy plaque, hopper and nozzle. Change ONLY the blue painted casing and blue painted hopper to warm golden amber yellow (#F5B51B). Keep gold parts gold, steel parts steel and navy display navy. Do not add text, numbers, buttons, crates, background or any new object. Preserve true alpha transparency. Return the complete identically framed sprite.",
+      "file": "apps/web/public/assets/art-v4/dispenser-amber.webp",
+      "sha256": "fcd59af4b9ed6761165bded1016adf7d5fc7a0f24360fc024848bc194f5f7a35",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 708446
+    },
+    {
+      "kind": "dispenser",
+      "color": "magenta",
+      "path": "/home/owner/.codex/generated_images/01a0f437-b7ce-7a70-a907-d745e5bfee04/exec-80301d27-2532-47a2-ae0a-434cc138d8ae.png",
+      "prompt": "Use case: precise-object-edit. This is a production game sprite color variant. Preserve the supplied dispenser sprite EXACTLY: same pixel dimensions, transparent canvas, object position, scale, silhouette, camera, framing, highlights, bolt placement, golden pipes, steel fittings, BLANK dark navy plaque, hopper and nozzle. Change ONLY the blue painted casing and blue painted hopper to rich magenta pink (#C5207D). Keep gold parts gold, steel parts steel and navy display navy. Do not add text, numbers, buttons, crates, background or any new object. Preserve true alpha transparency. Return the complete identically framed sprite.",
+      "file": "apps/web/public/assets/art-v4/dispenser-magenta.webp",
+      "sha256": "a10be8b8147e8a7c1ef47b10ead5144a26f7c7dea6655670a287382d84510300",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 706278
+    },
+    {
+      "kind": "dispenser",
+      "color": "cyan",
+      "path": "/home/owner/.codex/generated_images/01a0f437-b7ce-7a70-a907-d745e5bfee04/exec-cb33b1bb-ef0b-49c5-a647-d3b67b81d49b.png",
+      "prompt": "Use case: precise-object-edit. This is a production game sprite color variant. Preserve the supplied dispenser sprite EXACTLY: same pixel dimensions, transparent canvas, object position, scale, silhouette, camera, framing, highlights, bolt placement, golden pipes, steel fittings, BLANK dark navy plaque, hopper and nozzle. Change ONLY the blue painted casing and blue painted hopper to cyan teal (#00839B). Keep gold parts gold, steel parts steel and navy display navy. Do not add text, numbers, buttons, crates, background or any new object. Preserve true alpha transparency. Return the complete identically framed sprite.",
+      "file": "apps/web/public/assets/art-v4/dispenser-cyan.webp",
+      "sha256": "300ba181b4910ccd64a304d9c1d9d74678b2db2bd9278012650839945bc6774d",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 696862
+    },
+    {
+      "kind": "crate",
+      "color": "purple",
+      "path": "/home/owner/.codex/generated_images/01a0f437-b7ce-7a70-a907-d745e5bfee04/exec-462fc59b-d2ce-4177-b7fa-81bc2370e535.png",
+      "prompt": "Use case: precise-object-edit. This is a production game sprite color variant. Preserve the supplied open crate EXACTLY: same pixel dimensions, transparent canvas, object position, scale, silhouette, near-front camera, open top, every bevel and bolt, and the large blank warm ivory inset panel. Change ONLY the blue painted crate casing, rim, panel surround and lower corner pads to rich violet purple (#7541D7). Keep steel bolts steel, ivory panel ivory, and the interior appropriately shaded. Do not add text, digits, buttons, symbols, dispenser, floor or background. The ivory plaque and lower corner pads must remain blank for live HTML controls. Preserve true alpha transparency. Return the complete identically framed crate sprite.",
+      "file": "apps/web/public/assets/art-v4/crate-purple.webp",
+      "sha256": "88be94e3dbe84d3e358eb9c79b5076c619fcafb48ede139708a836f9f87e0168",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 593502
+    },
+    {
+      "kind": "crate",
+      "color": "blue",
+      "path": "/home/owner/.codex/generated_images/01a0f437-b7ce-7a70-a907-d745e5bfee04/exec-a257a114-6b3d-455f-a1e5-16f1d3addc6a.png",
+      "prompt": "Use case: background-extraction. Input is the approved gameplay art reference. Create ONE standalone transparent game sprite: extract and faithfully recreate only the BLUE open crate, second from left, below the blue dispenser. Same front-on squared front face, slight visible top/right depth, glossy painted blue reinforced metal rim, corner bolts, dark empty open top, dimensional blue sidewalls, and large inset warm IVORY rectangular instrument panel on the front. Keep the sturdy blue frame surrounding that panel. IMPORTANT: completely remove the word CRATES, the 0, and both minus/plus buttons and their outlines. The ivory instrument panel must be completely BLANK for live editable HTML controls. The lower corners should be plain blue crate casing with enough surface area for live minus/plus buttons to be placed there later. Keep panel roughly centered, occupying about 60% of front width and 60% of front height, as in the reference. Do not include dispenser, pipes, conveyor, floor, background, headings, any text, digits, symbols or controls. Square transparent canvas, one complete crate centered, tight comfortable padding. Identical polished game art quality, lighting upper left, crisp alpha edges. This crate must be usable independently as a moving game sprite. Real alpha transparency, not a colored backdrop or checkerboard pattern.",
+      "file": "apps/web/public/assets/art-v4/crate-blue.webp",
+      "sha256": "8bdbf8e41b59dc523a52fb05d148f934462f7ec60d71f8b4f240d2d9fa06b0a8",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 553482
+    },
+    {
+      "kind": "crate",
+      "color": "green",
+      "path": "/home/owner/.codex/generated_images/01a0f437-b7ce-7a70-a907-d745e5bfee04/exec-256bacbd-2524-4e37-b4ba-9d9bdf16b52b.png",
+      "prompt": "Use case: precise-object-edit. This is a production game sprite color variant. Preserve the supplied open crate EXACTLY: same pixel dimensions, transparent canvas, object position, scale, silhouette, near-front camera, open top, every bevel and bolt, and the large blank warm ivory inset panel. Change ONLY the blue painted crate casing, rim, panel surround and lower corner pads to emerald green (#11863D). Keep steel bolts steel, ivory panel ivory, and the interior appropriately shaded. Do not add text, digits, buttons, symbols, dispenser, floor or background. The ivory plaque and lower corner pads must remain blank for live HTML controls. Preserve true alpha transparency. Return the complete identically framed crate sprite.",
+      "file": "apps/web/public/assets/art-v4/crate-green.webp",
+      "sha256": "f72ee4dcea10c40e6eebf27419f48b57590d74de8ee719c5e358fe69e340ef1f",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 576902
+    },
+    {
+      "kind": "crate",
+      "color": "amber",
+      "path": "/home/owner/.codex/generated_images/01a0f437-b7ce-7a70-a907-d745e5bfee04/exec-f86381bd-bba3-4d06-b249-f12815971707.png",
+      "prompt": "Use case: precise-object-edit. This is a production game sprite color variant. Preserve the supplied open crate EXACTLY: same pixel dimensions, transparent canvas, object position, scale, silhouette, near-front camera, open top, every bevel and bolt, and the large blank warm ivory inset panel. Change ONLY the blue painted crate casing, rim, panel surround and lower corner pads to warm golden amber yellow (#F5B51B). Keep steel bolts steel, ivory panel ivory, and the interior appropriately shaded. Do not add text, digits, buttons, symbols, dispenser, floor or background. The ivory plaque and lower corner pads must remain blank for live HTML controls. Preserve true alpha transparency. Return the complete identically framed crate sprite.",
+      "file": "apps/web/public/assets/art-v4/crate-amber.webp",
+      "sha256": "11c91e3a3cf18234e10a60d9c9beed2c57e2237b6241ab33b8c2951afb6a087e",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 579138
+    },
+    {
+      "kind": "crate",
+      "color": "magenta",
+      "path": "/home/owner/.codex/generated_images/01a0f437-b7ce-7a70-a907-d745e5bfee04/exec-7dcda9ba-ef87-4c06-a981-a852c34bb78d.png",
+      "prompt": "Use case: precise-object-edit. This is a production game sprite color variant. Preserve the supplied open crate EXACTLY: same pixel dimensions, transparent canvas, object position, scale, silhouette, near-front camera, open top, every bevel and bolt, and the large blank warm ivory inset panel. Change ONLY the blue painted crate casing, rim, panel surround and lower corner pads to rich magenta pink (#C5207D). Keep steel bolts steel, ivory panel ivory, and the interior appropriately shaded. Do not add text, digits, buttons, symbols, dispenser, floor or background. The ivory plaque and lower corner pads must remain blank for live HTML controls. Preserve true alpha transparency. Return the complete identically framed crate sprite.",
+      "file": "apps/web/public/assets/art-v4/crate-magenta.webp",
+      "sha256": "40e490f41c3395186b3ccbf0d6a3eb2e3ab94f784664a22f57b1a4a2a4776b47",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 572460
+    },
+    {
+      "kind": "crate",
+      "color": "cyan",
+      "path": "/home/owner/.codex/generated_images/01a0f437-b7ce-7a70-a907-d745e5bfee04/exec-025cc707-6cee-4621-815d-bdd41b3aab3e.png",
+      "prompt": "Use case: precise-object-edit. This is a production game sprite color variant. Preserve the supplied open crate EXACTLY: same pixel dimensions, transparent canvas, object position, scale, silhouette, near-front camera, open top, every bevel and bolt, and the large blank warm ivory inset panel. Change ONLY the blue painted crate casing, rim, panel surround and lower corner pads to cyan teal (#00839B). Keep steel bolts steel, ivory panel ivory, and the interior appropriately shaded. Do not add text, digits, buttons, symbols, dispenser, floor or background. The ivory plaque and lower corner pads must remain blank for live HTML controls. Preserve true alpha transparency. Return the complete identically framed crate sprite.",
+      "file": "apps/web/public/assets/art-v4/crate-cyan.webp",
+      "sha256": "03bf293bde18dbc1f5b7358c891f12c3d328a2516aec2cd37dfd1e54b6e55689",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 566062
+    }
+  ]
+}

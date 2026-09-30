@@ -1753,13 +1753,6 @@ td {
   font-size: .85rem;
 }
 .machine-artwork { display: block; width: 100%; height: 184px; overflow: visible; }
-.machine-artwork .paint-light { stop-color: var(--paint-light); }
-.machine-artwork .paint-base { stop-color: var(--machine); }
-.machine-artwork .paint-dark { stop-color: var(--paint-dark); }
-.machine-artwork .crate-rim { fill: var(--paint-light); stroke: var(--paint-dark); stroke-width: 1; }
-.machine-artwork .crate-side, .machine-artwork .crate-edge { fill: var(--paint-dark); }
-.machine-artwork .crate-groove { fill: none; stroke: #102653; stroke-opacity: .35; stroke-width: 2; }
-.machine-artwork .crate-edge-stroke { stroke: var(--paint-light); }
 .game-screen .illustrated-machine .crate-inventory {
   margin: 1px 0 8px;
   min-height: 24px;
@@ -1899,51 +1892,85 @@ td {
   text-align: center;
   width: 100%;
 }
-.game-screen .production-line .machine-artwork { height: 145px; width: 100%; overflow: hidden; }
-.game-screen .production-line .editable-crate { display: block; position: relative; height: 140px; width: 100%; }
-.quantity-crate-art { position: absolute; inset: 0; width: 100%; height: 140px; overflow: visible; }
-.quantity-crate-art .crate-front { fill: var(--machine); }
-.quantity-crate-art .crate-rim { fill: var(--paint-light); stroke: var(--paint-dark); stroke-width: 1; }
-.quantity-crate-art .crate-side { fill: var(--paint-dark); }
-.quantity-crate-art .crate-groove { fill: none; stroke: #122449; stroke-opacity: .38; stroke-width: 2; }
-.quantity-crate-art .crate-edge-stroke { stroke: var(--paint-light); }
+/* Both frames share a fixed image coordinate system across all six colors. */
+.game-screen .production-line .workstation-art {
+  display: block; position: relative; width: min(100%, 248px); margin: 6px auto 0;
+  container-type: inline-size;
+}
+.game-screen .production-line .machine-artwork {
+  position: relative; height: auto; aspect-ratio: 1156 / 896; width: 100%; overflow: visible;
+}
+.dispenser-sprite-frame { position: absolute; inset: 0; overflow: hidden; }
+.dispenser-sprite-frame img {
+  position: absolute; width: 108.4775%; height: 139.9554%; max-width: none;
+  left: -5.5363%; top: -17.6339%; pointer-events: none; user-select: none;
+}
+.machine-place-value {
+  position: absolute; left: 23%; top: 34%; width: 52%; height: 18%;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: clamp(16px, 11cqw, 27px); font-weight: 900;
+  line-height: 1; white-space: nowrap;
+}
+.machine-closed-badge {
+  position: absolute; left: 27%; top: 68%; width: 46%; padding: 3px 0;
+  border: 2px solid #ffcf4a; border-radius: 6px; background: #142957; color: #ffdf77;
+  text-align: center; font-size: clamp(10px, 6cqw, 14px); font-weight: 900;
+}
+.game-screen .production-line .editable-crate {
+  display: block; position: relative; height: auto; aspect-ratio: 1152 / 760;
+  width: 100%; margin-top: -6px;
+}
+.quantity-crate-art { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.quantity-crate-art img {
+  position: absolute; width: 108.8542%; height: 165%; max-width: none;
+  left: -4.8611%; top: -33.6842%; user-select: none;
+}
+.game-screen .production-line .illustrated-machine[aria-disabled="true"] :is(.machine-artwork, .quantity-crate-art) {
+  filter: saturate(.25) brightness(.9);
+}
 .game-screen .production-line .editable-crate > label {
-  position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  position: absolute; left: 25%; top: 43%; width: 50%; height: auto;
+  padding: 0; overflow: visible; clip-path: none; white-space: nowrap;
+  background: transparent; color: #17376a; line-height: 1.1;
+  font-size: clamp(10px, 6cqw, 14px); font-weight: 800; letter-spacing: .06em;
 }
 .game-screen .production-line .editable-crate .quantity-controls {
   position: absolute; inset: 0; display: block; padding: 0; margin: 0; background: transparent;
 }
 .game-screen .production-line .editable-crate input {
-  position: absolute; top: 58px; left: 17%; width: 50%; height: 24px; min-height: 24px; max-height: 24px; box-sizing: border-box;
-  border: 3px solid #ffe7a0; border-radius: 7px; background: #102653; color: white;
-  box-shadow: inset 0 3px 5px #020c23, 0 2px 0 #06183766;
-  font-size: 1rem; font-weight: 900; padding: 0 3px; text-align: center;
+  position: absolute; top: 54%; left: 24%; width: 52%; height: 28%; min-height: 0; max-height: none; box-sizing: border-box;
+  border: 2px solid transparent; border-radius: 6px; background: transparent; color: #102653;
+  box-shadow: none; font-size: clamp(18px, min(22cqw, calc(74cqw / var(--quantity-digits))), 40px);
+  font-weight: 900; line-height: 1; padding: 0 2px; text-align: center;
   appearance: textfield; -moz-appearance: textfield;
 }
 .game-screen .production-line .editable-crate input::-webkit-inner-spin-button,
 .game-screen .production-line .editable-crate input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.game-screen .production-line .editable-crate input:focus-visible { outline: 3px solid white; outline-offset: 2px; }
-.game-screen .production-line .editable-crate input:disabled { background: #334569; color: #e5edff; border-color: #8fa2be; }
+.game-screen .production-line .editable-crate input:focus-visible { outline: 3px solid #145ec2; outline-offset: 1px; }
+.game-screen .production-line .editable-crate input:disabled { background: transparent; color: #40516d; }
 .game-screen .production-line .editable-crate .quantity-controls button {
-  position: absolute; top: 104px; width: 44px; height: 34px; min-width: 44px; min-height: 34px;
+  position: absolute; top: auto; bottom: 6.5%; width: 20%; height: 29%; min-width: 0; min-height: 0;
   padding: 0; border: 2px solid #b5d6ff; border-radius: 8px; box-shadow: 0 3px 0 #102653;
+  background: #134fa4; color: white; font-size: clamp(20px, 12cqw, 28px); line-height: 1;
 }
-.game-screen .production-line .editable-crate .quantity-controls button:first-child { left: 11%; }
-.game-screen .production-line .editable-crate .quantity-controls button:last-child { right: 21%; }
+.game-screen .production-line .editable-crate .quantity-controls button:disabled {
+  background: #51657f; color: #e4eaf2; border-color: #8997ad;
+}
+.game-screen .production-line .editable-crate .quantity-controls button:first-child { left: 1.8%; }
+.game-screen .production-line .editable-crate .quantity-controls button:last-child { right: 1.8%; }
 .game-screen .production-line .machines::before {
-  display: block; content: ''; position: absolute; pointer-events: none; left: 0; right: 0; top: 302px; height: 24px; z-index: -1;
-  border: 4px solid #91c5ff; border-radius: 14px 14px 4px 4px;
-  transform: none;
+  display: block; content: ''; position: absolute; pointer-events: none; left: 0; right: 0; top: auto; bottom: 72px; height: 26px; z-index: -1;
+  border: 4px solid #91c5ff; border-radius: 14px 14px 4px 4px; transform: none;
   background: repeating-linear-gradient(110deg, #172954 0 22px, #5477b8 23px 26px, #0d204b 27px 48px);
   box-shadow: inset 0 4px 0 #06152e, 0 2px 0 #172759;
 }
 .game-screen .production-line .machines::after {
-  content: ''; position: absolute; pointer-events: none; left: 0; right: 0; top: 330px; height: 28px; z-index: -1;
+  content: ''; position: absolute; pointer-events: none; left: 0; right: 0; top: auto; bottom: 44px; height: 28px; z-index: -1;
   border: 3px solid #88aff4; border-top: 0; border-radius: 0 0 16px 16px;
   background: radial-gradient(circle at 22px 12px, #142950 0 5px, #698ad0 6px 9px, #b0cfff 10px 11px, transparent 12px) 0 0 / 48px 28px repeat-x, linear-gradient(#355697, #132957);
   box-shadow: 0 7px 0 #10204b, 0 13px 10px #10265377;
 }
-.game-screen .production-line .crate-inventory { margin-top: 52px; }
+.game-screen .production-line .crate-inventory { margin: 50px 0 6px; height: 26px; }
 .game-screen .production-line .exchange-row {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -1962,10 +1989,10 @@ td {
 /* Accepted shipments carry the current crates out before the next row enters. */
 @keyframes shipment-crates-depart {
   from { transform: translate3d(0, 0, 0) rotate(0); }
-  to { transform: translate3d(1150px, 0, 0) rotate(2deg); }
+  to { transform: translate3d(max(1320px, calc(100vw + 300px)), 0, 0) rotate(2deg); }
 }
 @keyframes shipment-crates-arrive {
-  from { transform: translate3d(-1150px, 0, 0) rotate(-2deg); }
+  from { transform: translate3d(min(-1320px, calc(-100vw - 300px)), 0, 0) rotate(-2deg); }
   to { transform: translate3d(0, 0, 0) rotate(0); }
 }
 @keyframes shipment-belt-roll {
