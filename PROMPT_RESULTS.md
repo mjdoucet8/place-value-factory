@@ -420,3 +420,9 @@ Result: Reviewed outstanding changes and outgoing history, committed the remaini
 Prompt: Expand the app to the browser edges, remove blank side margins and make the map larger.
 
 Result: Primary app screens and the fixed gameplay backdrop now fill the available browser width. Wide factory maps use larger station buildings and level buttons, retain the Warehouse/Shipping bend rows and keep Lab's long row. Verified 1920px map width plus overflow-free layouts at 1280, 768 and 390px; inspected desktop and phone screenshots. TypeScript, build and all 27 applicable browser scenarios pass across the full run and corrected layout-check rerun; native zoom remains environment-skipped. Updated intentional gameplay/results visual references and published to the stable MVP. Existing local saved data preserved.
+
+## 2026-09-30 — Fit the complete map into the screen
+
+Prompt: Always show the entire map without scrolling on arrival, adjusting automatically for screen size.
+
+Result: World view measures available space beneath the actual header and resume banner, then fits and centres the full route. Resize observation updates the fit on window, content and orientation changes. Desktop progress details scroll independently; compact screens retain details through Progress and full-size mission buttons through Level list. Compact headers preserve space for the overview. Verified all 30 nodes and zero page overflow at seven desktop/tablet/phone sizes, including 320×568 and 844×390 with a resume banner. TypeScript, build and all 27 applicable browser scenarios pass across the full run and corrected layout-check rerun; native zoom remains environment-skipped. Updated and inspected the map visual reference; deployed to the stable MVP. Existing local saved data preserved.

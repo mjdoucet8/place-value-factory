@@ -2,7 +2,7 @@ import type { LevelSummary, SelectedLevel } from "../models.js";
 import { FactoryArt, Mascot } from "../components/FactoryArt.js";
 import { studentSkillLabel } from "../studentCopy.js";
 import { formatNumber } from "../formatNumber.js";
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 type Props = {
   map: any;
@@ -19,12 +19,45 @@ type Props = {
 export function MapScreen(props: Props) {
   const [view, setView] = useState<"world" | "list">("world");
   const [lockedNotice, setLockedNotice] = useState("");
+  const screenRef = useRef<HTMLElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const routeRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    if (view !== "world") return;
+    const screen = screenRef.current;
+    const viewport = viewportRef.current;
+    const route = routeRef.current;
+    if (!screen || !viewport || !route) return;
+    if (window.scrollY) window.scrollTo(0, 0);
+    const fit = () => {
+      screen.style.setProperty("--map-screen-height", `${Math.max(0, window.innerHeight - screen.getBoundingClientRect().top)}px`);
+      const width = viewport.clientWidth;
+      const height = viewport.clientHeight;
+      route.style.width = `${Math.max(1050, width)}px`;
+      const scale = Math.min(1, width / route.offsetWidth, height / route.offsetHeight);
+      route.style.transform = `scale(${scale})`;
+      route.style.left = `${(width - route.offsetWidth * scale) / 2}px`;
+      route.style.top = `${(height - route.offsetHeight * scale) / 2}px`;
+    };
+    const observer = new ResizeObserver(fit);
+    observer.observe(viewport);
+    observer.observe(route);
+    window.addEventListener("resize", fit);
+    fit();
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", fit);
+      for (const property of ["width", "transform", "left", "top"]) {
+        route.style.removeProperty(property);
+      }
+    };
+  }, [view]);
   const levels: LevelSummary[] =
     props.map?.zones.flatMap((zone: any) => zone.levels) ?? [];
   const currentId = props.map?.highestUnlockedLevelId;
   const stars = levels.reduce((sum, level) => sum + level.stars, 0);
   return (
-    <main className="map-screen" data-map-view={view}>
+    <main ref={screenRef} className="map-screen" data-map-view={view}>
       <header>
         <h1>Factory Map</h1>
         <nav aria-label="Student tools">
@@ -82,7 +115,9 @@ export function MapScreen(props: Props) {
         </p>
       ) : null}
       <div className="map-layout">
+        <div className="route-viewport" ref={viewportRef}>
         <div
+          ref={routeRef}
           className="factory-route"
           aria-label="Five-zone factory route"
           aria-busy={props.starting}
@@ -247,6 +282,7 @@ export function MapScreen(props: Props) {
               </section>
             );
           })}
+        </div>
         </div>
         <aside className="map-summary" aria-label="Factory progress summary">
           <h2>Your factory</h2>

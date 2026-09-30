@@ -168,15 +168,26 @@ test("fills wide screens with a larger factory map and fits small screens", asyn
   const map = await page.locator(".map-screen").boundingBox();
   expect(map?.x).toBe(0);
   expect(map?.width).toBe(1920);
-  expect((await page.locator(".factory-route").boundingBox())?.width).toBeGreaterThan(1500);
-  expect((await page.locator(".zone-building").first().boundingBox())?.height).toBeGreaterThan(190);
+  expect((await page.locator(".factory-route").boundingBox())?.width).toBeGreaterThan(1200);
+  expect((await page.locator(".zone-building").first().boundingBox())?.height).toBeGreaterThan(150);
   await page.screenshot({ path: "/tmp/math-factory-wide-map.png", fullPage: true, animations: "disabled" });
-  for (const width of [1280, 768, 390]) {
-    await page.setViewportSize({ width, height: 900 });
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.goto("/dev/place-value-factory/states?fixture=map-resume");
+  for (const [width, height] of [[1920, 914], [1366, 768], [1024, 768], [768, 1024], [390, 844], [320, 568], [844, 390]]) {
+    await page.setViewportSize({ width, height });
+    await expect.poll(() => page.evaluate(() => {
+      const nodes = Array.from(document.querySelectorAll('.level-node'));
+      return nodes.length === 30 && nodes.every(node => {
+        const box = node.getBoundingClientRect();
+        return box.left >= 0 && box.right <= innerWidth && box.top >= 0 && box.bottom <= innerHeight;
+      }) && document.documentElement.scrollWidth <= innerWidth && document.documentElement.scrollHeight <= innerHeight;
+    })).toBe(true);
     await expect(page.getByRole("button", { name: /Replay mission — Level 1:/ })).toBeVisible();
   }
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: "/tmp/math-factory-phone-map.png", fullPage: true, animations: "disabled" });
+  await page.getByRole("button", { name: "Level list", exact: true }).click();
+  await expect(page.locator(".map-screen")).toHaveAttribute("data-map-view", "list");
+  expect((await page.getByRole("button", { name: "Replay mission", exact: true }).first().boundingBox())?.height).toBeGreaterThanOrEqual(44);
 });
 
 test("resumes a paused mission after the page reloads", async ({ page }) => {
