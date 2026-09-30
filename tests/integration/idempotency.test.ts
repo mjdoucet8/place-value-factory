@@ -51,7 +51,7 @@ function canonical(target: number) {
 }
 
 describe("fictional-data command safety", () => {
-  it.each([4, 9, 15, 21])("opens the next station as soon as Level %i is complete", async (boundary) => {
+  it.each([4, 9, 15, 17, 21])("opens and issues the next level after Level %i completion", async (boundary) => {
     const attempts = Array.from({ length: boundary }, (_, index) => ({
       id: `completed-level-${index + 1}`,
       studentId: "student-ava",
@@ -105,6 +105,9 @@ describe("fictional-data command safety", () => {
     );
     expect(start.status).toBe(201);
     expect(start.body.levelId).toBe(`level-${boundary + 1}`);
+    expect(start.body.activeOrder.engineVersion).toBe(
+      boundary === 17 ? "xorshift32-v3" : "xorshift32-v2",
+    );
   });
 
   it("uses saved cross-attempt evidence to start a bounded easy scaffold", async () => {

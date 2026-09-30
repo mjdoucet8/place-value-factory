@@ -544,10 +544,23 @@ function constructLevelOrder(
     const target =
       level.ordinal === 18 && slotIndex === 0
         ? 529521
-        : level.ordinal === 16
-          ? allowed[0] * seededRange(seed, level.ordinal, slotIndex, 1, 7) +
-            allowed[1] * seededRange(seed, level.ordinal, slotIndex, 1, 9, 1)
-          : allowed.reduce(
+        : level.ordinal === 18
+          // Missing place values must be nonzero so ordinary digit counts cannot ship.
+          ? DENOMINATIONS.filter(
+              (place) => place >= allowed[allowed.length - 1],
+            ).reduce(
+              (sum, place, index) => {
+                const [low, high] = DIGIT_RANGES[difficultyBand];
+                return sum + place * seededRange(
+                  seed, level.ordinal, slotIndex, low, high, index,
+                );
+              },
+              0,
+            )
+          : level.ordinal === 16
+            ? allowed[0] * seededRange(seed, level.ordinal, slotIndex, 1, 7) +
+              allowed[1] * seededRange(seed, level.ordinal, slotIndex, 1, 9, 1)
+            : allowed.reduce(
               (sum, place, index) =>
                 sum +
                 place *

@@ -93,3 +93,7 @@ RC07-PRACTICE-RANGE; 2026-09-29; RECOMMENDED BASELINE specification correction. 
 ## 2026-09-29 — MVP station progression follows station completion
 
 Owner requirement: completing Warehouse must unlock Shipping, consistent with the previously requested station-unlock journey. Completed station boundaries now open the next station through map eligibility, result actions and attempt authorization: Levels 4→5, 9→10, 15→16 and 21→22. Skill evidence, certifications and display-tier awards remain independently calculated; opening a station does not award a certification. Within-station stage gates remain in place. This supersedes the earlier mastery-gated station access behavior for the MVP.
+
+## 2026-09-30 — Level 18 consistently requires flexible place values
+
+Owner reported that only the opening Shipping Challenge question required regrouping. Keep its published 529521 exemplar and all five allowed-machine sets. Later slots now construct six-digit targets with nonzero digits down to the smallest available crate, using the existing difficulty digit bands. Every slot has a nonzero place whose machine is unavailable, so ordinary digit counts cannot ship; whole-crate witnesses remain valid. Newly issued Level 18 orders are marked xorshift32-v3; other levels keep v2. Persisted active orders, answers and evidence remain immutable. No minimum-crate requirement is added: every correct flexible representation is accepted.

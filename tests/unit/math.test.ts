@@ -324,9 +324,10 @@ describe("minimum oracle", () => {
   });
   it("keeps Stage 4 allowed subsets soluble within their published ranges", () => {
     for (const seed of [1, 71, 0xffffffff])
+      for (const band of ["easy", "medium", "hard"] as const)
       for (let level = 16; level <= 18; level++)
         for (let slot = 0; slot < 5; slot++) {
-          const order = generateLevelOrder(`level-${level}`, seed, slot);
+          const order = generateLevelOrder(`level-${level}`, seed, slot, band);
           expect(order.allowed.length).toBeGreaterThanOrEqual(2);
           expect(6 - order.allowed.length).toBeGreaterThanOrEqual(
             level === 18 ? 2 : 1,
@@ -338,6 +339,14 @@ describe("minimum oracle", () => {
           expect(
             validateRepresentation(order, witnessFor(order)).shipmentAccepted,
           ).toBe(true);
+          if (level === 18) {
+            const canonical = canonicalRepresentation(order.target);
+            expect(DENOMINATIONS.some((place, index) =>
+              !order.allowed.includes(place) && canonical[index] > 0,
+            )).toBe(true);
+            // Every solution must regroup: six ordinary digit counts cannot suffice.
+            expect(witnessFor(order).some((count) => count >= 10)).toBe(true);
+          }
           if (level === 18 && slot === 0) {
             expect(order.target).toBe(529521);
             expect(order.allowed).toEqual([10000, 100, 1]);

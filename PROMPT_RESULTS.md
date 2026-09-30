@@ -397,3 +397,9 @@ Result: Completed station boundaries consistently open the next station in map, 
 Prompt: Prefer “Use only hundreds (100) and ones (1).” to the numeric-only restriction.
 
 Result: Restricted-machine instructions now include lowercase place-value names and their formatted numbers, joined with “and”; this applies to every allowed combination. Mathematical constraints are unchanged. TypeScript, production build and the existing advanced-mode browser scenario pass. Published to the stable MVP after explicitly selecting the linked Vercel team. Existing local saved data and unrelated work preserved.
+
+## 2026-09-30 — Make Level 18 regrouping consistent
+
+Prompt: Level 18 starts with a flexible place-value challenge but the remaining questions do not require it.
+
+Result: Kept the original opening exemplar and allowed crate sets; every later Level 18 question now has nonzero unavailable places, forcing flexible regrouping while retaining whole-crate solvability and difficulty bands. New Level 18 issuance is marked xorshift32-v3; persisted active questions and saved answers remain unchanged. Independent mathematical regression reproduced the old failure and now passes for every slot at all three bands. All 87 application tests, TypeScript and production build pass; dedicated PostgreSQL harness tests remain skipped in the regular suite. Deployed to the stable MVP. Existing local saved data and unrelated work preserved.
