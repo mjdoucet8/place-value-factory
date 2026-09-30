@@ -119,6 +119,19 @@ test("shows the packing guide only during Receiving or the first order", async (
   await expect(page.locator(".factory-console")).toHaveAttribute("data-packing-monitor", "false");
 });
 
+test("Warehouse completion reveals Shipping from its primary unlock button", async ({ page }) => {
+  await page.goto("/dev/place-value-factory/states?fixture=results-warehouse");
+  await expect(page.getByRole("heading", { name: "Warehouse Station Complete!" })).toBeVisible();
+  await page.screenshot({ path: "/tmp/math-factory-warehouse-complete.png", fullPage: true, animations: "disabled" });
+  await page.getByRole("button", { name: "Unlock Shipping Station" }).click();
+  await expect(page).toHaveURL(/fixture=map-shipping-unlock/);
+  const station = page.locator('[data-zone="shipping"]');
+  await expect(station).toHaveAttribute("data-zone-state", "available");
+  await expect(station).toHaveAttribute("data-zone-unlocking", "true");
+  await expect(station.locator(".zone-building")).toHaveCSS("animation-name", "station-unlock-reveal");
+  await expect(page.getByRole("button", { name: /View mission — Level 16/ })).toBeEnabled();
+});
+
 test("keeps the handoff-faithful gallery baselines stable", async ({
   page,
 }) => {

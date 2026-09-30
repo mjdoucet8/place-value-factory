@@ -385,3 +385,9 @@ Result: The production form now supplies one verified matching demo credential s
 Prompt: Make the packing total and expression available only at the first station and on the first question of every level.
 
 Result: The packing guide appears throughout Receiving Station (Levels 1–4) and only on the first order of later levels; later orders and extra challenges hide it and expand the action controls. Added browser visibility coverage and first-order/tutorial fixtures, moved the existing total-response performance probe to an eligible first-order fixture, and inspected the updated gameplay visual reference. TypeScript, build and diff checks pass. All 25 applicable browser scenarios pass across the full run and corrected performance rerun; native browser zoom remains environment-skipped. Deployed to the stable MVP URL and confirmed production health and the served visibility rule.
+
+## 2026-09-29 — Unlock Shipping after Warehouse completion
+
+Prompt: Completed Warehouse did not unlock Shipping Station.
+
+Result: Completed station boundaries consistently open the next station in map, results and attempt-start authorization, while certification evidence stays independent. Verified all four station boundaries and the primary Unlock Shipping Station button with its map colour reveal. TypeScript, build, 86 application tests and 26 browser scenarios pass; native zoom remains environment-skipped. Deployed to the stable MVP and confirmed the existing demo profile has Warehouse completed and Shipping unlocked without replaying or changing saved progress. Existing local data and unrelated work preserved.

@@ -649,6 +649,8 @@ export function createApiServer(
       level.ordinal <= highest + 1 &&
       (level.stage === 1 ||
         level.stage === 2 ||
+        (levelById(`level-${level.ordinal - 1}`)?.zone !== level.zone &&
+          completed.has(`level-${level.ordinal - 1}`)) ||
         level.ordinal !==
           LEVELS.find((item) => item.stage === level.stage)?.ordinal ||
         certifications.includes(stageCertificationIds[level.stage - 2]) ||
@@ -747,6 +749,7 @@ export function createApiServer(
       next &&
       (next.stage === levelById(attempt.levelId)?.stage ||
         next.stage === 2 ||
+        (attempt.completed && next.zone !== levelById(attempt.levelId)?.zone) ||
         allAttempts.some(
           (item) => item.awardedTier === stageDisplayTiers[next.stage - 2],
         ) ||
@@ -1341,6 +1344,11 @@ export function createApiServer(
         const stageAccessAllowed =
           requestedLevel?.stage === 1 ||
           requestedLevel?.stage === 2 ||
+          Boolean(
+            requestedLevel &&
+            levelById(`level-${requestedLevel.ordinal - 1}`)?.zone !== requestedLevel.zone &&
+            completed.has(`level-${requestedLevel.ordinal - 1}`),
+          ) ||
           !requestedLevel ||
           hasStageCertification(state, actor.id, requestedLevel.stage - 1) ||
           stageGate(requestedLevel.stage - 1, evidence, now()).satisfied ||

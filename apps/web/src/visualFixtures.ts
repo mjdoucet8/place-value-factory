@@ -209,6 +209,22 @@ export const MAP_UNLOCK_FIXTURE = {
   })),
 };
 
+export const MAP_SHIPPING_UNLOCK_FIXTURE = {
+  ...MAP_UNLOCK_FIXTURE,
+  profileRevision: 15,
+  highestUnlockedLevelId: "level-16",
+  zones: MAP_UNLOCK_FIXTURE.zones.map((zone) => ({
+    ...zone,
+    levels: zone.levels.map((level) => {
+      const ordinal = Number(level.id.slice(6));
+      return { ...level,
+        status: ordinal <= 15 ? "completed" : ordinal === 16 ? "unlocked" : "locked",
+        stars: ordinal <= 15 ? 2 : 0,
+      };
+    }),
+  })),
+};
+
 export const PROGRESS_FIXTURE = {
   completedLevelIds: ["level-1", "level-2"],
   nextPracticeSkillId: "pv.hundreds",

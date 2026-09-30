@@ -8,6 +8,7 @@ import {
   GAME_FIXTURES,
   MAP_FIXTURE,
   MAP_UNLOCK_FIXTURE,
+  MAP_SHIPPING_UNLOCK_FIXTURE,
   PROGRESS_FIXTURE,
   RESULTS_FIXTURES,
 } from "../visualFixtures.js";
@@ -16,12 +17,14 @@ const noop = () => undefined;
 const states = [
   "map",
   "map-unlock",
+  "map-shipping-unlock",
   "map-resume",
   "progress",
   ...Object.keys(GAME_FIXTURES),
   "results-two",
   "results-three",
   "results-station",
+  "results-warehouse",
   "loading",
   "error",
   "empty",
@@ -41,12 +44,12 @@ export function StateGallery() {
     window.history.replaceState({}, "", `?fixture=${value}`);
   };
   let preview;
-  if (state === "map" || state === "map-unlock" || state === "map-resume")
+  if (state === "map" || state === "map-unlock" || state === "map-shipping-unlock" || state === "map-resume")
     preview = (
       <MapScreen
-        map={state === "map-unlock" ? MAP_UNLOCK_FIXTURE : MAP_FIXTURE}
+        map={state === "map-shipping-unlock" ? MAP_SHIPPING_UNLOCK_FIXTURE : state === "map-unlock" ? MAP_UNLOCK_FIXTURE : MAP_FIXTURE}
         progress={PROGRESS_FIXTURE}
-        unlockingZone={state === "map-unlock" ? "packing" : null}
+        unlockingZone={state === "map-shipping-unlock" ? "shipping" : state === "map-unlock" ? "packing" : null}
         starting={false}
         activeAttempt={
           state === "map-resume" ? GAME_FIXTURES.calm.attempt : null
@@ -68,24 +71,28 @@ export function StateGallery() {
   else if (
     state === "results-two" ||
     state === "results-three" ||
-    state === "results-station"
+    state === "results-station" || state === "results-warehouse"
   )
     preview = (
       <ResultsScreen
         result={
-          state === "results-station"
+          state === "results-warehouse"
+            ? { ...RESULTS_FIXTURES.station, newlyUnlockedLevelIds: ["level-16"] }
+            : state === "results-station"
             ? RESULTS_FIXTURES.station
             : state === "results-two"
               ? RESULTS_FIXTURES.two
               : RESULTS_FIXTURES.three
         }
-        completedLevelId={state === "results-station" ? "level-4" : "level-18"}
+        completedLevelId={state === "results-warehouse" ? "level-15" : state === "results-station" ? "level-4" : "level-18"}
         onTransfer={noop}
         onReplay={noop}
         onNext={noop}
         onProgress={noop}
         onMap={
-          state === "results-station"
+          state === "results-warehouse"
+            ? () => choose("map-shipping-unlock")
+            : state === "results-station"
             ? () => choose("map-unlock")
             : noop
         }

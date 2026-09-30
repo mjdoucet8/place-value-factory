@@ -51,8 +51,8 @@ function canonical(target: number) {
 }
 
 describe("fictional-data command safety", () => {
-  it("opens the Packing Station as soon as Level 4 is complete", async () => {
-    const attempts = Array.from({ length: 4 }, (_, index) => ({
+  it.each([4, 9, 15, 21])("opens the next station as soon as Level %i is complete", async (boundary) => {
+    const attempts = Array.from({ length: boundary }, (_, index) => ({
       id: `completed-level-${index + 1}`,
       studentId: "student-ava",
       levelId: `level-${index + 1}`,
@@ -83,24 +83,28 @@ describe("fictional-data command safety", () => {
 
     const map = await request("/games/place-value-factory/map");
     expect(map.status).toBe(200);
-    expect(map.body.highestUnlockedLevelId).toBe("level-5");
-    expect(map.body.zones[1].levels[0]).toMatchObject({
-      id: "level-5",
+    expect(map.body.highestUnlockedLevelId).toBe(`level-${boundary + 1}`);
+    expect(map.body.zones.flatMap((zone: any) => zone.levels).find((level: any) => level.id === `level-${boundary + 1}`)).toMatchObject({
+      id: `level-${boundary + 1}`,
       status: "unlocked",
     });
+
+    const result = await request(`/games/place-value-factory/attempts/completed-level-${boundary}/results`);
+    expect(result.status).toBe(200);
+    expect(result.body.newlyUnlockedLevelIds).toContain(`level-${boundary + 1}`);
 
     const start = await request(
       "/games/place-value-factory/attempts",
       {
         commandId: "unlock-packing-start",
-        profileRevision: 4,
+        profileRevision: boundary,
         tabId: "packing-tab",
-        levelId: "level-5",
+        levelId: `level-${boundary + 1}`,
       },
       { ...studentHeaders, "idempotency-key": "unlock-packing-start" },
     );
     expect(start.status).toBe(201);
-    expect(start.body.levelId).toBe("level-5");
+    expect(start.body.levelId).toBe(`level-${boundary + 1}`);
   });
 
   it("uses saved cross-attempt evidence to start a bounded easy scaffold", async () => {
