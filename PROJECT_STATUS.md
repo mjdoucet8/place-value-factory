@@ -1,8 +1,8 @@
 # Project status
 
-## Current: 30 September 2026 — Approved connected map implemented locally
+## Current: 30 September 2026 — Approved connected map live
 
-The owner-approved generated campus now renders in the live map component with 30 semantic level buttons and server-derived stars, locks, current level and completion medals. Artwork and controls share one uniformly scaled coordinate space; all five stations and connections remain visible, and Level list provides full-size access. Typecheck/build and 28 browser checks pass, plus the focused earned-reward/keyboard check. Native browser zoom remains environment-skipped. Only the map visual baseline changed. See `docs/qa/COHESIVE_MAP_2026-09-30.md`. Automatic approval review rejected publishing to the existing Vercel game without explicit approval in this chat; local work is complete and the online game is unchanged pending owner approval. Earlier status sections below are historical.
+The owner-approved generated campus now renders in the live map component with 30 semantic level buttons and server-derived stars, locks, current level and completion medals. Artwork and controls share one uniformly scaled coordinate space; all five stations and connections remain visible, and Level list provides full-size access. Typecheck/build and 28 browser checks pass, plus the focused earned-reward/keyboard check. Native browser zoom remains environment-skipped. Only the map visual baseline changed. See `docs/qa/COHESIVE_MAP_2026-09-30.md`. After explicit owner approval in this chat, deployment dpl_9sA8nvMiJNxsrB38T7oQPNgkq1JN is READY at https://math-factory-one.vercel.app/. Live page/health/artwork return 200; the artwork hash matches the tested local asset and the updated JavaScript/styles are served. The bounded new-deployment error-log query returned no error records. Earlier status sections below are historical.
 
 ## Current: 29 September 2026 — Linear RC-07 revalidation
 

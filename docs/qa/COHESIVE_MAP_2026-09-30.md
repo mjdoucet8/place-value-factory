@@ -23,4 +23,14 @@ The generated asset and exact prompts are documented in `docs/FACTORY_CAMPUS_ART
 
 ## Deployment state
 
-Local implementation is complete and verified. Automatic approval review rejected `vercel deploy --prod` because the current chat did not explicitly authorize the specific live Vercel deployment. The command did not run and the online game is unchanged. Explicit owner approval has been requested for `https://math-factory-one.vercel.app/`. Do not treat the rejection as permission or retry without approval.
+The first production attempt was rejected by automatic approval review and did not execute. The owner then explicitly replied, "Yes, publish the map update," approving the live destination https://math-factory-one.vercel.app/. The approved publish succeeded.
+
+- Deployment: `dpl_9sA8nvMiJNxsrB38T7oQPNgkq1JN`, production, **READY**.
+- Stable URL: https://math-factory-one.vercel.app/.
+- Implementation commit: `3680b57`.
+- Runtime: existing Vite/React client and Node container; remote build completed in 30 seconds.
+- Live page, health endpoint and new artwork: HTTP 200.
+- Live 2,816,806-byte artwork SHA-256 matches the locally verified asset.
+- Live JavaScript `/assets/index-C6fN_EEh.js` references the new campus; live stylesheet `/assets/index-BBLvhwCm.css` contains the matching coordinate layout.
+- Deployment-specific error-log query (`--level error --since 10m --limit 10 --json`) returned no error records at verification time. This is a bounded post-deployment observation, not ongoing monitoring.
+- No external account settings, database migrations, credentials or saved student progress were changed.
