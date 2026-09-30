@@ -31,4 +31,15 @@ Generation used the built-in image tool. Exact prompts, generated source paths, 
 
 ## Publication
 
-Implementation verified locally; production publication is the remaining step.
+Published successfully through the existing Vercel project after local verification.
+
+- URL: https://math-factory-one.vercel.app/.
+- Target/status: production, READY.
+- Deployment: `dpl_5txKDodqadGuFpJzcHomaxCiH4Y6`.
+- Implementation commit: `f4f6e9d`.
+- Framework/runtime: existing Vite/React client and Node container; remote build completed in 36 seconds.
+- Live page and `/api/healthz`: HTTP 200, health `ok`.
+- Served JavaScript `/assets/index-D3lM5YxR.js` and stylesheet `/assets/index-Cu-ik0Ma.css` match the tested build and contain the separate sprite components, quantity fitting and viewport-aware shipment travel.
+- All twelve live artwork files return HTTP 200 and match the local manifest SHA-256 hashes exactly.
+- Deployment-specific error query (`--level error --since 10m --limit 10 --json`) returned no error records. This was a bounded post-deployment check; no ongoing monitor or drain configuration was added.
+- No account settings, migrations, credentials or saved progress were changed.

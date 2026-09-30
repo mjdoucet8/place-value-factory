@@ -1,8 +1,8 @@
 # Project status
 
-## Current: 30 September 2026 — Approved gameplay equipment verified locally
+## Current: 30 September 2026 — Approved gameplay equipment live
 
-The approved dispenser/crate artwork is integrated as twelve independent transparent image files. Live quantity fields fit the ivory panels and move with their crates while dispensers stay fixed; shipment travel clears wide viewports and existing save sequencing/reduced motion remain intact. Typecheck/build and 31 browser checks pass, with one existing native-zoom environment skip. Only the gameplay visual baseline changed. See `docs/qa/GAMEPLAY_ART_2026-09-30.md` and `docs/GAMEPLAY_ARTWORK_V4.json`. Production publication pending; earlier status sections below are historical.
+The approved dispenser/crate artwork is integrated as twelve independent transparent image files. Live quantity fields fit the ivory panels and move with their crates while dispensers stay fixed; shipment travel clears wide viewports and existing save sequencing/reduced motion remain intact. Typecheck/build and 31 browser checks pass, with one existing native-zoom environment skip. Only the gameplay visual baseline changed. See `docs/qa/GAMEPLAY_ART_2026-09-30.md` and `docs/GAMEPLAY_ARTWORK_V4.json`. Published implementation `f4f6e9d` as READY deployment `dpl_5txKDodqadGuFpJzcHomaxCiH4Y6` at https://math-factory-one.vercel.app/. Live health is OK, the updated build is served and all twelve live art hashes match the tested files. The bounded deployment error scan returned no records. Earlier status sections below are historical.
 
 ## Current: 30 September 2026 — Approved connected map live
 
