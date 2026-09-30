@@ -1143,3 +1143,11 @@ Removed the Settings screen, type and handlers and replaced the map action with 
 ## 2026-09-30 | MVP-LOGOUT-43 | DEPLOY / DONE | FE / BE / QA
 
 Published verified implementation 5b81a2c to the existing game. Deployment dpl_Dpboh9pA99NagQAUNxkuPob4AUHr is READY at https://math-factory-one.vercel.app/; remote build completed in 29 seconds. Live page/health return 200 and health is OK. Served index-BP541op2.js matches the tested build byte-for-byte, includes Log out and excludes the deleted Settings screen. Bounded deployment-specific error scan returned no records. Verification made no live student/session/progress mutations; existing local runtime data stays untouched and excluded. Isolated pilot was shut down cleanly. Task complete.
+
+## 2026-09-30 | MVP-CLASS-CODE-44 | CLAIM | FE / BE / QA
+
+Change the existing live fictional MVP class code from b0183617e9 to the owner-requested doucet. Own the public login default in packages/config/src/index.ts, its existing tests/unit/login-defaults.test.ts assertion, and task/status/prompt records. Make a guarded one-row live class-code update after checking uniqueness and the existing demo membership; retain class/student identifiers and all saved progress. Verify the existing matching login and publish the new default. No other credentials, classes, local development fixtures or local-development.json changes. Main agent works sequentially.
+
+## 2026-09-30 | MVP-CLASS-CODE-44 | UPDATE | FE / BE / QA
+
+Confirmed the existing enabled Fictional MVP Demo Class (18 students including demo.student) uses the old code and no class uses doucet. Read-only lookup used Supabase's published CA with full TLS verification; no credentials printed or connection settings changed. Public login default and existing assertion now use doucet. Typecheck, the two existing credential/default tests, production build and diff check pass. Preparing the guarded class-row update and publication.

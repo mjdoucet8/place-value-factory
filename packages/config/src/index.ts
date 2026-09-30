@@ -4,7 +4,7 @@ import type { Denomination } from "../../contracts/src/index.js";
 
 /** Public credentials for the shared fictional MVP walkthrough account. */
 export const FICTIONAL_MVP_ACCESS = Object.freeze({
-  classCode: "b0183617e9",
+  classCode: "doucet",
   username: "demo.student",
   pin: "123456",
 });
