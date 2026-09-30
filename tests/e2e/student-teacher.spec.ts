@@ -161,6 +161,24 @@ test("keeps the handoff-faithful gallery baselines stable", async ({
   }
 });
 
+test("fills wide screens with a larger factory map and fits small screens", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto("/dev/place-value-factory/states?fixture=map");
+  const map = await page.locator(".map-screen").boundingBox();
+  expect(map?.x).toBe(0);
+  expect(map?.width).toBe(1920);
+  expect((await page.locator(".factory-route").boundingBox())?.width).toBeGreaterThan(1500);
+  expect((await page.locator(".zone-building").first().boundingBox())?.height).toBeGreaterThan(190);
+  await page.screenshot({ path: "/tmp/math-factory-wide-map.png", fullPage: true, animations: "disabled" });
+  for (const width of [1280, 768, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await expect(page.getByRole("button", { name: /Replay mission — Level 1:/ })).toBeVisible();
+  }
+  await page.screenshot({ path: "/tmp/math-factory-phone-map.png", fullPage: true, animations: "disabled" });
+});
+
 test("resumes a paused mission after the page reloads", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Student login" }).click();

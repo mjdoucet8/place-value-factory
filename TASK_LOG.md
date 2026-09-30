@@ -1071,3 +1071,11 @@ Retained Level 18's opening 529521 exemplar and all allowed sets; later targets 
 ## 2026-09-30 | GITHUB-CHECKPOINT-36 | CLAIM / REVIEW / HANDOFF | PA
 
 Owner requested committing all project progress and pushing to GitHub. Reviewed the remaining prompt ledger entry and all outgoing commits; retain local-development.json as local runtime data and exclude it from this checkpoint. Commit the pending Linear task record and this handoff, then push main to the existing origin without rewriting history. Latest implementation verification remains 87 regular tests, TypeScript and build passing; this task changes records only. Preserve credentials and all local saved data.
+
+## 2026-09-30 | MVP-FULL-WIDTH-37 | CLAIM | FE / QA
+
+Fill the browser width with primary app screens and enlarge the factory map on wide displays. Own styles.css and browser layout verification/visual references plus task records. Keep compact-screen controls usable, preserve shipment background stability and local data, inspect wide and narrow layouts, then deploy. Main agent works sequentially.
+
+## 2026-09-30 | MVP-FULL-WIDTH-37 | HANDOFF / REVIEW / DONE | FE / QA
+
+Primary app screens now fill the available browser width; gameplay's fixed backdrop also fills the viewport without its former cap. Retained control padding and the readable login layout. At widths above 1400px, enlarged map buildings and nodes; retained five-node Warehouse/Shipping rows at the bend and Lab's wider row. Added desktop sizing and tablet/phone overflow checks. Desktop, phone and updated gameplay screenshots inspected. TypeScript, build and diff checks pass. All 27 applicable browser scenarios pass across the full run and corrected layout-test rerun; the initial new test used the wrong replay-button locator, corrected without changing app behavior. Native zoom remains environment-skipped; visual text audit clean. Updated only intentional gameplay and results snapshots. Production deployment dpl_5k2HTkXd8yEPja9smjjdDkobbJEi is Ready; live health is 200 and the updated stylesheet is served. Existing local runtime data preserved and excluded from the checkpoint.

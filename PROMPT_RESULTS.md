@@ -414,3 +414,9 @@ Result: Kept the original opening exemplar and allowed crate sets; every later L
 Prompt: Commit all progress to Git and push everything to GitHub.
 
 Result: Reviewed outstanding changes and outgoing history, committed the remaining project records, and prepared all implementation checkpoints for the existing GitHub main branch. Local runtime student data and credentials remain excluded from the commit and preserved on disk. Latest implementation tests remain passing; no application code changed in this checkpoint.
+
+## 2026-09-30 — Expand the app and factory map
+
+Prompt: Expand the app to the browser edges, remove blank side margins and make the map larger.
+
+Result: Primary app screens and the fixed gameplay backdrop now fill the available browser width. Wide factory maps use larger station buildings and level buttons, retain the Warehouse/Shipping bend rows and keep Lab's long row. Verified 1920px map width plus overflow-free layouts at 1280, 768 and 390px; inspected desktop and phone screenshots. TypeScript, build and all 27 applicable browser scenarios pass across the full run and corrected layout-check rerun; native zoom remains environment-skipped. Updated intentional gameplay/results visual references and published to the stable MVP. Existing local saved data preserved.
