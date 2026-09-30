@@ -17,6 +17,7 @@ import {
   sessionToken,
 } from "./identity.js";
 import { PostgresRuntimeStore } from "./runtime-store.js";
+import { ensureFictionalMvpAccess } from "./demo-access.js";
 import { parseReportQueryV2 } from "../../../packages/contracts/src/index.js";
 import { reportRevision, reportPage } from "./report-pagination.js";
 import { buildStudentReport, reportWindow, type ReportFacts } from "./reporting.js";
@@ -2676,11 +2677,22 @@ if (
   fileURLToPath(import.meta.url) === resolve(process.argv[1])
 ) {
   const databaseOptions = runtimeDatabaseOptions();
+  const database = databaseOptions ? new Pool(databaseOptions) : undefined;
+  if (
+    database &&
+    process.env.PVF_MODE === "staging" &&
+    process.env.PVF_FICTIONAL_ONLY === "true" &&
+    process.env.PVF_AUTH === "local"
+  ) {
+    const ready = await ensureFictionalMvpAccess(database);
+    if (!ready)
+      console.warn("Fictional MVP demo student was not found; credentials were not changed.");
+  }
   createApiServer(
     defaultDataPath,
-    databaseOptions
+    database
       ? {
-          database: new Pool(databaseOptions),
+          database,
           ...(process.env.PVF_AUTH === "local"
             ? {
                 identity: {

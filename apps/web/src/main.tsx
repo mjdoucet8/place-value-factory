@@ -18,7 +18,7 @@ import { GameScreen } from "./screens/GameScreen.js";
 import { StateGallery } from "./screens/StateGallery.js";
 import { outbox, type PendingGameCommand } from "./outbox.js";
 import { formatNumber } from "./formatNumber.js";
-import { defaultClassCode } from "./loginDefaults.js";
+import { defaultStudentLogin } from "./loginDefaults.js";
 
 const places = PLACES;
 declare const __PVF_DEVELOPMENT__: boolean;
@@ -73,6 +73,7 @@ async function sendPending(command: PendingGameCommand) {
 }
 
 function App() {
+  const loginDefaults = defaultStudentLogin(__PVF_DEVELOPMENT__);
   const [screen, setScreen] = useState<Screen>(() =>
     window.location.pathname.startsWith("/dev/") ? "state-gallery" : "login",
   );
@@ -104,11 +105,9 @@ function App() {
   const [pendingLocal, setPendingLocal] = useState(false);
   const [pendingConflict, setPendingConflict] = useState(false);
   const [storageUnavailable, setStorageUnavailable] = useState(false);
-  const [classCode, setClassCode] = useState(
-    defaultClassCode(__PVF_DEVELOPMENT__),
-  );
-  const [username, setUsername] = useState(__PVF_DEVELOPMENT__ ? "ava" : "");
-  const [pin, setPin] = useState(__PVF_DEVELOPMENT__ ? "123456" : "");
+  const [classCode, setClassCode] = useState(loginDefaults.classCode);
+  const [username, setUsername] = useState(loginDefaults.username);
+  const [pin, setPin] = useState(loginDefaults.pin);
   const [teacherPassword, setTeacherPassword] = useState(
     __PVF_DEVELOPMENT__ ? "factory-demo" : "",
   );

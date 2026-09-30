@@ -373,3 +373,9 @@ Prompt: Get to work on MAT-5 through MAT-8 and update Linear as work progresses.
 Prompt: Automatically fill the class code on the student login for the MVP, as the browser already fills the username and password.
 
 Result: The production student login now starts with the active fictional MVP class code while keeping the field editable and retaining the separate local development fixture. Added a unit regression for both environments, passed TypeScript, the production build, 82 regular tests and all 24 browser scenarios, visually verified the live login, and deployed the update to the stable production URL.
+
+## 2026-09-29 — Make all automatic demo login details match
+
+Prompt: Correct the automatically populated class code, username, and hidden password so the fictional demo student can sign in immediately.
+
+Result: The production form now supplies one verified matching demo credential set and prevents stale password-manager values from replacing it. Secure staging startup reconciles only the exact fictional demo account when needed, preserving its progress and every other account. Added frontend and server regressions, passed TypeScript, the production build, 83 regular tests and all 24 browser scenarios, deployed to the stable production URL, and verified a fresh one-click live login reached the existing Factory Map without editing any field.

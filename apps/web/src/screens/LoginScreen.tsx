@@ -23,6 +23,7 @@ export function LoginScreen(props: Props) {
       <h1>Place Value Factory</h1>
       <p>Ready to build? Use the access details from your teacher.</p>
       <form
+        autoComplete="off"
         onSubmit={(event) => {
           event.preventDefault();
           props.onStudentLogin();
@@ -31,7 +32,7 @@ export function LoginScreen(props: Props) {
         <label>
           Class code
           <input
-            autoComplete="organization"
+            autoComplete="off"
             aria-describedby={props.notice ? "login-error" : undefined}
             value={props.classCode}
             onChange={(event) => props.onClassCode(event.target.value)}
@@ -40,7 +41,7 @@ export function LoginScreen(props: Props) {
         <label>
           Username
           <input
-            autoComplete="username"
+            autoComplete="off"
             aria-describedby={props.notice ? "login-error" : undefined}
             value={props.username}
             onChange={(event) => props.onUsername(event.target.value)}
@@ -51,7 +52,7 @@ export function LoginScreen(props: Props) {
           <input
             inputMode="numeric"
             aria-describedby={props.notice ? "login-error" : undefined}
-            autoComplete="current-password"
+            autoComplete="one-time-code"
             type={props.showPin ? "text" : "password"}
             pattern="[0-9]{6}"
             maxLength={6}

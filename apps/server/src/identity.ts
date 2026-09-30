@@ -44,7 +44,7 @@ export async function hashCredential(value: string) {
   const salt = randomBytes(16);
   return `scrypt-v1$${salt.toString("hex")}$${(await derive(value, salt)).toString("hex")}`;
 }
-async function verifyCredential(value: string, hash: string) {
+export async function verifyCredential(value: string, hash: string) {
   const [version, salt, key] = hash.split("$");
   if (
     version !== "scrypt-v1" ||
