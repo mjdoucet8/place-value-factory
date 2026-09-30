@@ -69,4 +69,13 @@ The repeated **1,000 / 100 / 1** allowed set also existed in Levels 23 and 28. B
 
 New Lab questions carry `engineVersion: xorshift32-v4`. Existing saved order specifications, active questions, responses and evidence are not regenerated or migrated. Levels 1–21 retain their prior versions. Exact-type modelled answers remain valid under both old and new specs. The API shape and configuration version are unchanged.
 
-Existing local runtime data is excluded from the change. Artwork, layout and visual baselines are unchanged. Local implementation is verified; production publication is the remaining step.
+Existing local runtime data is excluded from the change. Artwork, layout and visual baselines are unchanged. Published successfully to https://math-factory-one.vercel.app/.
+
+- Target/status: production, READY.
+- Deployment: `dpl_B1L24G24GtbJXwBRAwG2kFP4pEL7`.
+- Implementation commit: `2260479`; remote container image was built with tag `22604791b207`.
+- Runtime: existing Node server and Vite/React client; remote build completed in 50 seconds.
+- Live page and `/api/healthz`: HTTP 200; health status `ok`.
+- Frontend bundle remains `/assets/index-D3lM5YxR.js`, as expected for the server-side generator change; artwork/layout are unchanged.
+- Deployment-specific error query (`--level error --since 10m --limit 10 --json`) returned no error records. This is a bounded check; no ongoing monitor was created.
+- No live student responses were submitted for verification. Full question issuance, saving, 30-level progression and restart recovery were verified in disposable local data before publishing.
