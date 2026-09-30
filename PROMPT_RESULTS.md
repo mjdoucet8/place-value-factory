@@ -367,3 +367,9 @@ Result: Removed all three decorative overlays and their responsive styles while 
 ## 2026-09-29 — Work on the Linear RC-07 tasks and update progress
 
 Prompt: Get to work on MAT-5 through MAT-8 and update Linear as work progresses. Result: audited newer implementation, fixed practice random-range mapping to the published specification, added independent golden regression, versioned new orders without rewriting history, verified all 30 levels/six certifications and teacher reporting, reconciled current evidence documents, and prepared a reviewed local checkpoint. Final verification: 81 regular tests; PostgreSQL 9 initial/3 restart; 24 standard browser/4 secure-pilot passes; typecheck/build/diff checks pass. Native zoom skipped by environment and broader release gates remain explicit. Existing development data preserved. Linear progress comments/statuses updated using sanitized summaries; detailed evidence retained locally. No deployment or remote push.
+
+## 2026-09-29 — Prefill the MVP class code
+
+Prompt: Automatically fill the class code on the student login for the MVP, as the browser already fills the username and password.
+
+Result: The production student login now starts with the active fictional MVP class code while keeping the field editable and retaining the separate local development fixture. Added a unit regression for both environments, passed TypeScript, the production build, 82 regular tests and all 24 browser scenarios, visually verified the live login, and deployed the update to the stable production URL.

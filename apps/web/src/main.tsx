@@ -18,6 +18,7 @@ import { GameScreen } from "./screens/GameScreen.js";
 import { StateGallery } from "./screens/StateGallery.js";
 import { outbox, type PendingGameCommand } from "./outbox.js";
 import { formatNumber } from "./formatNumber.js";
+import { defaultClassCode } from "./loginDefaults.js";
 
 const places = PLACES;
 declare const __PVF_DEVELOPMENT__: boolean;
@@ -104,7 +105,7 @@ function App() {
   const [pendingConflict, setPendingConflict] = useState(false);
   const [storageUnavailable, setStorageUnavailable] = useState(false);
   const [classCode, setClassCode] = useState(
-    __PVF_DEVELOPMENT__ ? "FACTORY5" : "",
+    defaultClassCode(__PVF_DEVELOPMENT__),
   );
   const [username, setUsername] = useState(__PVF_DEVELOPMENT__ ? "ava" : "");
   const [pin, setPin] = useState(__PVF_DEVELOPMENT__ ? "123456" : "");
