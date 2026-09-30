@@ -3,6 +3,11 @@ import { FactoryArt, Mascot } from "../components/FactoryArt.js";
 import { studentSkillLabel } from "../studentCopy.js";
 import { formatNumber } from "../formatNumber.js";
 import { useLayoutEffect, useRef, useState } from "react";
+import {
+  FACTORY_MAP_SIZE,
+  levelPosition,
+  stationPosition,
+} from "../factoryMapLayout.js";
 
 type Props = {
   map: any;
@@ -30,11 +35,16 @@ export function MapScreen(props: Props) {
     if (!screen || !viewport || !route) return;
     if (window.scrollY) window.scrollTo(0, 0);
     const fit = () => {
-      screen.style.setProperty("--map-screen-height", `${Math.max(0, window.innerHeight - screen.getBoundingClientRect().top)}px`);
+      screen.style.setProperty(
+        "--map-screen-height",
+        `${Math.max(0, window.innerHeight - screen.getBoundingClientRect().top)}px`,
+      );
       const width = viewport.clientWidth;
       const height = viewport.clientHeight;
-      route.style.width = `${Math.max(1050, width)}px`;
-      const scale = Math.min(1, width / route.offsetWidth, height / route.offsetHeight);
+      const scale = Math.min(
+        width / FACTORY_MAP_SIZE.width,
+        height / FACTORY_MAP_SIZE.height,
+      );
       route.style.transform = `scale(${scale})`;
       route.style.left = `${(width - route.offsetWidth * scale) / 2}px`;
       route.style.top = `${(height - route.offsetHeight * scale) / 2}px`;
@@ -47,7 +57,7 @@ export function MapScreen(props: Props) {
     return () => {
       observer.disconnect();
       window.removeEventListener("resize", fit);
-      for (const property of ["width", "transform", "left", "top"]) {
+      for (const property of ["transform", "left", "top"]) {
         route.style.removeProperty(property);
       }
     };
@@ -116,186 +126,209 @@ export function MapScreen(props: Props) {
       ) : null}
       <div className="map-layout">
         <div className="route-viewport" ref={viewportRef}>
-        <div
-          ref={routeRef}
-          className="factory-route"
-          aria-label="Five-zone factory route"
-          aria-busy={props.starting}
-        >
-          {view === "world" && (
-            <div className="map-scenery" aria-hidden="true">
-              <FactoryArt asset="prop-shipment" className="map-prop map-prop-incoming" />
-              <FactoryArt asset="prop-waiting-pallet" className="map-prop map-prop-packing-stock" />
-              <FactoryArt asset="prop-waiting-pallet" className="map-prop map-prop-receiving-stock" />
-              <FactoryArt asset="prop-pipes-gauge" className="map-prop map-prop-utilities" />
-              <FactoryArt asset="prop-conveyor" className="map-prop map-prop-transfer-belt" />
-              <FactoryArt asset="prop-shipment" className="map-prop map-prop-transfer-crate" />
-              <FactoryArt asset="cosmetic-shelves" className="map-prop map-prop-central-storage" />
-              <FactoryArt asset="prop-activity-light" className="map-prop map-prop-lab-tools" />
-              <FactoryArt asset="prop-waiting-pallet" className="map-prop map-prop-outgoing-stock" />
-            </div>
-          )}
-          <svg
-            className="world-route"
-            viewBox="0 0 1000 700"
-            preserveAspectRatio="none"
-            aria-hidden="true"
+          <div
+            ref={routeRef}
+            className="factory-route"
+            aria-label="Five-zone factory route"
+            aria-busy={props.starting}
           >
-            <path d="M150 215 C300 215 300 215 490 215 S850 215 855 310 L855 500 C855 590 620 590 490 590 S260 590 160 545" />
-          </svg>
-          {props.map?.zones.map((zone: any) => {
-            const artName = zone.name.toLowerCase().replaceAll(" ", "-");
-            const statuses = zone.levels.map(
-              (level: LevelSummary) => level.status,
-            );
-            const zoneState = statuses.every(
-              (status: string) => status === "completed",
-            )
-              ? "completed"
-              : statuses.some((status: string) => status === "unlocked")
-                ? "available"
-                : "locked";
-            const cosmetic = (
-              {
-                receiving: "cosmetic-sign",
-                packing: "cosmetic-crane",
-                warehouse: "cosmetic-shelves",
-                shipping: "cosmetic-loading-bay",
-                lab: "cosmetic-lab-equipment",
-              } as Record<string, string>
-            )[artName];
-            return (
-              <section
-                className="map"
-                data-zone={artName}
-                data-zone-state={zoneState}
-                data-zone-unlocking={
-                  props.unlockingZone === artName ? "true" : undefined
-                }
-                key={zone.id}
-              >
-                {props.unlockingZone === artName ? (
-                  <span className="zone-unlock-badge" role="status">
-                    {zone.name} Station unlocked!
-                  </span>
-                ) : null}
-                <div className="zone-illustration" aria-hidden="true">
-                  <FactoryArt
-                    asset={`zone-${artName}`}
-                    className="zone-building"
-                    height={768}
-                    loading="lazy"
-                    width={768}
-                  />
-                  {cosmetic && zoneState === "completed" && (
-                    <FactoryArt
-                      asset={cosmetic}
-                      className="zone-cosmetic"
-                      loading="lazy"
-                    />
+            {view === "world" && (
+              <img
+                className="factory-map-art"
+                src="/assets/art-v3/factory-campus.png"
+                alt=""
+                aria-hidden="true"
+                width={FACTORY_MAP_SIZE.width}
+                height={FACTORY_MAP_SIZE.height}
+                fetchPriority="high"
+                draggable={false}
+              />
+            )}
+            {props.map?.zones.map((zone: any) => {
+              const artName = zone.name.toLowerCase().replaceAll(" ", "-");
+              const statuses = zone.levels.map(
+                (level: LevelSummary) => level.status,
+              );
+              const zoneState = statuses.every(
+                (status: string) => status === "completed",
+              )
+                ? "completed"
+                : statuses.some((status: string) => status === "unlocked")
+                  ? "available"
+                  : "locked";
+              const cosmetic = (
+                {
+                  receiving: "cosmetic-sign",
+                  packing: "cosmetic-crane",
+                  warehouse: "cosmetic-shelves",
+                  shipping: "cosmetic-loading-bay",
+                  lab: "cosmetic-lab-equipment",
+                } as Record<string, string>
+              )[artName];
+              return (
+                <section
+                  className="map"
+                  data-zone={artName}
+                  data-zone-state={zoneState}
+                  data-zone-unlocking={
+                    props.unlockingZone === artName ? "true" : undefined
+                  }
+                  key={zone.id}
+                >
+                  {props.unlockingZone === artName ? (
+                    <span
+                      className="zone-unlock-badge"
+                      role="status"
+                      style={
+                        view === "world" ? stationPosition(artName) : undefined
+                      }
+                    >
+                      {zone.name} Station unlocked!
+                    </span>
+                  ) : null}
+                  {view === "list" && (
+                    <div className="zone-illustration" aria-hidden="true">
+                      <FactoryArt
+                        asset={`zone-${artName}`}
+                        className="zone-building"
+                        height={768}
+                        loading="lazy"
+                        width={768}
+                      />
+                      {cosmetic && zoneState === "completed" && (
+                        <FactoryArt
+                          asset={cosmetic}
+                          className="zone-cosmetic"
+                          loading="lazy"
+                        />
+                      )}
+                    </div>
                   )}
-                </div>
-                <div className="zone-content">
-                  <h2>{zone.name}</h2>
-                  <ol
-                    className={view === "world" ? "level-nodes" : "level-list"}
-                    aria-label={`${zone.name} levels`}
-                  >
-                    {zone.levels.map((level: LevelSummary) => (
-                      <li
-                        key={level.id}
-                        data-status={level.status}
-                        data-current={level.id === currentId}
-                      >
-                        {view === "world" ? (
-                          <>
-                            <button
-                              className="level-node"
-                              aria-current={
-                                level.id === currentId ? "step" : undefined
-                              }
-                              data-locked={level.status === "locked"}
-                              disabled={props.starting}
-                              aria-label={`${level.status === "locked" ? "Locked" : level.status === "completed" ? "Replay mission" : "View mission"} — Level ${level.id.replace("level-", "")}: ${level.title}${level.status === "locked" ? `. ${level.prerequisiteSummary}` : ""}`}
-                              onClick={() =>
-                                level.status === "locked"
-                                  ? setLockedNotice(
-                                      `Level ${level.id.replace("level-", "")}: ${level.prerequisiteSummary}`,
-                                    )
-                                  : props.onSelectLevel({
+                  <div className="zone-content">
+                    <h2
+                      style={
+                        view === "world" ? stationPosition(artName) : undefined
+                      }
+                    >
+                      <span className="station-name">{zone.name}</span>
+                      {view === "world" && zoneState === "completed" && (
+                        <span
+                          className="zone-cosmetic station-medal"
+                          aria-label={`${zone.name} complete`}
+                        >
+                          ✓
+                        </span>
+                      )}
+                    </h2>
+                    <ol
+                      className={
+                        view === "world" ? "level-nodes" : "level-list"
+                      }
+                      aria-label={`${zone.name} levels`}
+                    >
+                      {zone.levels.map((level: LevelSummary) => (
+                        <li
+                          key={level.id}
+                          data-level-id={level.id}
+                          style={
+                            view === "world"
+                              ? levelPosition(level.id)
+                              : undefined
+                          }
+                          data-status={level.status}
+                          data-current={level.id === currentId}
+                        >
+                          {view === "world" ? (
+                            <>
+                              <button
+                                className="level-node"
+                                aria-current={
+                                  level.id === currentId ? "step" : undefined
+                                }
+                                data-locked={level.status === "locked"}
+                                disabled={props.starting}
+                                aria-label={`${level.status === "locked" ? "Locked" : level.status === "completed" ? "Replay mission" : "View mission"} — Level ${level.id.replace("level-", "")}: ${level.title}${level.status === "locked" ? `. ${level.prerequisiteSummary}` : ""}`}
+                                onClick={() =>
+                                  level.status === "locked"
+                                    ? setLockedNotice(
+                                        `Level ${level.id.replace("level-", "")}: ${level.prerequisiteSummary}`,
+                                      )
+                                    : props.onSelectLevel({
+                                        ...level,
+                                        zoneName: zone.name,
+                                      })
+                                }
+                              >
+                                <span>{level.id.replace("level-", "")}</span>
+                                <span className="node-lock" aria-hidden="true">
+                                  {level.status === "locked"
+                                    ? "🔒"
+                                    : level.status === "completed"
+                                      ? "✓"
+                                      : ""}
+                                </span>
+                              </button>
+                              {level.stars > 0 ? (
+                                <span
+                                  className="node-stars"
+                                  aria-label={`${level.stars} earned stars`}
+                                >
+                                  {"★".repeat(level.stars)}
+                                </span>
+                              ) : null}
+                              {level.id === currentId ? (
+                                <small className="here-label">
+                                  You are here
+                                </small>
+                              ) : null}
+                            </>
+                          ) : (
+                            <>
+                              <strong>
+                                Level {level.id.replace("level-", "")}:{" "}
+                                {level.title}
+                              </strong>
+                              <small>
+                                Stage {level.stage} · {level.status}
+                              </small>
+                              {level.status === "unlocked" ? (
+                                <button
+                                  disabled={props.starting}
+                                  onClick={() =>
+                                    props.onSelectLevel({
                                       ...level,
                                       zoneName: zone.name,
                                     })
-                              }
-                            >
-                              <span>{level.id.replace("level-", "")}</span>
-                              <span className="node-lock" aria-hidden="true">
-                                {level.status === "locked"
-                                  ? "🔒"
-                                  : level.status === "completed"
-                                    ? "✓"
-                                    : ""}
-                              </span>
-                            </button>
-                            {level.stars > 0 ? (
-                              <span
-                                className="node-stars"
-                                aria-label={`${level.stars} earned stars`}
-                              >
-                                {"★".repeat(level.stars)}
-                              </span>
-                            ) : null}
-                            {level.id === currentId ? (
-                              <small className="here-label">You are here</small>
-                            ) : null}
-                          </>
-                        ) : (
-                          <>
-                            <strong>
-                              Level {level.id.replace("level-", "")}:{" "}
-                              {level.title}
-                            </strong>
-                            <small>
-                              Stage {level.stage} · {level.status}
-                            </small>
-                            {level.status === "unlocked" ? (
-                              <button
-                                disabled={props.starting}
-                                onClick={() =>
-                                  props.onSelectLevel({
-                                    ...level,
-                                    zoneName: zone.name,
-                                  })
-                                }
-                              >
-                                View mission
-                              </button>
-                            ) : level.status === "completed" ? (
-                              <button
-                                className="secondary"
-                                disabled={props.starting}
-                                onClick={() =>
-                                  props.onSelectLevel({
-                                    ...level,
-                                    zoneName: zone.name,
-                                  })
-                                }
-                              >
-                                Replay mission
-                              </button>
-                            ) : (
-                              <span>{level.prerequisiteSummary}</span>
-                            )}
-                          </>
-                        )}
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-              </section>
-            );
-          })}
-        </div>
+                                  }
+                                >
+                                  View mission
+                                </button>
+                              ) : level.status === "completed" ? (
+                                <button
+                                  className="secondary"
+                                  disabled={props.starting}
+                                  onClick={() =>
+                                    props.onSelectLevel({
+                                      ...level,
+                                      zoneName: zone.name,
+                                    })
+                                  }
+                                >
+                                  Replay mission
+                                </button>
+                              ) : (
+                                <span>{level.prerequisiteSummary}</span>
+                              )}
+                            </>
+                          )}
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                </section>
+              );
+            })}
+          </div>
         </div>
         <aside className="map-summary" aria-label="Factory progress summary">
           <h2>Your factory</h2>
@@ -307,7 +340,9 @@ export function MapScreen(props: Props) {
             <div>
               <dt>Levels completed</dt>
               <dd>
-                {formatNumber(levels.filter((level) => level.status === "completed").length)}{" "}
+                {formatNumber(
+                  levels.filter((level) => level.status === "completed").length,
+                )}{" "}
                 / 30
               </dd>
             </div>

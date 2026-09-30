@@ -432,3 +432,9 @@ Result: World view measures available space beneath the actual header and resume
 Prompt: Add more artwork between the stations because the map feels sparse.
 
 Result: Added nine decorative factory props using the existing illustration assets: pallets and crates between upper stations, plus a loaded transfer conveyor, pipes, storage shelves and activity light in the central gaps. Scenery scales with the world map, sits behind the route and controls, ignores pointer input and is omitted from Level list. Inspected the final composition and updated the map visual reference. TypeScript, build, visual baseline and seven-size map-fitting browser checks pass. Published to the stable MVP; existing local saved data preserved.
+
+## 2026-09-30 — Recreate the approved map in the game
+
+Prompt: Recreate the exact generated factory campus map in Place Value Factory.
+
+Result: Implemented the approved scenery with all five station anchors and connections, aligned 30 live levels and state-driven labels/locks/stars, preserved whole-map fitting and full-size Level list, and removed scattered world-map props. Typecheck/build pass; 28 browser checks and the focused earned-reward/keyboard check pass, with one existing native-zoom environment skip. Inspected desktop/mobile and refreshed only the map visual baseline. Local implementation complete. Automatic approval review blocked publishing to the live Vercel game pending explicit owner approval; no deployment occurred.

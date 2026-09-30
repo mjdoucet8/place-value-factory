@@ -112,10 +112,10 @@ test("has 30 live map nodes, a keyboard list, locked explanations and earned-onl
   await expect(page.locator(".zone-cosmetic")).toHaveCount(2);
   await expect(
     page.locator('[data-zone="receiving"] .zone-cosmetic'),
-  ).toHaveAttribute("src", /cosmetic-sign/);
+  ).toHaveAttribute("aria-label", "Receiving complete");
   await expect(
     page.locator('[data-zone="packing"] .zone-cosmetic'),
-  ).toHaveAttribute("src", /cosmetic-crane/);
+  ).toHaveAttribute("aria-label", "Packing complete");
   await page.getByRole("button", { name: /Locked — Level 13:/ }).click();
   await expect(page.getByRole("status")).toContainText(
     "Complete Level 12 first",

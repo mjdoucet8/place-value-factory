@@ -128,7 +128,7 @@ test("Warehouse completion reveals Shipping from its primary unlock button", asy
   const station = page.locator('[data-zone="shipping"]');
   await expect(station).toHaveAttribute("data-zone-state", "available");
   await expect(station).toHaveAttribute("data-zone-unlocking", "true");
-  await expect(station.locator(".zone-building")).toHaveCSS("animation-name", "station-unlock-reveal");
+  await expect(station.locator(".station-name")).toHaveCSS("animation-name", "station-unlock-reveal");
   await expect(page.getByRole("button", { name: /View mission — Level 16/ })).toBeEnabled();
 });
 
@@ -169,7 +169,7 @@ test("fills wide screens with a larger factory map and fits small screens", asyn
   expect(map?.x).toBe(0);
   expect(map?.width).toBe(1920);
   expect((await page.locator(".factory-route").boundingBox())?.width).toBeGreaterThan(1200);
-  expect((await page.locator(".zone-building").first().boundingBox())?.height).toBeGreaterThan(150);
+  await expect(page.locator(".factory-map-art")).toHaveJSProperty("naturalWidth", 1747);
   await page.screenshot({ path: "/tmp/math-factory-wide-map.png", fullPage: true, animations: "disabled" });
   await page.goto("/dev/place-value-factory/states?fixture=map-resume");
   for (const [width, height] of [[1920, 914], [1366, 768], [1024, 768], [768, 1024], [390, 844], [320, 568], [844, 390]]) {
@@ -512,7 +512,7 @@ test("renders deterministic advanced-mode visual fixtures", async ({
   const packingStation = page.locator('[data-zone="packing"]');
   await expect(packingStation).toHaveAttribute("data-zone-state", "available");
   await expect(packingStation).toHaveAttribute("data-zone-unlocking", "true");
-  await expect(packingStation.locator(".zone-building")).toHaveCSS(
+  await expect(packingStation.locator(".station-name")).toHaveCSS(
     "animation-name",
     "station-unlock-reveal",
   );
@@ -601,11 +601,9 @@ test("loads original art and keeps gallery controls responsive", async ({
     await expect(page.locator("main").first()).toBeVisible();
   }
   await page.goto("/dev/place-value-factory/states?fixture=map");
-  await expect(page.locator(".zone-building")).toHaveCount(5);
-  await expect(page.locator(".zone-building").first()).toHaveJSProperty(
-    "naturalWidth",
-    768,
-  );
+  await expect(page.locator(".factory-map-art")).toHaveCount(1);
+  await expect(page.locator(".factory-map-art")).toHaveJSProperty("naturalWidth", 1747);
+  await expect(page.locator(".station-name")).toHaveCount(5);
   await page.screenshot({
     path: "test-results/art-v1-map.png",
     fullPage: true,

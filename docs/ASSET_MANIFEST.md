@@ -47,3 +47,9 @@ All filenames below are relative to `apps/web/public/assets/art-v1/`. Each item 
 | cosmetic-lab-equipment.png / cosmetic-lab-equipment.webp | 512×512             | Lab map-zone accent                                       | Lazy loaded; decorative                                                    |
 | effect-steam.png / effect-steam.webp                     | 512×512             | Busy gameplay ambience                                    | Busy only; motion and image hidden under reduced motion                    |
 | effect-celebration.png / effect-celebration.webp         | 512×512             | Results celebration backdrop                              | Decorative; hidden under reduced motion, stars remain live                 |
+
+## 2026-09-30 — Approved connected factory campus
+
+`apps/web/public/assets/art-v3/factory-campus.png` is the 1747×900 scenery-only edit of the owner's approved generated map. Built with the built-in image generator; exact prompts and provenance are retained in `docs/FACTORY_CAMPUS_ARTWORK.json`. Its five station buildings, conveyors, roads, water and landscape form one composition. It contains no level buttons, digits, locks, stars, station nameplates or current-level indicators.
+
+The live world map uses this scene with semantic HTML controls in the same coordinate system (`apps/web/src/factoryMapLayout.ts`). All 30 nodes, station names, earned stars, locks, completion medals and the current level come from existing game data. The complete scene fits the available viewport without cropping or distortion. The full-size Level list retains the original art-v1 station illustrations and earned cosmetics. Scenery itself is neutral infrastructure, not a saved achievement. No gameplay, scoring, persistence or API changes.
