@@ -1,8 +1,8 @@
 # Project status
 
-## Current: 30 September 2026 — Settings replaced with logout, verified locally
+## Current: 30 September 2026 — Settings replaced with logout, live
 
-Removed the Settings screen and replaced its map button with Log out. Logout revokes the cookie session, clears private UI state, prevents signed-out Back navigation and preserves saved progress and drafts. Pending/error/retry behavior is covered. Typecheck/build pass; 100 regular tests, 34 browser checks and 4 real PostgreSQL secure-pilot journeys pass (9 dedicated-harness and 1 native-zoom skips documented). Only the map visual reference changed. See `docs/qa/LOGOUT_2026-09-30.md`. Publication pending; earlier sections below are historical.
+Removed the Settings screen and replaced its map button with Log out. Logout revokes the cookie session, clears private UI state, prevents signed-out Back navigation and preserves saved progress and drafts. Pending/error/retry behavior is covered. Typecheck/build pass; 100 regular tests, 34 browser checks and 4 real PostgreSQL secure-pilot journeys pass (9 dedicated-harness and 1 native-zoom skips documented). Only the map visual reference changed. See `docs/qa/LOGOUT_2026-09-30.md`. Published implementation `5b81a2c` as READY deployment `dpl_Dpboh9pA99NagQAUNxkuPob4AUHr` at https://math-factory-one.vercel.app/. Live health is OK, served code matches the tested build, and bounded error scan returned no records. Earlier sections below are historical.
 
 ## Current: 30 September 2026 — All-level question variety improvements live
 
