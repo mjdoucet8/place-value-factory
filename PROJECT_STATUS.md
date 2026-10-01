@@ -1,5 +1,9 @@
 # Project status
 
+## Current: 30 September 2026 — Project changes pushed to GitHub
+
+All 13 pending implementation/verification commits through `9a3ca1e` were pushed successfully to `main` at https://github.com/mjdoucet8/place-value-factory. This includes the approved map/gameplay art, question variety, logout and doucet login update. Final delivery records accompany this checkpoint; existing local play-session data and credentials remain local. No application behavior changed. Live deployment and validation details remain in the sections below.
+
 ## Current: 30 September 2026 — Class code changed to doucet, live
 
 The existing shared fictional MVP class now uses `doucet`, and the live login form prefills the new code. Its class ID, all 18 students, credentials and saved progress are retained. Verified a fresh successful sign-in to the existing profile/map and checked the live form. Typecheck, the two existing login/credential tests and production build pass. Implementation `79da49a` is live as READY deployment `dpl_7Pno5YerdBp7c9HPY2bMgySgwzMp`; live bundle matches the tested build, health is OK, and bounded error scan is empty. Earlier sections below are historical.
