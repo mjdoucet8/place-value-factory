@@ -19,3 +19,7 @@ Owner request: remove prefilled demo credentials, remove the false other-tab war
 - Reviewed short-laptop, two-representation and phone screenshots. Only the gameplay visual baseline intentionally changed. Shipment geometry remains stable throughout departure/arrival.
 
 Final command-key recovery rechecks: 7 browser journeys pass, asserting a fresh key after definite rejection and exact recovery after a lost committed reply; the secure PostgreSQL classroom journey passes again. Publication is recorded in TASK_LOG.md. No actual student answers were submitted for verification. Physical classroom devices and native browser zoom were not independently tested. Existing local-development.json is pre-existing runtime data and remains untouched/excluded.
+
+## Live verification
+
+Implementation `7dd5aea` deployed READY as `dpl_EUavNGisiWeuXij8GX6Axy54kK2e` to https://math-factory-one.vercel.app/. Public page and `/api/healthz` return 200, health is OK, and both served build assets match local hashes exactly. A fresh browser shows all three student fields blank with zero page errors. Bounded deployment error query is empty. An initial authorization error was resolved by verifying the same project under its current Doucet team and refreshing the local link/OIDC context; no remote account settings changed. Verification did not sign into a live student account.
