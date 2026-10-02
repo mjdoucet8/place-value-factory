@@ -8,4 +8,4 @@ Integrated the owner's approved generated city as the full viewport login backgr
 - Reviewed desktop, short-laptop and phone screenshots. Public image is byte-for-byte identical to the approved 1672×941 source (SHA-256 0dd8932059ec04c12e94b0c78d22a5ca4ebde49dbb2a4e6730fdc774ab1e5757). No visual baselines updated.
 - Source diff checked. No authentication, API, database, game logic or saved-progress changes. Existing local runtime data remains unstaged.
 
-Publication verification follows in TASK_LOG.md. Actual classroom devices were not tested during this change.
+Published implementation 2b7ba99 as READY dpl_bMQoAGMjwvCMSawp4iijsF7vrxEa at https://math-factory-one.vercel.app/. Public health is OK; JavaScript, CSS and approved image hashes match the tested local build. Fresh live browser confirms blank fields, loaded 1672×941 artwork and visible login button at 1366×600 with zero page errors. Bounded deployment error scan is empty. Verification made no live student login or progress mutations. Actual classroom devices were not tested during this change.

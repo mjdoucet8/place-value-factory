@@ -1,8 +1,8 @@
 # Project status
 
-## Current: 1 October 2026 — Factory-city login integrated, publishing
+## Current: 1 October 2026 — Factory-city login live
 
-The approved city artwork fills the login background, with a centered readable cream panel and compact short-screen layout. The Student login button remains visible at five checked desktop/laptop/phone sizes. Typecheck/build and eight existing login/logout/accessibility/student/teacher browser checks pass. No authentication or gameplay logic changed. See docs/qa/LOGIN_CITY_2026-10-01.md. Earlier sections are historical.
+The approved city artwork fills the login background, with a centered readable cream panel and compact short-screen layout. The Student login button remains visible at five checked desktop/laptop/phone sizes. Typecheck/build and eight existing login/logout/accessibility/student/teacher browser checks pass. No authentication or gameplay logic changed. Implementation 2b7ba99 is live at https://math-factory-one.vercel.app/ as READY deployment dpl_bMQoAGMjwvCMSawp4iijsF7vrxEa. Live health, exact JavaScript/CSS/art hashes, blank fields and short-screen login visibility pass; no startup/page errors observed. See docs/qa/LOGIN_CITY_2026-10-01.md. Earlier sections are historical.
 
 ## Current: 1 October 2026 — Login factory-city artwork created
 
