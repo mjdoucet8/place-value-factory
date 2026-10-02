@@ -474,3 +474,15 @@ Result: Implemented the approved scenery with all five station anchors and conne
 Prompt: Clear prefilled demo login fields; remove the other-tab warning and always take over automatically; shrink gameplay to fit smaller student screens with Ship order visible.
 
 Result: Implemented all three fixes with blank fields after logout too, safe automatic command recovery, and live HTML fitting across eight screen sizes. Keyboard play, individual crate animations, saved progress and math remain intact. Typecheck/build, 100 regular tests, 37 browser checks and 4 isolated secure PostgreSQL pilot journeys pass, with documented existing harness/zoom skips. Final recovery refinement passes 7 targeted browser journeys plus the secure pilot rerun. Published at https://math-factory-one.vercel.app/ as READY deployment dpl_EUavNGisiWeuXij8GX6Axy54kK2e. Live health, exact tested asset hashes and blank login fields pass; no startup/page errors observed. Main agent worked sequentially; existing runtime data preserved.
+
+## 2026-10-01 — Factory-city login background before coding
+
+Prompt: Make the login more exciting with a full background of a city made entirely of factories; create the image before coding.
+
+Result: Created a polished colorful factory-city background with coherent conveyor connections, loading bays and a quieter central courtyard for the login form. Saved the separate image and exact generation prompt under docs/. Artwork displayed for review; application code and live website unchanged. Main agent only; no code tests needed.
+
+## 2026-10-01 — Add the approved factory-city background to the app
+
+Prompt: Add the generated factory-city image to the app.
+
+Result: Integrated the full background behind a readable cream login panel, with compact spacing on short screens. Student/teacher access, blank fields, error announcements and logout remain working. Typecheck/build, eight existing browser checks and five-screen production visual review pass. Publication verification follows in the task log. Main agent only; existing runtime data preserved.

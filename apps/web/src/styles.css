@@ -744,15 +744,51 @@ header nav {
 .help-dialog button + button {
   margin-left: 12px;
 }
+/* Keep the approved city visible around a readable, keyboard-accessible form. */
 .login {
-  max-width: 560px;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  max-width: none;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 24px 16px;
   text-align: center;
-  padding-top: 12vh;
 }
-.login-mascot {
-  height: 150px;
-  margin: 0 auto -16px;
-  width: 150px;
+.login::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: #b7e6fb url('/assets/login-factory-city-v1.png') center / cover no-repeat;
+}
+.login-card {
+  width: min(100%, 460px);
+  padding: 22px 28px;
+  color: var(--navy);
+  background: #fffaf0;
+  border: 3px solid #246fbd;
+  border-radius: 26px;
+  box-shadow: inset 0 0 0 3px #ffe4a0, 0 8px 0 #143d7355, 0 18px 50px #10265340;
+}
+.login .login-mascot {
+  display: block;
+  height: 80px;
+  width: 80px;
+  margin: 0 auto 6px;
+}
+.login h1 {
+  font-size: clamp(1.7rem, 3vw, 2rem);
+  line-height: 1.1;
+  margin: 0;
+}
+.login-intro {
+  font-size: .9rem;
+  line-height: 1.4;
+  margin: 12px 0 16px;
 }
 .progress-summary,
 .results {
@@ -910,7 +946,7 @@ header nav {
 .login button {
   display: block;
   width: 100%;
-  margin: 12px 0;
+  margin: 0;
 }
 .login form,
 .login details,
@@ -919,9 +955,18 @@ header nav {
   gap: 8px;
   text-align: left;
 }
-.login form,
-.login details {
-  margin: 20px 0;
+.login form { margin: 0; }
+.login details { margin: 16px 0 0; }
+.login details[open] form { margin-top: 12px; }
+.login label { gap: 4px; font-size: .9rem; }
+.login #login-error {
+  background: #fff0ec;
+  border: 2px solid var(--danger);
+  border-radius: 12px;
+  color: #7d1e1e;
+  padding: 10px;
+  margin: 14px 0 0;
+  text-align: left;
 }
 .login input {
   width: 100%;
@@ -2289,4 +2334,18 @@ main[data-map-view="world"] .map-summary {
   .game-viewport .second-representation label { font-size: .85rem; }
   .game-viewport .source-representation { padding: 8px 12px; margin: 8px auto; }
   .game-viewport .source-representation p { margin: 0; }
+}
+
+@media (max-height: 720px) {
+  .login { padding-block: 12px; }
+  .login-card { padding-block: 14px; }
+  .login .login-mascot { width: 58px; height: 58px; margin-bottom: 4px; }
+  .login h1 { font-size: 1.7rem; }
+  .login-intro { margin: 8px 0 12px; }
+  .login input, .login button { min-height: 44px; }
+  .login details { margin-top: 12px; }
+}
+@media (max-width: 480px) {
+  .login { padding-inline: 12px; }
+  .login-card { padding-inline: 18px; border-radius: 22px; }
 }

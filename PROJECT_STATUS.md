@@ -1,5 +1,13 @@
 # Project status
 
+## Current: 1 October 2026 — Factory-city login integrated, publishing
+
+The approved city artwork fills the login background, with a centered readable cream panel and compact short-screen layout. The Student login button remains visible at five checked desktop/laptop/phone sizes. Typecheck/build and eight existing login/logout/accessibility/student/teacher browser checks pass. No authentication or gameplay logic changed. See docs/qa/LOGIN_CITY_2026-10-01.md. Earlier sections are historical.
+
+## Current: 1 October 2026 — Login factory-city artwork created
+
+Created the requested factory-city background before coding. Visual concept is saved as docs/design/login-factory-city-v1.png with the exact built-in generation prompt in docs/LOGIN_FACTORY_CITY_ARTWORK.json. Ready for visual review; login implementation and publication have not begun. The classroom fixes described below remain live.
+
 ## Current: 1 October 2026 — Classroom fixes live
 
 Student login fields start blank and clear on logout. Attempts automatically acquire control on arrival/focus/actions without a takeover notice; exact receipt replay and same-order reconciliation protect saved work. Gameplay compacts and scales to screen height so Ship order remains visible. Typecheck/build and 100 regular tests pass (9 harness skips); browser suite 37 pass/1 native-zoom skip; secure PostgreSQL pilot 4 pass. Final command-key checks add 7 passing recovery journeys and a passing secure pilot rerun. Eight small-screen sizes and six states are covered. Implementation `7dd5aea` is live as READY deployment `dpl_EUavNGisiWeuXij8GX6Axy54kK2e` at https://math-factory-one.vercel.app/. Live health is OK, JavaScript/styles match the tested build byte-for-byte, and a fresh browser confirms all three login fields blank with no page errors. Bounded deployment error scan is empty. See `docs/qa/CLASSROOM_FIXES_2026-10-01.md`. Existing local play-session data remains excluded. Earlier sections below are historical.

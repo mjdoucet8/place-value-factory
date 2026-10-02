@@ -1179,3 +1179,19 @@ Final immutable-command-key recovery passes seven targeted browser journeys, inc
 ## 2026-10-01 | CLASSROOM-FIXES-46 | DEPLOY / DONE | FE / QA
 
 Published implementation 7dd5aea as READY dpl_EUavNGisiWeuXij8GX6Axy54kK2e at https://math-factory-one.vercel.app/. The first deployment returned Not authorized. Read-only account/project lookup verified the identical project ID under its current Doucet team; refreshing the local link/OIDC context and explicitly selecting doucet resolved deployment. No remote project/account settings changed. Container build completed in 23 seconds. Live page/health return 200 with health OK, JavaScript index-CvYlAdIQ.js and styles index-CohL_z8o.css match the tested build byte-for-byte, and a fresh browser confirms blank Class code/Username/PIN with zero page errors. Bounded deployment-specific error scan returned no records. No live student login/answer/progress mutation was performed. Isolated pilot shut down cleanly; pre-existing local runtime data stays unstaged. Delivery records finalized for the GitHub checkpoint.
+
+## 2026-10-01 | LOGIN-CITY-ART-47 | CLAIM | FE / ART
+
+Create the requested full-screen factory-city login background before coding. Produce a new built-in image-generation concept with the established colorful illustrated factory style and a calmer center for the current login form. Own a new concept image under docs/design/, its prompt record and project logs. This stage is artwork only: no login implementation or deployment. Preserve existing runtime data and work sequentially.
+
+## 2026-10-01 | LOGIN-CITY-ART-47 | HANDOFF / REVIEW / DONE (ARTWORK) | FE / ART
+
+Generated and visually reviewed one full-bleed factory-city illustration with built-in image_gen. Connected colorful factories, conveyors and loading bays surround a calmer central courtyard for the existing login panel. Saved non-destructively as docs/design/login-factory-city-v1.png; exact prompt/mode are in docs/LOGIN_FACTORY_CITY_ARTWORK.json. No login code or live website changes made; no code tests needed for this artwork-only request. Existing local-development.json preserved. Evidence level: visual concept, ready for the owner's review.
+
+## 2026-10-01 | LOGIN-CITY-48 | CLAIM | FE / QA
+
+Integrate the approved factory-city artwork into the login screen. Own LoginScreen.tsx, scoped login styles, one copied public background asset, artwork metadata and project records. Preserve blank credentials, student/teacher forms, error announcements and authentication behavior. Center a readable panel over the full viewport art and compact spacing on shorter screens. Reuse existing browser checks and inspect desktop/short/mobile layouts before publication. Existing local-development.json remains untouched/excluded; single main-agent execution.
+
+## 2026-10-01 | LOGIN-CITY-48 | HANDOFF / REVIEW / DONE (LOCAL) | FE / QA
+
+Added the exact approved image as apps/web/public/assets/login-factory-city-v1.png and wrapped the existing login content in a centered cream panel. Scoped CSS fills the viewport, keeps the background stable during teacher expansion, and compacts shorter screens. Typecheck/build/diff checks pass; eight existing browser checks pass for both login roles, logout/retry, blank credentials, errors, keyboard/reflow and contrast. Production-build captures reviewed at five desktop/laptop/phone sizes; Student login remains visible and there is no horizontal overflow. Public image hash equals approved source. No server/authentication/progress changes. See docs/qa/LOGIN_CITY_2026-10-01.md. Ready to publish; local runtime data preserved/excluded.
