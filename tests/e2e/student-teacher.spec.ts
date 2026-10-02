@@ -1,3 +1,4 @@
+import { loginStudent } from "./student-login.js";
 import { expect, test, type Page } from "@playwright/test";
 
 test.beforeEach(async () => {
@@ -34,7 +35,7 @@ test("student completes five saved orders and optional transfer, then logs back 
   browser,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Student login" }).click();
+  await loginStudent(page);
   await expect(
     page.getByRole("heading", { name: "Factory Map" }),
   ).toBeVisible();
@@ -47,8 +48,7 @@ test("student completes five saved orders and optional transfer, then logs back 
   });
   await page.reload();
   await expect(page.locator("#quantity-0")).toHaveValue("2");
-  const takeOver = page.getByRole("button", { name: "Take over this attempt" });
-  if (await takeOver.isVisible()) await takeOver.click();
+  await expect(page.getByText("This attempt is open in another tab.")).toHaveCount(0);
   await page.locator("#quantity-0").fill("1");
   await page.getByRole("button", { name: "Ship order" }).click();
   await expect(page.getByText("That is too many crates.")).toBeVisible();
@@ -88,7 +88,7 @@ test("student completes five saved orders and optional transfer, then logs back 
   await expect(page.getByRole("button", { name: "Student login" })).toBeVisible();
   await page.getByLabel("Username", { exact: true }).fill("ava");
   await page.getByLabel("Six-digit PIN").fill("123456");
-  await page.getByRole("button", { name: "Student login" }).click();
+  await loginStudent(page);
   await expect(page.locator('[data-level-id="level-1"] .node-stars')).toHaveAttribute("aria-label", "3 earned stars");
   await expect(
     page.getByRole("heading", { name: "Factory Map" }),
@@ -196,7 +196,7 @@ test("fills wide screens with a larger factory map and fits small screens", asyn
 
 test("resumes a paused mission after the page reloads", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Student login" }).click();
+  await loginStudent(page);
   await startFirstMission(page);
   await page.getByRole("button", { name: "Pause mission" }).click();
   await expect(
@@ -215,7 +215,7 @@ test("resumes a paused mission after the page reloads", async ({ page }) => {
 
 test("returns to the map when pause finds an already completed attempt", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Student login" }).click();
+  await loginStudent(page);
   await startFirstMission(page);
   await page.route("**/api/v1/games/place-value-factory/attempts/*/pause", async (route) => {
     await route.fulfill({
@@ -240,7 +240,7 @@ test("keeps play usable when browser storage cannot save a draft", async ({
     };
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "Student login" }).click();
+  await loginStudent(page);
   await startFirstMission(page);
   await expect(
     page.getByText(
@@ -260,7 +260,7 @@ test("saves directly with an explicit warning when IndexedDB is unavailable", as
     Object.defineProperty(window, "indexedDB", { value: undefined }),
   );
   await page.goto("/");
-  await page.getByRole("button", { name: "Student login" }).click();
+  await loginStudent(page);
   await startFirstMission(page);
   await fillCanonicalOrder(page);
   await page.getByRole("button", { name: "Ship order" }).click();
@@ -268,55 +268,34 @@ test("saves directly with an explicit warning when IndexedDB is unavailable", as
   await expect(page.getByText(/Device storage is unavailable/)).toBeVisible();
 });
 
-test("a second tab takes over and the stale writer cannot ship", async ({
-  page,
-}) => {
+test("switching tabs automatically takes over and stale orders cannot be counted twice", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Student login" }).click();
+  await loginStudent(page);
   await startFirstMission(page);
-  await expect(page.getByText("CURRENT ORDER", { exact: true })).toBeVisible();
-
-  const secondTab = await page.context().newPage();
-  await secondTab.goto("/");
-  await expect(
-    secondTab.getByRole("button", { name: "Take over this attempt" }),
-  ).toBeVisible();
-  await secondTab
-    .getByRole("button", { name: "Take over this attempt" })
-    .click();
-  await expect(
-    secondTab.getByText("This tab now controls the saved attempt."),
-  ).toHaveCount(0);
-  await expect(
-    secondTab.getByRole("button", { name: "Take over this attempt" }),
-  ).toHaveCount(0);
-  const shipmentBefore = Number(
-    (await secondTab.locator("header span").innerText()).match(/\d+/)?.[0],
-  );
-
+  const second = await page.context().newPage();
+  await second.goto("/");
+  await expect(second.getByText("CURRENT ORDER", { exact: true })).toBeVisible();
+  await expect(second.getByRole("button", { name: "Take over this attempt" })).toHaveCount(0);
   await fillCanonicalOrder(page);
   await page.getByRole("button", { name: "Ship order" }).click();
-  await expect(
-    page.getByText(/shipment is waiting to save — Another tab is editing/),
-  ).toBeVisible();
-
-  await fillCanonicalOrder(secondTab);
-  await secondTab.getByRole("button", { name: "Ship order" }).click();
-  await expect(
-    secondTab.getByText(/earlier tab's unsent crates were not added/),
-  ).toBeVisible();
-  await secondTab.getByRole("button", { name: "Ship order" }).click();
-  await expect(
-    secondTab.getByText(`Order ${shipmentBefore + 1} of 5`),
-  ).toBeVisible();
-  await secondTab.close();
+  await expect(page.getByText("Order 2 of 5")).toBeVisible();
+  // The second page still holds order 1. Reclaiming must never apply its crates to order 2.
+  await fillCanonicalOrder(second);
+  await second.getByRole("button", { name: "Ship order" }).click();
+  await expect(second.getByText("Order 2 of 5")).toBeVisible();
+  await expect(second.getByText(/already moved forward/)).toBeVisible();
+  await expect(second.getByRole("button", { name: "Take over this attempt" })).toHaveCount(0);
+  await fillCanonicalOrder(second);
+  await second.getByRole("button", { name: "Ship order" }).click();
+  await expect(second.getByText("Order 3 of 5")).toBeVisible();
+  await second.close();
 });
 
 test("help dialog traps focus and Escape restores its trigger", async ({
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Student login" }).click();
+  await loginStudent(page);
   await startFirstMission(page);
   const trigger = page.getByRole("button", { name: "Help" });
   await trigger.click();
@@ -332,15 +311,14 @@ test("recovers a shipment whose server reply was dropped after commit", async ({
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Student login" }).click();
+  await loginStudent(page);
   if (
     await page.getByRole("button", { name: "Resume saved mission" }).isVisible()
   )
     await page.getByRole("button", { name: "Resume saved mission" }).click();
   else await startFirstMission(page);
   await expect(page.getByText("CURRENT ORDER", { exact: true })).toBeVisible();
-  const takeOver = page.getByRole("button", { name: "Take over this attempt" });
-  if (await takeOver.isVisible()) await takeOver.click();
+  await expect(page.getByText("This attempt is open in another tab.")).toHaveCount(0);
   const shipmentBefore = Number(
     (await page.locator("header span").innerText()).match(/\d+/)?.[0],
   );
@@ -371,7 +349,7 @@ test("replays an IndexedDB shipment after disconnect before commit", async ({
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Student login" }).click();
+  await loginStudent(page);
   await startFirstMission(page);
   await page.route("**/responses", (route) => route.abort("connectionfailed"));
   await fillCanonicalOrder(page);
@@ -408,7 +386,7 @@ test("retries the same queued shipment when the connection returns", async ({
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Student login" }).click();
+  await loginStudent(page);
   await startFirstMission(page);
   await page.route("**/responses", (route) => route.abort("connectionfailed"));
   await fillCanonicalOrder(page);
@@ -428,7 +406,7 @@ test("restores a queued help step before the next shipment", async ({
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Student login" }).click();
+  await loginStudent(page);
   await startFirstMission(page);
   await page.route("**/hints", (route) => route.abort("connectionfailed"));
   await page.getByRole("button", { name: "Help", exact: true }).click();
@@ -444,37 +422,53 @@ test("restores a queued help step before the next shipment", async ({
   await expect(page.getByRole("button", { name: "Get H2 help" })).toBeVisible();
 });
 
-test("does not silently merge queued crates after another tab takes control", async ({
-  page,
-}) => {
+test("a lost reply after automatic takeover restores exactly one shipment", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Student login" }).click();
+  await loginStudent(page);
   await startFirstMission(page);
-  await page.route("**/responses", (route) => route.abort("connectionfailed"));
-  await fillCanonicalOrder(page);
-  const firstQuantity = await page.locator("#quantity-4").inputValue();
-  await page.getByRole("button", { name: "Ship order" }).click();
-  await expect(
-    page.getByRole("button", { name: "Try saving again" }),
-  ).toBeVisible();
   const other = await page.context().newPage();
-  await other.addInitScript(() =>
-    Object.defineProperty(window, "indexedDB", { value: undefined }),
-  );
+  const claim = other.waitForResponse(response => response.url().endsWith("/lease/takeover") && response.status() === 200);
   await other.goto("/");
-  await other.getByRole("button", { name: "Take over this attempt" }).click();
+  await claim;
+  const sends: { commandId: string; status: number }[] = [];
+  await page.route("**/responses", async route => {
+    const reply = await route.fetch();
+    const payload = route.request().postDataJSON();
+    expect(route.request().headers()["idempotency-key"]).toBe(payload.commandId);
+    sends.push({ commandId: payload.commandId, status: reply.status() });
+    if (reply.status() === 200) await route.abort("connectionfailed");
+    else await route.fulfill({ response: reply });
+  });
+  await fillCanonicalOrder(page);
+  await page.getByRole("button", { name: "Ship order" }).click();
+  await expect(page.getByRole("button", { name: "Try saving again" })).toBeVisible();
+  expect(sends.map(send => send.status)).toEqual([409, 200]);
+  expect(sends[0].commandId).not.toBe(sends[1].commandId);
   await page.unroute("**/responses");
   await page.getByRole("button", { name: "Try saving again" }).click();
-  await expect(
-    page.getByText(/lost control before those crates were saved/),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Take over this attempt" }).click();
-  await expect(page.locator("#quantity-4")).toHaveValue(firstQuantity);
-  await expect(
-    page.getByText(/Unsaved crates are ready for review/),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Ship order" }).click();
   await expect(page.getByText("Order 2 of 5")).toBeVisible();
+  await page.reload();
+  await expect(page.getByText("Order 2 of 5")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Take over this attempt" })).toHaveCount(0);
+  await other.close();
+});
+
+test("queued shipments recover automatically after another tab takes control", async ({ page }) => {
+  await page.goto("/");
+  await loginStudent(page);
+  await startFirstMission(page);
+  await page.route("**/responses", route => route.abort("connectionfailed"));
+  await fillCanonicalOrder(page);
+  await page.getByRole("button", { name: "Ship order" }).click();
+  await expect(page.getByRole("button", { name: "Try saving again" })).toBeVisible();
+  const other = await page.context().newPage();
+  await other.addInitScript(() => Object.defineProperty(window, "indexedDB", { value: undefined }));
+  await other.goto("/");
+  await expect(other.getByText("CURRENT ORDER", { exact: true })).toBeVisible();
+  await page.unroute("**/responses");
+  await page.getByRole("button", { name: "Try saving again" }).click();
+  await expect(page.getByText("Order 2 of 5")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Take over this attempt" })).toHaveCount(0);
   await other.close();
 });
 
@@ -487,7 +481,7 @@ test("renders deterministic advanced-mode visual fixtures", async ({
     ["exactTypes", "Use exactly 2 crate sizes"],
     ["twoWays", "Representation B"],
     ["repack", "Read-only source crates"],
-    ["takeover", "Take over this attempt"],
+    ["takeover", "CURRENT ORDER"],
     ["storage", "Device storage is unavailable"],
   ] as const;
   for (const [fixture, expected] of states) {

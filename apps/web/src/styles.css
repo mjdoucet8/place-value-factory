@@ -2220,3 +2220,73 @@ main[data-map-view="world"] .map-summary {
     font-size: .8rem;
   }
 }
+
+/* Keep the full interactive stage and Ship button inside short student screens. */
+:root:has(.game-viewport) { scrollbar-gutter: auto; }
+.game-viewport {
+  position: relative;
+  height: 100dvh;
+  overflow: clip;
+  background: url('/assets/art-v2/factory-reference-stage.png') center / cover;
+}
+.game-viewport > .game-screen {
+  position: absolute;
+  width: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 12px 20px 18px;
+  transform-origin: top left;
+  background: transparent;
+}
+.game-viewport .game-backdrop { display: none; }
+.game-viewport .factory-brief {
+  min-height: 172px;
+  margin: 14px 0 10px;
+  gap: 20px;
+}
+.game-viewport .factory-brief .robot-guide .mascot { width: 140px; height: 140px; }
+.game-viewport .factory-brief .current-order { padding: 20px 18px 14px; }
+.game-viewport .current-order strong { font-size: clamp(2.5rem, 4vw, 3.8rem); }
+.game-viewport .factory-console { margin-top: 8px; }
+@media (max-width: 699px) {
+  .game-viewport > .game-screen { padding: 8px 10px 16px; }
+  .game-viewport .factory-brief { min-height: 0; margin: 18px 0 8px; }
+  .game-viewport .factory-brief .robot-guide,
+  .game-viewport .factory-brief .play-instructions { display: none; }
+  .game-viewport .factory-console { gap: 8px; }
+  .game-viewport .factory-console .controls { padding: 10px; gap: 6px; }
+  .game-viewport .factory-console .controls button { padding: 0 10px; }
+}
+
+.game-viewport .production-line .editable-crate > label { background: #fff9e8; }
+/* Compact the artwork and spacing before scaling short classroom displays. */
+@media (min-width: 700px) and (max-height: 800px) {
+  .game-viewport > .game-screen { padding: 6px 12px 12px; }
+  .game-viewport .game-screen > header { padding: 4px 12px; border-width: 3px; }
+  .game-viewport .game-screen > header h1 { font-size: 1.25rem; margin: 4px 0; }
+  .game-viewport .factory-brief {
+    grid-template-columns: 140px minmax(280px, 540px) 200px;
+    min-height: 126px; margin: 18px 0 4px; gap: 16px;
+  }
+  .game-viewport .factory-brief .robot-guide .mascot { width: 100px; height: 100px; }
+  .game-viewport .factory-brief .robot-guide p { font-size: .8rem; padding: 5px; }
+  .game-viewport .factory-brief .current-order { padding: 14px 14px 10px; }
+  .game-viewport .current-order strong { font-size: 2.7rem; }
+  .game-viewport .current-order #order-heading { margin-top: -30px; padding: 5px 16px; }
+  .game-viewport .factory-brief .play-instructions { padding: 8px 10px; font-size: .85rem; }
+  .game-viewport .factory-brief .play-instructions h2 { margin-bottom: 4px; }
+  .game-viewport .production-line .workstation-art { width: min(100%, 160px); }
+  .game-viewport .factory-console { gap: 10px; grid-template-columns: minmax(180px, .65fr) minmax(0, 2fr); }
+  .game-viewport .factory-console[data-packing-monitor="false"] { grid-template-columns: 1fr; }
+  .game-viewport .factory-console .controls { gap: 8px; padding: 8px; }
+  .game-viewport .factory-console .controls button { padding-inline: 12px; }
+  .game-viewport .factory-console .representation-monitor { padding: 6px 10px; font-size: .85rem; }
+  .game-viewport .factory-console .representation-monitor strong { font-size: 1.7rem; }
+  .game-viewport .second-representation { margin: 8px auto; padding: 8px 12px; }
+  .game-viewport .second-representation > div { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+  .game-viewport .second-representation h2,
+  .game-viewport .source-representation h2 { font-size: 1rem; margin: 0 0 6px; }
+  .game-viewport .second-representation label { font-size: .85rem; }
+  .game-viewport .source-representation { padding: 8px 12px; margin: 8px auto; }
+  .game-viewport .source-representation p { margin: 0; }
+}

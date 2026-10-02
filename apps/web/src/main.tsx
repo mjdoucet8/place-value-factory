@@ -17,6 +17,7 @@ import { GameScreen } from "./screens/GameScreen.js";
 import { StateGallery } from "./screens/StateGallery.js";
 import { outbox, type PendingGameCommand } from "./outbox.js";
 import { formatNumber } from "./formatNumber.js";
+import { claimAttempt, sendAttemptCommand } from "./attemptSession.js";
 import { defaultStudentLogin } from "./loginDefaults.js";
 
 const places = PLACES;
@@ -58,20 +59,8 @@ const pathFor = (screen: Screen, attempt?: any) => {
   return "/dev/place-value-factory/states";
 };
 
-async function sendPending(command: PendingGameCommand) {
-  const suffix = command.kind === "response" ? "responses" : "hints";
-  return api(
-    `/games/place-value-factory/attempts/${command.attemptId}/orders/${command.orderId}/${suffix}`,
-    {
-      method: "POST",
-      headers: { "idempotency-key": command.payload.commandId },
-      body: JSON.stringify(command.payload),
-    },
-  );
-}
-
 function App() {
-  const loginDefaults = defaultStudentLogin(__PVF_DEVELOPMENT__);
+  const loginDefaults = defaultStudentLogin();
   const [screen, setScreen] = useState<Screen>(() =>
     window.location.pathname.startsWith("/dev/") ? "state-gallery" : "login",
   );
@@ -103,7 +92,6 @@ function App() {
   const [factoryAlert, setFactoryAlert] = useState(false);
   const factoryAlertTimer = useRef<number | null>(null);
   const [pendingLocal, setPendingLocal] = useState(false);
-  const [pendingConflict, setPendingConflict] = useState(false);
   const [storageUnavailable, setStorageUnavailable] = useState(false);
   const [classCode, setClassCode] = useState(loginDefaults.classCode);
   const [username, setUsername] = useState(loginDefaults.username);
@@ -117,9 +105,35 @@ function App() {
   const [showPin, setShowPin] = useState(false);
   const reconciled = useRef(new Set<string>());
   const restoredHelp = useRef("");
+  const restoredOrder = useRef("");
   const helpTrigger = useRef<HTMLButtonElement>(null);
   const helpDialog = useRef<HTMLDivElement>(null);
   const tabId = useRef(crypto.randomUUID()).current;
+  async function sendPending(command: PendingGameCommand) {
+    const suffix = command.kind === "response" ? "responses" : "hints";
+    return sendAttemptCommand(
+      `/games/place-value-factory/attempts/${command.attemptId}/orders/${command.orderId}/${suffix}`,
+      {
+        method: "POST",
+        headers: { "idempotency-key": command.payload.commandId },
+        body: JSON.stringify(command.payload),
+      },
+      tabId,
+      async (payload) => {
+        const replacement = { ...command, payload };
+        try {
+          await outbox.put(replacement, command.payload.commandId);
+        } catch (error) {
+          if ((error as Error).message.includes("earlier command")) throw error;
+          setStorageUnavailable(true);
+        }
+        command.payload = payload;
+      },
+    );
+  }
+  const gameCommand = (path: string, options: RequestInit) =>
+    sendAttemptCommand(path, options, tabId);
+
   const navigate = (
     next: Screen,
     options: { replace?: boolean; attempt?: any } = {},
@@ -146,19 +160,24 @@ function App() {
     const current = await api(
       `/games/place-value-factory/attempts/${pending.attemptId}`,
     );
+    if (!current.activeOrder && current.status === "completed") {
+      const result = await api(
+        `/games/place-value-factory/attempts/${current.attemptId}/results`,
+      );
+      setResultData(result);
+      navigate("results", { attempt: current });
+    }
     setAttempt(current);
     if (current.activeOrder?.id !== pending.orderId) {
       await outbox.remove(pending);
       setPendingLocal(false);
-      setPendingConflict(false);
       setNotice(
-        "Another tab moved this mission forward. The unsent crates from this tab were not added.",
+        "This order has already moved forward. Your saved progress is up to date.",
       );
     } else {
       setPendingLocal(true);
-      setPendingConflict(true);
       setNotice(
-        "This tab lost control before those crates were saved. Take over to review them before shipping again.",
+        "Your crates are saved on this device. Choose Try saving again to finish.",
       );
     }
     return true;
@@ -258,11 +277,7 @@ function App() {
                 (item: any) => item.id === requestedLevelId,
               );
               if (level) {
-                await start(
-                  level.id,
-                  "path",
-                  loaded.map.profileRevision,
-                );
+                await start(level.id, "path", loaded.map.profileRevision);
                 return;
               }
             }
@@ -300,6 +315,12 @@ function App() {
           );
         }
       }
+      const orderKey = `${attempt?.attemptId}:${attempt?.activeOrder?.id}`;
+      if (!saved && restoredOrder.current !== orderKey) {
+        setQuantities([0, 0, 0, 0, 0, 0]);
+        setQuantitiesB([0, 0, 0, 0, 0, 0]);
+      }
+      restoredOrder.current = orderKey;
       requestAnimationFrame(() =>
         document.getElementById("quantity-0")?.focus(),
       );
@@ -356,8 +377,47 @@ function App() {
         setStorageUnavailable(true);
   }, [screen, attempt?.attemptId, attempt?.activeOrder?.id, quantities]);
   useEffect(() => {
+    if (screen !== "game" || !attempt?.attemptId || !session) return;
+    let active = true;
+    const refresh = () => {
+      if (document.visibilityState === "hidden") return;
+      void claimAttempt(attempt.attemptId, tabId)
+        .then(async (current) => {
+          if (!active) return;
+          if (!current.activeOrder && current.status === "completed") {
+            const result = await api(
+              `/games/place-value-factory/attempts/${current.attemptId}/results`,
+            );
+            if (!active) return;
+            setResultData(result);
+            navigate("results", { attempt: current });
+          }
+          setAttempt((previous: any) =>
+            previous?.attemptId === current.attemptId &&
+            previous.revision <= current.revision
+              ? current
+              : previous,
+          );
+        })
+        .catch(() => undefined); // Actions also reacquire and provide normal save/retry feedback.
+    };
+    refresh();
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      active = false;
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, [screen, attempt?.attemptId, session, tabId]);
+  useEffect(() => {
     if (screen !== "game" || !attempt?.activeOrder) return;
     const heartbeat = () => {
+      if (
+        document.visibilityState === "hidden" ||
+        attempt.writerTabId !== tabId
+      )
+        return;
       const commandId = crypto.randomUUID();
       void api(
         `/games/place-value-factory/attempts/${attempt.attemptId}/lease/heartbeat`,
@@ -374,7 +434,9 @@ function App() {
       )
         .then((data) =>
           setAttempt((current: any) =>
-            current?.attemptId === attempt.attemptId
+            current?.attemptId === attempt.attemptId &&
+            current.leaseEpoch === attempt.leaseEpoch &&
+            current.writerTabId === tabId
               ? {
                   ...current,
                   leaseEpoch: data.leaseEpoch,
@@ -502,7 +564,6 @@ function App() {
       setHelp("");
       setHelpOpen(false);
       setPendingLocal(false);
-      setPendingConflict(false);
       setStorageUnavailable(false);
       setSaving(false);
       setShipmentMotion("idle");
@@ -512,6 +573,7 @@ function App() {
         window.clearTimeout(factoryAlertTimer.current);
       reconciled.current.clear();
       restoredHelp.current = "";
+      setClassCode("");
       setUsername("");
       setPin("");
       setTeacherUsername("");
@@ -628,7 +690,7 @@ function App() {
             navigate("results", { attempt: current });
           } else
             setNotice(
-              "An earlier tab's saved work was restored. Review this order before shipping.",
+              "Saved work was restored. Review this order before shipping.",
             );
           return;
         } catch (error) {
@@ -646,7 +708,7 @@ function App() {
           await outbox.remove(older);
           setAttempt(current);
           setNotice(
-            "The earlier tab's unsent crates were not added. Review this order and press Ship again.",
+            "Your mission has moved forward. Review this order and press Ship again.",
           );
           return;
         }
@@ -724,6 +786,11 @@ function App() {
         }, 1900);
       }
     } catch (error) {
+      if (
+        pending &&
+        (await reconcileRejectedPending(error, pending).catch(() => false))
+      )
+        return;
       setNotice(
         persisted
           ? `Your shipment is waiting to save — ${(error as Error).message}`
@@ -777,72 +844,12 @@ function App() {
       setSaving(false);
     }
   };
-  const takeOver = async () => {
-    const commandId = crypto.randomUUID();
-    try {
-      const data = await api(
-        `/games/place-value-factory/attempts/${attempt.attemptId}/lease/takeover`,
-        {
-          method: "POST",
-          headers: { "x-session": session, "idempotency-key": commandId },
-          body: JSON.stringify({
-            commandId,
-            expectedRevision: attempt.revision,
-            leaseEpoch: attempt.leaseEpoch,
-            tabId,
-          }),
-        },
-      );
-      setAttempt(data.snapshot);
-      if (pendingConflict) {
-        const pending = await outbox.get(session, attempt.attemptId);
-        if (pending && pending.orderId === data.snapshot.activeOrder?.id) {
-          if (pending.kind === "response") {
-            setQuantities(pending.payload.representationA as number[]);
-            setQuantitiesB(
-              (pending.payload.representationB as number[] | null) ?? [
-                0, 0, 0, 0, 0, 0,
-              ],
-            );
-          }
-          await outbox.remove(pending);
-          setPendingLocal(false);
-          setPendingConflict(false);
-          setNotice(
-            "Unsaved crates are ready for review. Ship again when you are ready.",
-          );
-        }
-      } else setNotice("");
-    } catch (error) {
-      setNotice(`Could not take over — ${(error as Error).message}`);
-    }
-  };
   const changeAttemptState = async (action: "pause" | "resume") => {
     setSaving(true);
     try {
-      let currentAttempt = attempt;
-      if (action === "resume" && currentAttempt.writerTabId !== tabId) {
-        const takeoverCommandId = crypto.randomUUID();
-        const takeover = await api(
-          `/games/place-value-factory/attempts/${currentAttempt.attemptId}/lease/takeover`,
-          {
-            method: "POST",
-            headers: {
-              "x-session": session,
-              "idempotency-key": takeoverCommandId,
-            },
-            body: JSON.stringify({
-              commandId: takeoverCommandId,
-              expectedRevision: currentAttempt.revision,
-              leaseEpoch: currentAttempt.leaseEpoch,
-              tabId,
-            }),
-          },
-        );
-        currentAttempt = takeover.snapshot;
-      }
+      const currentAttempt = attempt;
       const commandId = crypto.randomUUID();
-      const data = await api(
+      const data = await gameCommand(
         `/games/place-value-factory/attempts/${currentAttempt.attemptId}/${action}`,
         {
           method: "POST",
@@ -876,7 +883,9 @@ function App() {
           navigate("map");
           return;
         } catch (mapError) {
-          setNotice(`Could not return to the map — ${(mapError as Error).message}`);
+          setNotice(
+            `Could not return to the map — ${(mapError as Error).message}`,
+          );
           return;
         }
       }
@@ -889,7 +898,7 @@ function App() {
     const commandId = crypto.randomUUID();
     setSaving(true);
     try {
-      const data = await api(
+      const data = await gameCommand(
         `/games/place-value-factory/attempts/${attempt.attemptId}/orders/${attempt.activeOrder.id}/skip`,
         {
           method: "POST",
@@ -970,7 +979,7 @@ function App() {
   const startTransfer = async () => {
     const commandId = crypto.randomUUID();
     try {
-      const data = await api(
+      const data = await gameCommand(
         `/games/place-value-factory/attempts/${attempt.attemptId}/transfer`,
         {
           method: "POST",
@@ -1021,7 +1030,9 @@ function App() {
       }
       await start(level.id, "path", loaded.map.profileRevision);
     } catch (error) {
-      setNotice(`Could not open the next mission — ${(error as Error).message}`);
+      setNotice(
+        `Could not open the next mission — ${(error as Error).message}`,
+      );
       navigate("map");
     }
   };
@@ -1031,18 +1042,11 @@ function App() {
     navigate("map");
   };
   useEffect(() => {
-    if (screen !== "game" || !pendingLocal || pendingConflict) return;
+    if (screen !== "game" || !pendingLocal) return;
     const onOnline = () => void retryPending();
     window.addEventListener("online", onOnline);
     return () => window.removeEventListener("online", onOnline);
-  }, [
-    screen,
-    pendingLocal,
-    pendingConflict,
-    attempt?.attemptId,
-    session,
-    saving,
-  ]);
+  }, [screen, pendingLocal, attempt?.attemptId, session, saving]);
   if (screen === "state-gallery") return <StateGallery />;
   if (screen === "login" || !session)
     return (
@@ -1108,7 +1112,7 @@ function App() {
       />
     );
   if (screen === "teacher") return <TeacherWorkspace />;
-  if (screen === "game" && attempt)
+  if (screen === "game" && attempt?.activeOrder)
     return (
       <GameScreen
         attempt={attempt}
@@ -1122,10 +1126,8 @@ function App() {
         shipmentMotion={shipmentMotion}
         factoryAlert={factoryAlert}
         pending={pendingLocal}
-        pendingConflict={pendingConflict}
         busy={settings.pressure === "busy"}
         storageUnavailable={storageUnavailable}
-        tabId={tabId}
         helpTrigger={helpTrigger}
         helpDialog={helpDialog}
         setQuantities={setQuantities}
@@ -1137,7 +1139,6 @@ function App() {
           requestAnimationFrame(() => helpTrigger.current?.focus());
         }}
         onHelp={() => void requestHelp()}
-        onTakeOver={() => void takeOver()}
         onShip={() => void ship()}
         onRetryPending={() => void retryPending()}
         onSkip={() => void skipOrder()}

@@ -1,5 +1,9 @@
 # Project status
 
+## Current: 1 October 2026 — Classroom fixes verified, publishing
+
+Student login fields start blank and clear on logout. Attempts automatically acquire control on arrival/focus/actions without a takeover notice; exact receipt replay and same-order reconciliation protect saved work. Gameplay compacts and scales to screen height so Ship order remains visible. Typecheck/build and 100 regular tests pass (9 harness skips); browser suite 37 pass/1 native-zoom skip; secure PostgreSQL pilot 4 pass. Final command-key checks add 7 passing recovery journeys and a passing secure pilot rerun. Eight small-screen sizes and six states are covered. See `docs/qa/CLASSROOM_FIXES_2026-10-01.md`. Existing local play-session data remains excluded. Earlier sections below are historical.
+
 ## Current: 30 September 2026 — Project changes pushed to GitHub
 
 All 13 pending implementation/verification commits through `9a3ca1e` were pushed successfully to `main` at https://github.com/mjdoucet8/place-value-factory. This includes the approved map/gameplay art, question variety, logout and doucet login update. Final delivery records accompany this checkpoint; existing local play-session data and credentials remain local. No application behavior changed. Live deployment and validation details remain in the sections below.

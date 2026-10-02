@@ -1163,3 +1163,15 @@ Commit remaining project records and push all reviewed game changes to the exist
 ## 2026-09-30 | MVP-GIT-PUSH-45 | DONE | PA
 
 GitHub accepted the fast-forward push from 6e04dd5 through 9a3ca1e on origin/main, delivering all 13 pending implementation/verification commits. Includes the map, independent gameplay equipment, question variety, logout and doucet class-code updates. Existing app validation remains recorded in the respective task handoffs; no application code changed or tests rerun in this Git-only checkpoint. Final delivery records are committed with this entry. Local runtime play-session data remains preserved and unstaged.
+
+## 2026-10-01 | CLASSROOM-FIXES-46 | CLAIM | FE / QA
+
+Address observed classroom problems: blank student login fields, automatic attempt takeover with no tab warning/button, and complete gameplay fitted to available viewport height. Own login defaults, frontend attempt command coordination, main/game/gallery components, fitting hook/styles, relevant browser/unit/pilot tests and task records. Keep existing server authorization, revision checks, idempotency, saved progress, art and math intact. Verify refresh, multiple tabs, queued/lost-response recovery and visible Ship controls at small laptop/tablet sizes. Preserve existing local-development.json; single main-agent execution.
+
+## 2026-10-01 | CLASSROOM-FIXES-46 | UPDATE | FE / QA
+
+Implemented blank fields, focus/action-based automatic control and viewport fitting. Scope includes a small outbox compare-and-replace extension so a definitely rejected command receives a fresh key before retry, preserving the existing immutable-payload contract. Documented owner-requested client behavior in DECISIONS.md and API_CONTRACTS.md; no schema/server/migration changes. Typecheck/build pass, regular tests 100 pass/9 harness skips, full browser 37 pass/1 native-zoom skip, isolated secure PostgreSQL pilot 4 pass. Initial parallel math-oracle timeout resolved by running the unchanged suite without competing browser workloads. Final targeted recovery/pilot rechecks underway; existing local runtime data preserved.
+
+## 2026-10-01 | CLASSROOM-FIXES-46 | HANDOFF / REVIEW / DONE (LOCAL) | FE / QA
+
+Final immutable-command-key recovery passes seven targeted browser journeys, including a definite 409 followed by a fresh key and lost committed reply recovering exactly once. The secure PostgreSQL classroom journey also passes again. Final typecheck, production build, 100 regular tests and diff check pass. Reviewed source, all changed files, small-screen captures and intentional calm-gameplay baseline; no other visual baselines changed. Full earlier browser/pilot checks remain applicable. Implementation is ready to publish at the existing game URL. No live student responses, credential changes, schema changes or data migrations are included.

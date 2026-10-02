@@ -1,3 +1,4 @@
+import { loginStudent, fillStudentLogin } from "./student-login.js";
 import { expect, test } from "@playwright/test";
 
 test("names every machine input, preserves focus and reflows at 200% text zoom", async ({ page }) => {
@@ -68,7 +69,7 @@ test("quantity keyboard navigation and Enter ship work on a saved mission", asyn
   const reset = await fetch("http://127.0.0.1:3102/__reset", { method: "POST" });
   expect(reset.status).toBe(204);
   await page.goto("/");
-  await page.getByRole("button", { name: "Student login" }).click();
+  await loginStudent(page);
   await page.getByRole("button", { name: /View mission/ }).first().click();
   await expect(page.getByText("CURRENT ORDER", { exact: true })).toBeVisible();
   const openQuantities = page.locator('.machines input[id^="quantity-"]:not([disabled])');
@@ -91,7 +92,7 @@ test("quantity keyboard navigation and Enter ship work on a saved mission", asyn
   const sceneGeometry = () =>
     page.locator(".game-screen").evaluate((screen) => {
       const line = screen.querySelector<HTMLElement>(".production-line")!;
-      const backdrop = screen.querySelector<HTMLElement>(".game-backdrop")!;
+      const backdrop = screen.closest<HTMLElement>(".game-viewport")!;
       const backdropStyle = getComputedStyle(backdrop);
       const backdropRect = backdrop.getBoundingClientRect();
       const screenRect = screen.getBoundingClientRect();
@@ -102,6 +103,7 @@ test("quantity keyboard navigation and Enter ship work on a saved mission", asyn
         documentHeight: document.documentElement.scrollHeight,
         documentClientWidth: document.documentElement.clientWidth,
         viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
         scrollbarGutter: getComputedStyle(document.documentElement).scrollbarGutter,
         lineHeight: line.getBoundingClientRect().height,
         lineScrollWidth: line.scrollWidth,
@@ -117,8 +119,8 @@ test("quantity keyboard navigation and Enter ship work on a saved mission", asyn
       };
     });
   const idleGeometry = await sceneGeometry();
-  expect(idleGeometry.backdropPosition).toBe("fixed");
-  expect(idleGeometry.scrollbarGutter).toBe("stable");
+  expect(idleGeometry.backdropPosition).toBe("relative");
+  expect(idleGeometry.documentHeight).toBeLessThanOrEqual(idleGeometry.viewportHeight + 1);
   await openQuantities.last().press("Enter");
   await expect(page.locator(".production-line")).toHaveAttribute(
     "data-shipment-motion",
@@ -148,6 +150,7 @@ test("student can finish five orders and open the next mission by keyboard", asy
   const reset = await fetch("http://127.0.0.1:3102/__reset", { method: "POST" });
   expect(reset.status).toBe(204);
   await page.goto("/");
+  await fillStudentLogin(page);
   await page.getByRole("button", { name: "Student login" }).focus();
   await page.keyboard.press("Enter");
   await expect(page.getByRole("heading", { name: "Factory Map" })).toBeVisible();
@@ -197,7 +200,7 @@ test("student can finish five orders and open the next mission by keyboard", asy
 test("login failure is announced and associated with credential fields", async ({ page }) => {
   await page.goto("/");
   await page.getByLabel("Six-digit PIN").fill("000000");
-  await page.getByRole("button", { name: "Student login" }).click();
+  await loginStudent(page);
   await expect(page.getByRole("alert")).toContainText(/did not match/i);
   for (const label of ["Class code", "Username", "Six-digit PIN"])
     await expect(page.getByLabel(label, { exact: true })).toHaveAttribute("aria-describedby", "login-error");

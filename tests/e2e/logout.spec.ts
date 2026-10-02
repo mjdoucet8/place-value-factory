@@ -1,3 +1,4 @@
+import { loginStudent } from "./student-login.js";
 import { expect, test } from "@playwright/test";
 
 test.beforeEach(async () => {
@@ -10,7 +11,7 @@ test("logout ends the session, blocks history access and preserves a paused miss
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Student login" }).click();
+  await loginStudent(page);
   await expect(
     page.getByRole("button", { name: "Settings", exact: true }),
   ).toHaveCount(0);
@@ -50,7 +51,7 @@ test("logout ends the session, blocks history access and preserves a paused miss
   ).toBeVisible();
   await page.getByLabel("Username", { exact: true }).fill("ava");
   await page.getByLabel("Six-digit PIN").fill("123456");
-  await page.getByRole("button", { name: "Student login" }).click();
+  await loginStudent(page);
   await page.getByRole("button", { name: "Resume saved mission" }).click();
   await expect(page).toHaveURL(missionUrl);
   await page
@@ -64,7 +65,7 @@ test("logout can be retried after a network failure and disables competing actio
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Student login" }).click();
+  await loginStudent(page);
   await page.route("**/api/v1/auth/session", (route) =>
     route.request().method() === "DELETE"
       ? route.abort("connectionfailed")
@@ -107,7 +108,7 @@ test("the removed settings route opens the map for a signed-in student", async (
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Student login" }).click();
+  await loginStudent(page);
   await expect(
     page.getByRole("heading", { name: "Factory Map" }),
   ).toBeVisible();

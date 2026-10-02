@@ -1,3 +1,4 @@
+import { loginStudent } from "./student-login.js";
 import { expect, test, type Page } from "@playwright/test";
 
 const places = [100000, 10000, 1000, 100, 10, 1];
@@ -8,7 +9,7 @@ async function startMission(page: Page) {
   });
   expect(reset.status).toBe(204);
   await page.goto("/");
-  await page.getByRole("button", { name: "Student login" }).click();
+  await loginStudent(page);
   await page
     .getByRole("button", { name: /View mission/ })
     .first()
@@ -87,11 +88,9 @@ test("independent art loads and live counts fit the crate panels at every screen
         context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
         const textWidth = context.measureText(input.value).width;
         const innerWidth =
-          field.width -
+          input.clientWidth -
           parseFloat(style.paddingLeft) -
-          parseFloat(style.paddingRight) -
-          parseFloat(style.borderLeftWidth) -
-          parseFloat(style.borderRightWidth);
+          parseFloat(style.paddingRight);
         return {
           textWidth,
           innerWidth,

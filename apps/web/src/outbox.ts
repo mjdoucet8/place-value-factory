@@ -77,17 +77,17 @@ export const outbox = {
         );
     });
   },
-  async put(command: PendingGameCommand) {
+  async put(
+    command: PendingGameCommand,
+    expectedCommandId = command.payload.commandId,
+  ) {
     let conflict = false;
     try {
       return await transaction<void>("readwrite", (store, done) => {
         const request = store.get(command.id);
         request.onsuccess = () => {
           const existing = request.result as PendingGameCommand | undefined;
-          if (
-            existing &&
-            existing.payload.commandId !== command.payload.commandId
-          ) {
+          if (existing && existing.payload.commandId !== expectedCommandId) {
             conflict = true;
             store.transaction.abort();
             return;

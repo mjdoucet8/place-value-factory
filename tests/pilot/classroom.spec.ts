@@ -95,9 +95,7 @@ test("teacher issues access, student ships, and teacher reviews and revokes it",
       await student.unroute("**/responses");
       await student.reload();
       await expect(student.getByText("Order 2 of 5")).toBeVisible();
-      await student
-        .getByRole("button", { name: "Take over this attempt" })
-        .click();
+      await expect(student.getByRole("button", { name: "Take over this attempt" })).toHaveCount(0);
       continue;
     }
     if (slot === 1) {

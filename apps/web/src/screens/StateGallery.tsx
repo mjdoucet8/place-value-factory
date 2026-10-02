@@ -150,10 +150,8 @@ export function StateGallery() {
           shipmentMotion="idle"
           factoryAlert={state === "incorrect"}
           pending={false}
-          pendingConflict={false}
           busy={fixture.pressure === "busy"}
           storageUnavailable={fixture.storageUnavailable ?? false}
-          tabId="fixture-tab"
           helpTrigger={helpTrigger}
           helpDialog={helpDialog}
           setQuantities={setQuantities}
@@ -162,7 +160,6 @@ export function StateGallery() {
           onHelpOpen={noop}
           onHelpClose={noop}
           onHelp={noop}
-          onTakeOver={noop}
           onShip={noop}
           onRetryPending={noop}
           onSkip={noop}

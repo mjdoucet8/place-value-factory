@@ -468,3 +468,9 @@ Result: Implemented the approved scenery with all five station anchors and conne
 **Prompt:** Commit all changes to Git and push to GitHub.
 
 **Result:** Reviewed and pushed all 13 pending project commits to the existing GitHub main branch, including the map, gameplay art, question variety, logout and doucet class-code updates. Committed the final project delivery records. Local play-session data and credentials remain on this computer. No application changes or extra test runs were needed.
+
+## 2026-10-01 — Fix classroom login, attempt takeover and small-screen play
+
+Prompt: Clear prefilled demo login fields; remove the other-tab warning and always take over automatically; shrink gameplay to fit smaller student screens with Ship order visible.
+
+Result: Implemented all three fixes with blank fields after logout too, safe automatic command recovery, and live HTML fitting across eight screen sizes. Keyboard play, individual crate animations, saved progress and math remain intact. Typecheck/build, 100 regular tests, 37 browser checks and 4 isolated secure PostgreSQL pilot journeys pass, with documented existing harness/zoom skips. Final recovery refinement passes 7 targeted browser journeys plus the secure pilot rerun. Publication verification follows in the task log. Main agent worked sequentially; existing runtime data preserved.
