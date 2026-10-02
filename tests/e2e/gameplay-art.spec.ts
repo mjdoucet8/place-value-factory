@@ -125,7 +125,7 @@ test("independent art loads and live counts fit the crate panels at every screen
 test("saved shipments carry separate crates and their fields fully off the belt while dispensers stay fixed", async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.setViewportSize({ width: 1920, height: 940 });
   await startMission(page);
   await packOrder(page);
   await page
@@ -161,6 +161,27 @@ test("saved shipments carry separate crates and their fields fully off the belt 
       });
     });
   });
+  const sceneGeometry = () =>
+    page.evaluate(async () => {
+      // Let both React layout and the viewport ResizeObserver settle.
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      );
+      return {
+        scale:
+          document.querySelector<HTMLElement>(".game-viewport")!.dataset.scale,
+        boxes: [
+          ".game-screen",
+          ".game-screen > header",
+          ".current-order",
+          ".production-line",
+          ".factory-console",
+        ].map((selector) =>
+          document.querySelector(selector)!.getBoundingClientRect().toJSON(),
+        ),
+      };
+    });
+  const idleGeometry = await sceneGeometry();
   let release!: () => void;
   const held = new Promise<void>((resolve) => {
     release = resolve;
@@ -175,7 +196,23 @@ test("saved shipments carry separate crates and their fields fully off the belt 
     "data-shipment-motion",
     "idle",
   );
-  release();
+  try {
+    expect(await sceneGeometry()).toEqual(idleGeometry);
+    // Resizing must still work even while the network reply is held.
+    await page.setViewportSize({ width: 1024, height: 600 });
+    const smallGeometry = await sceneGeometry();
+    expect(smallGeometry.boxes[0].width).toBeLessThan(
+      idleGeometry.boxes[0].width,
+    );
+    await expect(page.getByRole("button", { name: "Saving…" })).toBeInViewport({
+      ratio: 0.999,
+    });
+    expect(await sceneGeometry()).toEqual(smallGeometry);
+    await page.setViewportSize({ width: 1920, height: 940 });
+    expect(await sceneGeometry()).toEqual(idleGeometry);
+  } finally {
+    release();
+  }
   await expect(page.getByText("Order 2 of 5")).toBeVisible();
   await expect(page.locator(".production-line")).toHaveAttribute(
     "data-shipment-motion",

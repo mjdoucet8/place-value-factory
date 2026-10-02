@@ -486,3 +486,9 @@ Result: Created a polished colorful factory-city background with coherent convey
 Prompt: Add the generated factory-city image to the app.
 
 Result: Integrated the full background behind a readable cream login panel, with compact spacing on short screens. Student/teacher access, blank fields, error announcements and logout remain working. Typecheck/build, eight existing browser checks and five-screen production visual review pass. Published as READY deployment dpl_bMQoAGMjwvCMSawp4iijsF7vrxEa at https://math-factory-one.vercel.app/. Live health, exact tested build/art hashes, blank fields and short-screen login visibility pass with no startup/page errors. Main agent only; existing runtime data preserved.
+
+## 2026-10-02 — Prevent temporary shrinking while shipping
+
+Prompt: Keep the game static when shipping while retaining its ability to shrink and expand with browser size.
+
+Result: Identified the extra saving banner as the cause and moved save feedback into the existing Ship button. A delayed-response regression verifies identical geometry while saving and fixed dispensers during crate animation, plus resizing down and back up before releasing the response. Existing screen-fit, keyboard and recovery checks were exercised; one unrelated recovery check passed on its isolated rerun. Typecheck/build pass. Publication verification follows in the task log. Main agent only; existing runtime data preserved.

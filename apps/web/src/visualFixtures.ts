@@ -129,7 +129,6 @@ export const GAME_FIXTURES: Record<
   pending: {
     label: "Saving and pending",
     attempt: baseAttempt,
-    notice: "Saving your shipment…",
     saving: true,
   },
   offline: {

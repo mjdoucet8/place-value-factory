@@ -666,7 +666,7 @@ function App() {
       window.clearTimeout(factoryAlertTimer.current);
     setFactoryAlert(false);
     setSaving(true);
-    setNotice("Saving your shipment…");
+    setNotice("");
     const commandId = crypto.randomUUID();
     let pending: PendingGameCommand | null = null;
     let persisted = false;

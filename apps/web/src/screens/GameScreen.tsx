@@ -282,7 +282,13 @@ export function GameScreen(props: Props) {
             >
               Undo
             </button>
-            <button className="ship" disabled={locked} onClick={props.onShip}>
+            <button
+              className="ship"
+              disabled={locked}
+              onClick={props.onShip}
+              aria-live="polite"
+              aria-atomic="true"
+            >
               {props.saving
                 ? "Saving…"
                 : props.pending

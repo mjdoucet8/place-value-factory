@@ -1199,3 +1199,11 @@ Added the exact approved image as apps/web/public/assets/login-factory-city-v1.p
 ## 2026-10-01 | LOGIN-CITY-48 | DEPLOY / DONE | FE / QA
 
 Published implementation 2b7ba99 as READY dpl_bMQoAGMjwvCMSawp4iijsF7vrxEa at https://math-factory-one.vercel.app/. Remote build completed in 38 seconds; registry upload recovered automatically from one transient retry. Live page/health return 200 with health OK. Served index-DJYW-zNk.js, index-CMy0x9EK.css and login-factory-city-v1.png match the verified local build exactly. Fresh browser confirms the approved 1672×941 background, blank credentials, visible login button at 1366×600 and zero page errors. Bounded deployment error scan is empty. No live student account or progress mutation performed; temporary preview is stopped. Existing local-development.json remains untouched and unstaged. Delivery records finalized for GitHub.
+
+## 2026-10-02 | SHIPMENT-STABILITY-49 | CLAIM | FE / QA
+
+Fix the temporary gameplay shrink while a shipment is awaiting its response. The transient Saving your shipment notice adds an in-flow panel measured by useGameFit. Own the ship status presentation, matching saving fixture, existing real-shipment browser regression and project records. Preserve live browser resizing, crate animation, server save sequencing and recovery. Reproduce using a held response before changing implementation. Existing local-development.json remains untouched/excluded; main agent only.
+
+## 2026-10-02 | SHIPMENT-STABILITY-49 | HANDOFF / REVIEW / DONE (LOCAL) | FE / QA
+
+Reproduced a 0.904716→0.777502 stage-scale drop during a held shipment response at 1920×940. Removed the extra saving-notice panel and kept Saving… in the existing button with polite live announcement. Fitting hook/listeners and save/animation logic are untouched. Expanded the real-shipment regression to assert waiting-phase geometry plus browser shrink/expand during the held response; it fails before and passes after. Keyboard/animation/reduced-motion/fitting/recovery checks pass, with one queued-tab-recovery check intermittent in the eight-check run and passing unchanged in its isolated traced rerun. Typecheck/build/diff checks pass. No baselines changed. See docs/qa/SHIPMENT_STABILITY_2026-10-02.md. Ready to publish; existing runtime data preserved/excluded.
