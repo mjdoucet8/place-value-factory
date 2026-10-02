@@ -1,8 +1,8 @@
 # Project status
 
-## Current: 2 October 2026 — Shipment layout fix verified, publishing
+## Current: 2 October 2026 — Shipment layout fix live
 
-Removed the redundant saving banner that caused the entire game to shrink while waiting for a shipment response. Save status remains in the existing button with a polite live announcement. The viewport fitting hook and resize listeners are unchanged. A regression reproduces the former scale drop and now verifies identical waiting-phase geometry, crate movement with fixed dispensers, and browser shrink/expand during a held response. Typecheck/build and relevant fitting/keyboard/recovery checks pass; the isolated rerun of one intermittent tab-recovery check also passes. See docs/qa/SHIPMENT_STABILITY_2026-10-02.md. Earlier sections are historical.
+Removed the redundant saving banner that caused the entire game to shrink while waiting for a shipment response. Save status remains in the existing button with a polite live announcement. The viewport fitting hook and resize listeners are unchanged. A regression reproduces the former scale drop and now verifies identical waiting-phase geometry, crate movement with fixed dispensers, and browser shrink/expand during a held response. Typecheck/build and relevant fitting/keyboard/recovery checks pass; the isolated rerun of one intermittent tab-recovery check also passes. Implementation c0ecb60 is live at https://math-factory-one.vercel.app/ as READY deployment dpl_APLmeCLRftJnnPCDoeNuxiByZuBw. Live health and exact served JavaScript/CSS match pass; a fresh browser opens with blank credentials and no page errors. Bounded deployment error scan is empty. See docs/qa/SHIPMENT_STABILITY_2026-10-02.md. Earlier sections are historical.
 
 ## Current: 1 October 2026 — Factory-city login live
 
