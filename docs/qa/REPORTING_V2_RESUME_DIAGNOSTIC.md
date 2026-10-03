@@ -2,7 +2,7 @@
 
 ## Scope and preservation
 
-Resumed directly in `/home/owner/Math Factory`. Preserved existing uncommitted implementation, development JSON, private configuration and prior edits. No source changes, staging, commits, deployments or usage resets. Owner raised the weekly usage stop threshold to 90%; latest verified usage 76%. Existing checks before work, between major steps and approximately every five minutes remain active; stop if verification is unavailable.
+Resumed directly in the existing local repository (now located at `/home/owner/education-games/place-value-factory`). Preserved existing uncommitted implementation, development JSON, private configuration and prior edits. No source changes, staging, commits, deployments or usage resets. Owner raised the weekly usage stop threshold to 90%; latest verified usage 76%. Existing checks before work, between major steps and approximately every five minutes remain active; stop if verification is unavailable.
 
 ## Retained workload diagnosis
 

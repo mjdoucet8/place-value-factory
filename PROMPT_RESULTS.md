@@ -492,3 +492,15 @@ Result: Integrated the full background behind a readable cream login panel, with
 Prompt: Keep the game static when shipping while retaining its ability to shrink and expand with browser size.
 
 Result: Identified the extra saving banner as the cause and moved save feedback into the existing Ship button. A delayed-response regression verifies identical geometry while saving and fixed dispensers during crate animation, plus resizing down and back up before releasing the response. Existing screen-fit, keyboard and recovery checks were exercised; one unrelated recovery check passed on its isolated rerun. Typecheck/build pass. Published at https://math-factory-one.vercel.app/ as READY deployment dpl_APLmeCLRftJnnPCDoeNuxiByZuBw. Live health, exact tested asset hashes and fresh-browser startup pass with no page errors; bounded deployment error scan is empty. Main agent only; existing runtime data preserved.
+
+## 2026-10-03 — Move the repository into education-games
+
+Prompt: Move Math Factory into the education-games directory, rename it place-value-factory, and update code/documentation references as needed.
+
+Result: Moved the entire checkout to /home/owner/education-games/place-value-factory, preserved Git history and all local data/configuration, and updated README, existing documentation path references and the local Codex project entry. Code already uses relative paths. Typecheck/build and the full existing student/teacher browser journey pass from the new location. The old directory is absent; the live game and GitHub remote are unchanged. Documentation edits remain local and uncommitted.
+
+## 2026-10-03 — Commit relocation documentation to GitHub
+
+Prompt: Commit the relocation changes to GitHub.
+
+Result: Reviewed the six relocation documentation files for the GitHub main-branch checkpoint, preserving the prior build and browser verification evidence. Existing local saved game data and private configuration are excluded. No application changes or additional test runs were needed.

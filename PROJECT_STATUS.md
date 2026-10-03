@@ -1,5 +1,9 @@
 # Project status
 
+## Current: 3 October 2026 — Local repository relocated
+
+The working repository is now `/home/owner/education-games/place-value-factory`. The complete directory was moved and renamed in place, preserving Git history, existing uncommitted runtime data, private configuration, dependencies and the Vercel project link. README and three documentation path references now identify the new location, and the existing local Codex project-path entry was updated. Application code uses relative paths and needed no edits. TypeScript, production build and the existing complete student/teacher browser journey pass from the new root. The old directory is absent; preservation hashes and dependency symlinks pass. The live game and GitHub remote remain unchanged. Earlier sections are historical.
+
 ## Current: 2 October 2026 — Shipment layout fix live
 
 Removed the redundant saving banner that caused the entire game to shrink while waiting for a shipment response. Save status remains in the existing button with a polite live announcement. The viewport fitting hook and resize listeners are unchanged. A regression reproduces the former scale drop and now verifies identical waiting-phase geometry, crate movement with fixed dispensers, and browser shrink/expand during a held response. Typecheck/build and relevant fitting/keyboard/recovery checks pass; the isolated rerun of one intermittent tab-recovery check also passes. Implementation c0ecb60 is live at https://math-factory-one.vercel.app/ as READY deployment dpl_APLmeCLRftJnnPCDoeNuxiByZuBw. Live health and exact served JavaScript/CSS match pass; a fresh browser opens with blank credentials and no page errors. Bounded deployment error scan is empty. See docs/qa/SHIPMENT_STABILITY_2026-10-02.md. Earlier sections are historical.
@@ -60,7 +64,7 @@ The unchanged 90-student/30-concurrent/three-worker historical workload passed: 
 
 ## Current: 27 September 2026 — resumed reporting performance investigation
 
-The owner resumed work directly in `/home/owner/Math Factory`, preserving all changes, and raised the weekly usage guard to 90%. Actual account usage was verified at 75%. Stop at 90% or when usage verification is unavailable; do not redeem resets without explicit authorization. PERF-01 remains open at the prior 566 ms browser class-summary measurement. Retained fictional-data query diagnosis completed: a narrower materialized order projection did not improve latency and was rejected without source edits. See `docs/qa/REPORTING_V2_RESUME_DIAGNOSTIC.md`. Latest weekly usage verified at 76%. Older current-status sections are historical.
+The owner resumed work directly in the local repository (now at `/home/owner/education-games/place-value-factory`), preserving all changes, and raised the weekly usage guard to 90%. Actual account usage was verified at 75%. Stop at 90% or when usage verification is unavailable; do not redeem resets without explicit authorization. PERF-01 remains open at the prior 566 ms browser class-summary measurement. Retained fictional-data query diagnosis completed: a narrower materialized order projection did not improve latency and was rejected without source edits. See `docs/qa/REPORTING_V2_RESUME_DIAGNOSTIC.md`. Latest weekly usage verified at 76%. Older current-status sections are historical.
 
 ## Current: 27 September 2026 — paused by owner usage guard
 

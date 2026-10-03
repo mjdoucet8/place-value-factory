@@ -1,6 +1,6 @@
 # Math Factory: next milestone and usage-efficient execution
 
-Assessment date: 26 September 2026. Inspected `/home/owner/Math Factory` (the existing directory corresponding to the requested path). This is a planning assessment, not an implementation or release sign-off.
+Assessment date: 26 September 2026. Inspected the existing local repository (now located at `/home/owner/education-games/place-value-factory`). This is a planning assessment, not an implementation or release sign-off.
 
 ## Recommendation
 

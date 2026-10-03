@@ -1211,3 +1211,15 @@ Reproduced a 0.904716→0.777502 stage-scale drop during a held shipment respons
 ## 2026-10-02 | SHIPMENT-STABILITY-49 | DEPLOY / DONE | FE / QA
 
 Published implementation c0ecb60 as READY dpl_APLmeCLRftJnnPCDoeNuxiByZuBw at https://math-factory-one.vercel.app/. Initial Vercel authorization failure resolved by refreshing the existing identical doucet/math-factory project connection; no project/account settings changed. Remote build completed in 33 seconds. Live page/health return 200 with health OK. Served index-DqnbFlcN.js and index-CMy0x9EK.css match the verified local build byte-for-byte. A fresh browser confirms blank credentials, visible login and zero page errors. Bounded deployment error scan returned no records. No live student response submitted; existing local-development.json preserved and unstaged. Delivery records finalized for GitHub.
+
+## 2026-10-03 | RELOCATE-50 | CLAIM | PA / QA
+
+Move the existing repository to /home/owner/education-games/place-value-factory as requested. Own the directory relocation, README, the three documentation path references, project delivery records and the matching local Codex project-path entry. Preserve all Git history, uncommitted runtime data, private configuration, installed dependencies and hosting identity. Application code uses relative paths; verify build and a disposable browser journey from the new root. Main agent only.
+
+## 2026-10-03 | RELOCATE-50 | HANDOFF / REVIEW / DONE (LOCAL) | PA / QA
+
+Moved and renamed the complete repository to /home/owner/education-games/place-value-factory using a same-filesystem directory rename; directory inode and Git HEAD are preserved. Updated README local-development entry, three existing documentation path references and the exact existing local Codex project-path entry without changing its settings. No application code contains the former absolute root. Git recognizes the new main-worktree path, and installed dependency symlinks resolve. Hashes confirm .git/HEAD/config/index, .env.local, .vercel/project.json, package-lock.json and the pre-existing dirty local-development.json are unchanged. npx tsc --noEmit, npm run build and the existing complete student/teacher Playwright journey pass from the new root; production bundle names are unchanged. git diff --check passes. No live account, deployment, remote repository or runtime data changes. Documentation edits are local and uncommitted.
+
+## 2026-10-03 | RELOCATE-CHECKPOINT-51 | CLAIM / REVIEW / HANDOFF | PA
+
+Owner requested committing the relocation documentation to GitHub. Reviewed README, PROJECT_STATUS, PROMPT_RESULTS, TASK_LOG and the two historical path-reference documents. Fetched origin before the checkpoint; no application code changed, so prior successful relocation build/typecheck/browser evidence applies. Stage only these six documents and push to the existing main branch. Preserve and exclude the pre-existing dirty apps/server/db/local-development.json and local configuration.

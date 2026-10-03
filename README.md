@@ -8,9 +8,10 @@ Five named agents are development roles. One session can perform them sequential
 
 ## Local development (fictional data only)
 
-Requires Node 22/npm 10.
+Requires Node 22/npm 10. The local checkout is `/home/owner/education-games/place-value-factory`.
 
 ```bash
+cd /home/owner/education-games/place-value-factory
 npm install
 npm test
 npx tsc --noEmit
