@@ -504,3 +504,9 @@ Result: Moved the entire checkout to /home/owner/education-games/place-value-fac
 Prompt: Commit the relocation changes to GitHub.
 
 Result: Reviewed the six relocation documentation files for the GitHub main-branch checkpoint, preserving the prior build and browser verification evidence. Existing local saved game data and private configuration are excluded. No application changes or additional test runs were needed.
+
+## 2026-10-24 — Use the supplied Place Value Factory logo
+
+Prompt: Change the logo to the local pvf-logo.png.
+
+Result: Added the supplied image unchanged to the login screen and browser tab icon. In-game robot guides remain intact. Typecheck/build, three existing login/accessibility checks and five-size production layout verification pass. Publication verification follows in the task log. Original local image and saved data preserved.

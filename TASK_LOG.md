@@ -1223,3 +1223,11 @@ Moved and renamed the complete repository to /home/owner/education-games/place-v
 ## 2026-10-03 | RELOCATE-CHECKPOINT-51 | CLAIM / REVIEW / HANDOFF | PA
 
 Owner requested committing the relocation documentation to GitHub. Reviewed README, PROJECT_STATUS, PROMPT_RESULTS, TASK_LOG and the two historical path-reference documents. Fetched origin before the checkpoint; no application code changed, so prior successful relocation build/typecheck/browser evidence applies. Stage only these six documents and push to the existing main branch. Preserve and exclude the pre-existing dirty apps/server/db/local-development.json and local configuration.
+
+## 2026-10-24 | LOGO-52 | CLAIM | FE / QA
+
+Use the owner-supplied pvf-logo.png for login branding and the browser tab icon. Own the copied public asset, LoginScreen.tsx, scoped logo styling, index.html icon link, asset provenance and delivery records. Preserve the supplied original and in-game robot guides. Check desktop/short/mobile layouts, existing login behavior, typecheck and production build. Preserve existing local-development.json; main agent only.
+
+## 2026-10-24 | LOGO-52 | HANDOFF / REVIEW / DONE (LOCAL) | FE / QA
+
+Copied the supplied 1254×1254 PNG unchanged into public assets, replaced only the login mascot with the logo and added the browser icon link. Retained heading semantics, fixed square dimensions and compact 58px sizing on short screens. Typecheck/build/diff checks and three existing student/teacher/error-accessibility browser checks pass. Production-build review covers 1920×1080, 1366×600, 1024×600, 390×844 and 320×568, with loaded logo, blank fields, no horizontal overflow and Student login in view. Reviewed laptop and phone captures. A temporary inspection script initially used an ambiguous Teacher login text selector; corrected it to the summary and completed verification without application changes. No page errors. See docs/qa/LOGO_2026-10-24.md. Original root image and local-development.json preserved.

@@ -774,8 +774,10 @@ header nav {
   border-radius: 26px;
   box-shadow: inset 0 0 0 3px #ffe4a0, 0 8px 0 #143d7355, 0 18px 50px #10265340;
 }
-.login .login-mascot {
+.login .login-logo {
   display: block;
+  object-fit: contain;
+  border-radius: 14px;
   height: 80px;
   width: 80px;
   margin: 0 auto 6px;
@@ -2339,7 +2341,7 @@ main[data-map-view="world"] .map-summary {
 @media (max-height: 720px) {
   .login { padding-block: 12px; }
   .login-card { padding-block: 14px; }
-  .login .login-mascot { width: 58px; height: 58px; margin-bottom: 4px; }
+  .login .login-logo { width: 58px; height: 58px; margin-bottom: 4px; }
   .login h1 { font-size: 1.7rem; }
   .login-intro { margin: 8px 0 12px; }
   .login input, .login button { min-height: 44px; }

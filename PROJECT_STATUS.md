@@ -1,5 +1,9 @@
 # Project status
 
+## Current: 24 October 2026 — New logo verified, publishing
+
+The owner-supplied pvf-logo.png now appears on the login screen and as the browser tab icon. The public asset is byte-for-byte identical to the source; short-screen sizing and the accessible title remain intact. Typecheck/build and three existing login/accessibility browser checks pass. The built app displays the logo without horizontal overflow and with Student login visible at five desktop/laptop/phone sizes. In-game robot guides and saved data are unchanged. See docs/qa/LOGO_2026-10-24.md. Earlier sections are historical.
+
 ## Current: 3 October 2026 — Local repository relocated
 
 The working repository is now `/home/owner/education-games/place-value-factory`. The complete directory was moved and renamed in place, preserving Git history, existing uncommitted runtime data, private configuration, dependencies and the Vercel project link. README and three documentation path references now identify the new location, and the existing local Codex project-path entry was updated. Application code uses relative paths and needed no edits. TypeScript, production build and the existing complete student/teacher browser journey pass from the new root. The old directory is absent; preservation hashes and dependency symlinks pass. The live game and GitHub remote remain unchanged. Earlier sections are historical.

@@ -20,7 +20,14 @@ export function LoginScreen(props: Props) {
   return (
     <main className="login">
       <section className="login-card" aria-labelledby="login-heading">
-        <Mascot pose="welcome" className="login-mascot" />
+        <img
+          src="/assets/pvf-logo.png"
+          className="login-logo"
+          alt=""
+          aria-hidden="true"
+          width={80}
+          height={80}
+        />
         <h1 id="login-heading">Place Value Factory</h1>
         <p className="login-intro">
           Ready to build? Use the access details from your teacher.
@@ -115,4 +122,3 @@ export function LoginScreen(props: Props) {
     </main>
   );
 }
-import { Mascot } from "../components/FactoryArt.js";
