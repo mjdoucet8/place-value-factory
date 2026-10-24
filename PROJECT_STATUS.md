@@ -1,8 +1,8 @@
 # Project status
 
-## Current: 24 October 2026 — New logo verified, publishing
+## Current: 24 October 2026 — New logo live
 
-The owner-supplied pvf-logo.png now appears on the login screen and as the browser tab icon. The public asset is byte-for-byte identical to the source; short-screen sizing and the accessible title remain intact. Typecheck/build and three existing login/accessibility browser checks pass. The built app displays the logo without horizontal overflow and with Student login visible at five desktop/laptop/phone sizes. In-game robot guides and saved data are unchanged. See docs/qa/LOGO_2026-10-24.md. Earlier sections are historical.
+The owner-supplied pvf-logo.png now appears on the login screen and as the browser tab icon. The public asset is byte-for-byte identical to the source; short-screen sizing and the accessible title remain intact. Typecheck/build and three existing login/accessibility browser checks pass. The built app displays the logo without horizontal overflow and with Student login visible at five desktop/laptop/phone sizes. In-game robot guides and saved data are unchanged. Implementation e408cf3 is live at https://math-factory-one.vercel.app/ as READY deployment dpl_2mWCZxWsafMXULxfT7GXFemQhEN7. Live logo/JavaScript/CSS match the tested files exactly; health, favicon and fresh-browser login checks pass with no page errors. Bounded deployment error query returned zero records. See docs/qa/LOGO_2026-10-24.md. Earlier sections are historical.
 
 ## Current: 3 October 2026 — Local repository relocated
 
