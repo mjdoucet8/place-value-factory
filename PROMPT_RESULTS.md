@@ -513,3 +513,5 @@ Result: Added the supplied image unchanged to the login screen and browser tab i
 
 ## 2026-10-29 — Canadian education backend consolidation
 Owner approved securely backing up, merging and reconnecting education apps into Number Line Rocket's Canadian project. Added verified CA support and regression coverage; focused tests, typecheck and build pass. Hosted migration and verification are in progress.
+
+Completed the approved consolidation: Math Factory, Crossword, Toy Factory and Sudoku now use the existing Canadian education backend; exact pre-cutover data comparison and live login/save/reload/logout checks pass. Number Line Rocket's existing data/auth remain in place. Source project paused and protected backups retained.

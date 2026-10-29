@@ -1,8 +1,8 @@
 # Project status
 
-## Current: 29 October 2026 — Canadian database connection prepared
+## Current: 29 October 2026 — Canadian education backend live
 
-Owner approved merging the education apps into the existing Canadian Number Line Rocket project. Math Factory now supports an explicit trusted database CA, preventing URL SSL flags from weakening certificate verification. Three focused tests, TypeScript and production build pass. Hosted cutover verification is pending; account and progress preservation will be checked before the old project is paused. Earlier sections are historical.
+Owner approved merging the education apps into the existing Canadian Number Line Rocket project. Math Factory now supports an explicit trusted database CA, preventing URL SSL flags from weakening certificate verification. Three focused tests, TypeScript and production build pass. All 34 migrated education tables matched source row counts and content hashes before cutover. Four apps pass live login/save/reload/logout tests; Number Line Rocket retains 58 students and its existing auth account. App roles are isolated; inherited API privileges were removed from imported tables. The old US project is paused, with private backups retained. Math Factory implementation 2ca8643 is live as deployment dpl_2ZV4DA7WDwJWS6WBG6KFKG7N5FoM. Earlier sections are historical.
 
 
 ## Current: 24 October 2026 — New logo live

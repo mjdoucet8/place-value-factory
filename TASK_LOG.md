@@ -1246,3 +1246,12 @@ Published implementation e408cf3 as READY dpl_2mWCZxWsafMXULxfT7GXFemQhEN7 at ht
 ## HANDOFF — BE-20261029-CA-TLS
 - DATABASE_CA_CERT now supplies an explicit trusted CA with rejectUnauthorized=true; URL SSL flags cannot override verification. Existing local/no-certificate behavior is preserved.
 - PASS: npm test -- tests/unit/staging-server.test.ts (3 tests), npx tsc --noEmit, npm run build, git diff --check. Hosted cutover verification pending. No public API contract change.
+
+## REVIEW / DONE — BE-20261029-CA-TLS
+- Integrated: 2ca8643, production deployment dpl_2ZV4DA7WDwJWS6WBG6KFKG7N5FoM.
+- Canadian database restore matched all 34 source table counts/content hashes before cutover. Existing Number Line Rocket: 58 students, 58 logs, 2 classrooms, 1 auth account and 8 policies retained.
+- All four migrated apps passed hosted login/save/reload/logout twice, including after the source pause began. Temporary fictional accounts removed.
+- Math Factory uses pvf_runtime, no database ownership/admin/RLS bypass; imported table browser/API grants revoked. Verified TLS passes.
+- Log review: three serverless apps had no error entries. Math Factory had SIGTERM container lifecycle exits; no database failure was observed and live functional checks passed. This is not a zero-error-log claim.
+- Source US project paused, not deleted. Protected database archives and recovery records are held outside Git under the owner's private local application data.
+- No classroom readiness or broader security certification claimed.
