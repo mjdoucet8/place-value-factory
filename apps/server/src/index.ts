@@ -8,7 +8,7 @@ import {
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, extname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { Pool } from "pg";
+import { Pool, type PoolConfig } from "pg";
 import { AsyncLocalStorage } from "node:async_hooks";
 import {
   AccessError,
@@ -47,7 +47,7 @@ import {
 const port = Number(process.env.PORT ?? 3101);
 export function runtimeDatabaseOptions(
   environment: NodeJS.ProcessEnv = process.env,
-): { connectionString: string; max: number } | null {
+): PoolConfig | null {
   const connectionString = environment.DATABASE_URL || environment.POSTGRES_URL;
   if (!connectionString) return null;
   const configured = environment.PVF_DATABASE_POOL_MAX;
@@ -58,6 +58,18 @@ export function runtimeDatabaseOptions(
       : 10;
   if (!Number.isSafeInteger(max) || max < 1 || max > 50)
     throw new Error("PVF_DATABASE_POOL_MAX must be an integer from 1 to 50.");
+  const certificate = environment.DATABASE_CA_CERT;
+  if (certificate) {
+    const url = new URL(connectionString);
+    // URL SSL options otherwise override pg's explicit trusted CA settings.
+    for (const parameter of ["ssl", "sslmode", "sslcert", "sslkey", "sslrootcert", "uselibpqcompat"])
+      url.searchParams.delete(parameter);
+    return {
+      connectionString: url.toString(),
+      max,
+      ssl: { ca: certificate.replace(/\\n/g, "\n"), rejectUnauthorized: true },
+    };
+  }
   return { connectionString, max };
 }
 const defaultDataPath = process.env.PVF_DATA_PATH

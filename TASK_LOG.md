@@ -1235,3 +1235,14 @@ Copied the supplied 1254×1254 PNG unchanged into public assets, replaced only t
 ## 2026-10-24 | LOGO-52 | DEPLOY / DONE | FE / QA
 
 Published implementation e408cf3 as READY dpl_2mWCZxWsafMXULxfT7GXFemQhEN7 at https://math-factory-one.vercel.app/ (deployment https://math-factory-6tqjj3x5i-doucet.vercel.app). Live page and health return 200 with health OK. Served index-Buy1cLE0.js, index-DZUhndpO.css and pvf-logo.png match the tested build byte-for-byte. Fresh Chromium confirms the logo loads at 1254×1254, favicon references the supplied art, credentials stay blank and Student login remains in view at 1366×600, with zero page errors. Bounded deployment log query returned zero errors using the installed CLI's level:error query syntax. No live student mutations. Original root pvf-logo.png and existing local-development.json remain untouched/uncommitted; public logo is included in the implementation commit. Delivery records prepared for GitHub.
+
+## CLAIM — BE-20261029-CA-TLS
+- Role: BE/QA/PA, single agent; 2026-10-29 UTC.
+- Goal: owner-approved consolidation into the existing Canadian education database, preserving accounts and progress.
+- Owned paths: apps/server/src/index.ts; tests/unit/staging-server.test.ts; TASK_LOG.md; PROJECT_STATUS.md; PROMPT_RESULTS.md.
+- Dependency: existing v1/v2 contracts unchanged. Add verified TLS via DATABASE_CA_CERT before database cutover; no UI or game changes.
+- Expected evidence: focused regression tests, typecheck/build, hosted database health after deployment.
+
+## HANDOFF — BE-20261029-CA-TLS
+- DATABASE_CA_CERT now supplies an explicit trusted CA with rejectUnauthorized=true; URL SSL flags cannot override verification. Existing local/no-certificate behavior is preserved.
+- PASS: npm test -- tests/unit/staging-server.test.ts (3 tests), npx tsc --noEmit, npm run build, git diff --check. Hosted cutover verification pending. No public API contract change.

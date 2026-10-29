@@ -25,6 +25,17 @@ describe("single-service staging server", () => {
     })).toThrow("PVF_DATABASE_POOL_MAX");
   });
 
+  it("keeps certificate verification when URL SSL flags try to override it", () => {
+    const options = runtimeDatabaseOptions({
+      DATABASE_URL: "postgresql://fictional@example.test/factory?sslmode=no-verify&sslrootcert=untrusted&uselibpqcompat=true&application_name=factory",
+      DATABASE_CA_CERT: "certificate-line-1\\ncertificate-line-2",
+      PVF_MODE: "staging",
+    });
+    expect(options?.connectionString).toBe("postgresql://fictional@example.test/factory?application_name=factory");
+    expect(options?.ssl).toEqual({ ca: "certificate-line-1\ncertificate-line-2", rejectUnauthorized: true });
+    expect(options?.max).toBe(1);
+  });
+
   it("serves the built SPA, keeps missing assets 404 and exposes health", async () => {
     const root = await mkdtemp(join(tmpdir(), "pvf-static-"));
     roots.push(root);
